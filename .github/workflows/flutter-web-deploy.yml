@@ -35,6 +35,6 @@ jobs:
         uses: amondnet/vercel-action@v20
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }} # Vercel Personal Access Token
-          vercel-args: '--prod'
+          vercel-args: '--prod --yes'
           working-directory: build/web # 빌드된 결과물 디렉토리
           project-name: flutter_gimchi # Vercel 프로젝트 이름
