@@ -1,0 +1,39 @@
+name: Flutter Web Deploy
+
+on:
+  push:
+    branches:
+      - main # main 브랜치에 푸시될 때 실행
+
+jobs:
+  build:
+    name: Build and Deploy Flutter Web
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 리포지토리 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Flutter 설치
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+
+      # 3. Flutter 의존성 설치
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 4. Flutter 웹 빌드
+      - name: Build Flutter Web
+        run: flutter build web
+
+      # 5. Vercel에 배포
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }} # Vercel Personal Access Token
+          vercel-args: '--prod'
+          working-directory: build/web # 빌드된 결과물 디렉토리
+          project-name: flutter_gimchi # Vercel 프로젝트 이름
