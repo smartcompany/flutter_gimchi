@@ -35,5 +35,5 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }} # Vercel Personal Access Token
           vercel-args: '--prod'
-          working-directory: build/web
-          project-name: flutter_gimch
+          working-directory: build/web # 빌드된 결과물 디렉토리
+          project-name: flutter_gimchi # Vercel 프로젝트 이름

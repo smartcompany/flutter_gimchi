@@ -89,7 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('김치 프리미엄 분석 - 테스트')),
+      appBar: AppBar(title: const Text('김치 프리미엄 분석')),
       body:
           exchangeRateSpots.isEmpty
               ? const Center(child: CircularProgressIndicator()) // 로딩 상태 표시
