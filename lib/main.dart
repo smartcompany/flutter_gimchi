@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart'; // 숫자 포맷팅을 위한 패키지
 
 void main() => runApp(const MyApp());
 
@@ -112,6 +113,24 @@ class _MyHomePageState extends State<MyHomePage> {
                                 getTitlesWidget: (value, meta) {
                                   return Text(
                                     value.toStringAsFixed(1), // 소수점 1자리까지 표시
+                                    style: const TextStyle(fontSize: 10),
+                                  );
+                                },
+                              ),
+                            ),
+                            rightTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                interval: 200, // 오른쪽 Y축 간격 설정
+                                reservedSize: 50, // 오른쪽 Y축 레이블 공간 확보
+                                getTitlesWidget: (value, meta) {
+                                  // 숫자를 쉼표로 구분된 형식으로 변환
+                                  final formattedValue =
+                                      NumberFormat.decimalPattern().format(
+                                        value,
+                                      );
+                                  return Text(
+                                    formattedValue, // 쉼표로 구분된 숫자 표시
                                     style: const TextStyle(fontSize: 10),
                                   );
                                 },
