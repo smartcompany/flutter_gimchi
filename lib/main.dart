@@ -56,22 +56,31 @@ class _MyHomePageState extends State<MyHomePage> {
         if (data.isNotEmpty && upbitData.isNotEmpty) {
           List<String> dates = data.keys.toList(); // 날짜 키를 리스트로 저장
           dates.sort(); // 날짜를 오름차순으로 정렬
-          int index = 0;
 
-          for (String date in dates) {
-            final value = data[date];
-            exchangeRateSpots.add(
-              FlSpot(index.toDouble(), (value as num).toDouble()),
+          // 날짜별 데이터를 정확히 매핑
+          for (int index = 0; index < dates.length; index++) {
+            final date = dates[index];
+            final exchangeRate = data[date] as num;
+
+            // 업비트 데이터에서 해당 날짜의 종가(close) 값을 가져옴
+            final usdtCandle = upbitData.firstWhere(
+              (candle) => candle['candle_date_time_utc'].startsWith(date),
+              orElse: () => null,
             );
 
-            // 업비트 캔들 데이터에서 해당 날짜의 종가(close) 값을 가져옴
-            final usdtCandle = upbitData[index];
-            final usdtPrice = usdtCandle['trade_price'] as num;
+            if (usdtCandle != null) {
+              final usdtPrice = usdtCandle['trade_price'] as num;
 
-            usdtPriceSpots.add(FlSpot(index.toDouble(), usdtPrice.toDouble()));
-
-            index++;
+              // 데이터를 추가
+              exchangeRateSpots.add(
+                FlSpot(index.toDouble(), exchangeRate.toDouble()),
+              );
+              usdtPriceSpots.add(
+                FlSpot(index.toDouble(), usdtPrice.toDouble()),
+              );
+            }
           }
+
           setState(() {});
         } else {
           print("API returned empty data.");
