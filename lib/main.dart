@@ -110,12 +110,19 @@ class _MyHomePageState extends State<MyHomePage> {
         height: 300, // 원하는 높이(px)로 고정
         width: double.infinity, // 가로로 꽉 차게
         child: SfCartesianChart(
+          margin: const EdgeInsets.all(10),
           primaryXAxis: DateTimeAxis(
             edgeLabelPlacement: EdgeLabelPlacement.shift,
             intervalType: DateTimeIntervalType.days,
             dateFormat: DateFormat.yMd(),
+            plotOffsetEnd: 30,
+            initialZoomFactor: 0.5,
+            initialZoomPosition: 1.0,
           ),
-          primaryYAxis: NumericAxis(labelFormat: '{value}'),
+          primaryYAxis: NumericAxis(
+            labelFormat: '{value}',
+            numberFormat: NumberFormat("###,##0.0"), // 소수점 첫째자리까지
+          ),
           zoomPanBehavior: ZoomPanBehavior(
             enablePinching: true,
             enablePanning: true,
