@@ -11,6 +11,8 @@ const String upbitUsdtUrl =
     "https://api.upbit.com/v1/candles/days?market=KRW-USDT&count=$days";
 const String rateHistoryUrl =
     "https://rate-history.vercel.app/api/rate-history?days=$days";
+const String gimchHistoryUrl =
+    "https://rate-history.vercel.app/api/gimch-history?days=$days";
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -38,6 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<ChartData> kimchiPremium = [];
   List<ChartData> usdtPrices = [];
   List<ChartData> exchangeRates = [];
+  double plotOffsetEnd = 0;
 
   @override
   void initState() {
@@ -102,32 +105,47 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  void _onActualRangeChanged(ActualRangeChangedArgs args) {
+    if (exchangeRates.isEmpty) return;
+    final DateTime? maxX = args.visibleMax is DateTime ? args.visibleMax : null;
+    final DateTime lastDate = exchangeRates.last.time;
+
+    // 마지막 데이터가 화면에 보일 때만 plotOffsetEnd 적용
+    setState(() {
+      plotOffsetEnd =
+          (maxX != null && maxX.isAtSameMomentAs(lastDate)) ? 30 : 0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("시세 차트")),
       body: SizedBox(
-        height: 300, // 원하는 높이(px)로 고정
-        width: double.infinity, // 가로로 꽉 차게
+        height: 300,
+        width: double.infinity,
         child: SfCartesianChart(
+          // onActualRangeChanged: _onActualRangeChanged,
           margin: const EdgeInsets.all(10),
           primaryXAxis: DateTimeAxis(
             edgeLabelPlacement: EdgeLabelPlacement.shift,
             intervalType: DateTimeIntervalType.days,
             dateFormat: DateFormat.yMd(),
-            plotOffsetEnd: 30,
-            initialZoomFactor: 0.5,
-            initialZoomPosition: 1.0,
+            //plotOffsetEnd: plotOffsetEnd,
+            rangePadding: ChartRangePadding.additionalEnd,
+            initialZoomFactor: 0.9,
+            initialZoomPosition: 0.8,
           ),
           primaryYAxis: NumericAxis(
+            rangePadding: ChartRangePadding.auto,
             labelFormat: '{value}',
-            numberFormat: NumberFormat("###,##0.0"), // 소수점 첫째자리까지
+            numberFormat: NumberFormat("###,##0.0"),
           ),
           zoomPanBehavior: ZoomPanBehavior(
             enablePinching: true,
             enablePanning: true,
             enableDoubleTapZooming: true,
-            zoomMode: ZoomMode.xy, // x축만 확대 (원하면 ZoomMode.xy 도 가능)
+            zoomMode: ZoomMode.xy,
           ),
           tooltipBehavior: TooltipBehavior(enable: true),
           series: <CartesianSeries>[
