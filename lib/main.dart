@@ -47,6 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     fetchExchangeRateData();
     fetchUSDTData();
+    fetchKimchiPremiumData(); // 김치 프리미엄 데이터도 불러오기
   }
 
   Future<void> fetchUSDTData() async {
@@ -102,6 +103,27 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     } catch (e) {
       print("Error fetching data: $e");
+    }
+  }
+
+  Future<void> fetchKimchiPremiumData() async {
+    try {
+      final response = await http.get(Uri.parse(gimchHistoryUrl));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        final List<ChartData> premium = [];
+        data.forEach((key, value) {
+          premium.add(ChartData(DateTime.parse(key), value.toDouble()));
+        });
+        setState(() {
+          kimchiPremium = premium;
+        });
+        print("Kimchi Premium Data: $kimchiPremium");
+      } else {
+        print("Failed to fetch kimchi premium: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching kimchi premium: $e");
     }
   }
 
@@ -166,6 +188,16 @@ class _MyHomePageState extends State<MyHomePage> {
                       : [ChartData(DateTime.now(), 0)],
               xValueMapper: (ChartData data, _) => data.time,
               yValueMapper: (ChartData data, _) => data.value,
+            ),
+            LineSeries<ChartData, DateTime>(
+              name: '김치 프리미엄(%)',
+              dataSource:
+                  kimchiPremium.isNotEmpty
+                      ? kimchiPremium
+                      : [ChartData(DateTime.now(), 0)],
+              xValueMapper: (ChartData data, _) => data.time,
+              yValueMapper: (ChartData data, _) => data.value,
+              color: Colors.red,
             ),
           ],
         ),
