@@ -42,6 +42,10 @@ class _MyHomePageState extends State<MyHomePage> {
   List<ChartData> exchangeRates = [];
   double plotOffsetEnd = 0;
   bool showKimchiPremium = true; // 김치 프리미엄 표시 여부
+  final TextEditingController questionController = TextEditingController(
+    text:
+        "이 차트는 김치 프리미엄과 환율 테더를 그리고 있어 데더를 싸게 사서 비싸게 팔아 이익을 취한다는 관점에서 봤을때 이 그래프를 보고 김치 프리미엄과 환율이 얼마일때 테더를 사고 얼마일때 팔아야 할지 기준을 대충 정해 볼 수 있겠어?",
+  );
 
   @override
   void initState() {
@@ -243,6 +247,18 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               const Text('gimch premium'),
             ],
+          ),
+          // 질문 에디트 박스 추가
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: TextField(
+              controller: questionController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: '질문을 입력하세요',
+              ),
+            ),
           ),
         ],
       ),
