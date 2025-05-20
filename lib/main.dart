@@ -41,6 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<ChartData> usdtPrices = [];
   List<ChartData> exchangeRates = [];
   double plotOffsetEnd = 0;
+  bool showKimchiPremium = true; // 김치 프리미엄 표시 여부
 
   @override
   void initState() {
@@ -143,64 +144,98 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("시세 차트")),
-      body: SizedBox(
-        height: 300,
-        width: double.infinity,
-        child: SfCartesianChart(
-          // onActualRangeChanged: _onActualRangeChanged,
-          margin: const EdgeInsets.all(10),
-          primaryXAxis: DateTimeAxis(
-            edgeLabelPlacement: EdgeLabelPlacement.shift,
-            intervalType: DateTimeIntervalType.days,
-            dateFormat: DateFormat.yMd(),
-            //plotOffsetEnd: plotOffsetEnd,
-            rangePadding: ChartRangePadding.additionalEnd,
-            initialZoomFactor: 0.9,
-            initialZoomPosition: 0.8,
-          ),
-          primaryYAxis: NumericAxis(
-            rangePadding: ChartRangePadding.auto,
-            labelFormat: '{value}',
-            numberFormat: NumberFormat("###,##0.0"),
-          ),
-          zoomPanBehavior: ZoomPanBehavior(
-            enablePinching: true,
-            enablePanning: true,
-            enableDoubleTapZooming: true,
-            zoomMode: ZoomMode.xy,
-          ),
-          tooltipBehavior: TooltipBehavior(enable: true),
-          series: <CartesianSeries>[
-            LineSeries<ChartData, DateTime>(
-              name: '환율',
-              dataSource:
-                  exchangeRates.isNotEmpty
-                      ? exchangeRates
-                      : [ChartData(DateTime.now(), 0)],
-              xValueMapper: (ChartData data, _) => data.time,
-              yValueMapper: (ChartData data, _) => data.value,
+      body: Column(
+        children: [
+          SizedBox(
+            height: 300,
+            width: double.infinity,
+            child: SfCartesianChart(
+              margin: const EdgeInsets.all(10),
+              primaryXAxis: DateTimeAxis(
+                edgeLabelPlacement: EdgeLabelPlacement.shift,
+                intervalType: DateTimeIntervalType.days,
+                dateFormat: DateFormat.yMd(),
+                rangePadding: ChartRangePadding.additionalEnd,
+                initialZoomFactor: 0.9,
+                initialZoomPosition: 0.8,
+              ),
+              primaryYAxis: NumericAxis(
+                rangePadding: ChartRangePadding.auto,
+                labelFormat: '{value}',
+                numberFormat: NumberFormat("###,##0.0"),
+              ),
+              axes: <ChartAxis>[
+                NumericAxis(
+                  name: 'kimchiAxis',
+                  opposedPosition: true,
+                  title: AxisTitle(text: '김치 프리미엄(%)'),
+                  labelFormat: '{value}%',
+                  axisLine: const AxisLine(width: 2, color: Colors.red),
+                  majorTickLines: const MajorTickLines(
+                    size: 6,
+                    color: Colors.red,
+                  ),
+                  rangePadding: ChartRangePadding.round,
+                ),
+              ],
+              zoomPanBehavior: ZoomPanBehavior(
+                enablePinching: true,
+                enablePanning: true,
+                enableDoubleTapZooming: true,
+                zoomMode: ZoomMode.xy,
+              ),
+              tooltipBehavior: TooltipBehavior(enable: true),
+              series: <CartesianSeries>[
+                LineSeries<ChartData, DateTime>(
+                  name: '환율',
+                  dataSource:
+                      exchangeRates.isNotEmpty
+                          ? exchangeRates
+                          : [ChartData(DateTime.now(), 0)],
+                  xValueMapper: (ChartData data, _) => data.time,
+                  yValueMapper: (ChartData data, _) => data.value,
+                ),
+                LineSeries<ChartData, DateTime>(
+                  name: 'USDT',
+                  dataSource:
+                      usdtPrices.isNotEmpty
+                          ? usdtPrices
+                          : [ChartData(DateTime.now(), 0)],
+                  xValueMapper: (ChartData data, _) => data.time,
+                  yValueMapper: (ChartData data, _) => data.value,
+                ),
+                if (showKimchiPremium)
+                  LineSeries<ChartData, DateTime>(
+                    name: '김치 프리미엄(%)',
+                    dataSource:
+                        kimchiPremium.isNotEmpty
+                            ? kimchiPremium
+                            : [ChartData(DateTime.now(), 0)],
+                    xValueMapper: (ChartData data, _) => data.time,
+                    yValueMapper: (ChartData data, _) => data.value,
+                    color: Colors.red,
+                    yAxisName: 'kimchiAxis',
+                    width: 2,
+                    markerSettings: const MarkerSettings(isVisible: true),
+                  ),
+              ],
             ),
-            LineSeries<ChartData, DateTime>(
-              name: 'USDT',
-              dataSource:
-                  usdtPrices.isNotEmpty
-                      ? usdtPrices
-                      : [ChartData(DateTime.now(), 0)],
-              xValueMapper: (ChartData data, _) => data.time,
-              yValueMapper: (ChartData data, _) => data.value,
-            ),
-            LineSeries<ChartData, DateTime>(
-              name: '김치 프리미엄(%)',
-              dataSource:
-                  kimchiPremium.isNotEmpty
-                      ? kimchiPremium
-                      : [ChartData(DateTime.now(), 0)],
-              xValueMapper: (ChartData data, _) => data.time,
-              yValueMapper: (ChartData data, _) => data.value,
-              color: Colors.red,
-            ),
-          ],
-        ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Checkbox(
+                value: showKimchiPremium,
+                onChanged: (val) {
+                  setState(() {
+                    showKimchiPremium = val ?? true;
+                  });
+                },
+              ),
+              const Text('gimch premium'),
+            ],
+          ),
+        ],
       ),
     );
   }
