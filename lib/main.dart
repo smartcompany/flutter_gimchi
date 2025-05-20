@@ -174,6 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   opposedPosition: true,
                   title: AxisTitle(text: '김치 프리미엄(%)'),
                   labelFormat: '{value}%',
+                  numberFormat: NumberFormat("##0.0"), // ← 소수점 첫째자리까지
                   axisLine: const AxisLine(width: 2, color: Colors.red),
                   majorTickLines: const MajorTickLines(
                     size: 2,
