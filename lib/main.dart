@@ -172,7 +172,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   labelFormat: '{value}%',
                   axisLine: const AxisLine(width: 2, color: Colors.red),
                   majorTickLines: const MajorTickLines(
-                    size: 6,
+                    size: 2,
                     color: Colors.red,
                   ),
                   rangePadding: ChartRangePadding.round,
@@ -216,7 +216,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     color: Colors.red,
                     yAxisName: 'kimchiAxis',
                     width: 2,
-                    markerSettings: const MarkerSettings(isVisible: true),
+                    markerSettings: const MarkerSettings(
+                      isVisible: true,
+                      width: 3, // 동그라미(마커) 크기 줄이기
+                      height: 3, // 동그라미(마커) 크기 줄이기
+                    ),
                   ),
               ],
             ),
