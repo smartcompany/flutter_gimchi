@@ -150,6 +150,10 @@ class _MyHomePageState extends State<MyHomePage> {
             height: 300,
             width: double.infinity,
             child: SfCartesianChart(
+              legend: const Legend(
+                isVisible: true,
+                position: LegendPosition.bottom, // 아래쪽에 범례 표시
+              ),
               margin: const EdgeInsets.all(10),
               primaryXAxis: DateTimeAxis(
                 edgeLabelPlacement: EdgeLabelPlacement.shift,
