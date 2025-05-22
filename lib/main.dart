@@ -8,7 +8,7 @@ void main() => runApp(const MyApp());
 
 const int days = 200;
 const String upbitUsdtUrl =
-    "https://api.upbit.com/v1/candles/days?market=KRW-USDT&count=$days";
+    "https://rate-history.vercel.app/api/usdt-history?days=$days";
 const String rateHistoryUrl =
     "https://rate-history.vercel.app/api/rate-history?days=$days";
 const String gimchHistoryUrl =
@@ -37,6 +37,7 @@ class ChartData {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final GlobalKey chartKey = GlobalKey();
   List<ChartData> kimchiPremium = [];
   List<ChartData> usdtPrices = [];
   List<ChartData> exchangeRates = [];
@@ -60,21 +61,15 @@ class _MyHomePageState extends State<MyHomePage> {
       final response = await http.get(Uri.parse(upbitUsdtUrl));
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body) as List;
+        final data = json.decode(response.body) as Map<String, dynamic>;
         final List<ChartData> rate = [];
 
-        for (final item in data) {
-          // 날짜와 가격을 올바르게 추출
-          final dateStr = item['candle_date_time_utc'] as String;
-          final price = item['trade_price'] as num;
-          rate.add(ChartData(DateTime.parse(dateStr), price.toDouble()));
-        }
-
-        // 최신 날짜가 앞으로 오므로, 그래프를 위해 뒤집기
-        final reversedRate = rate.reversed.toList();
+        data.forEach((key, value) {
+          rate.add(ChartData(DateTime.parse(key), value.toDouble()));
+        });
 
         setState(() {
-          usdtPrices = reversedRate;
+          usdtPrices = rate;
         });
 
         print("USDT prices Data: $usdtPrices");
@@ -133,105 +128,125 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _onActualRangeChanged(ActualRangeChangedArgs args) {
-    if (exchangeRates.isEmpty) return;
-    final DateTime? maxX = args.visibleMax is DateTime ? args.visibleMax : null;
-    final DateTime lastDate = exchangeRates.last.time;
-
-    // 마지막 데이터가 화면에 보일 때만 plotOffsetEnd 적용
-    setState(() {
-      plotOffsetEnd =
-          (maxX != null && maxX.isAtSameMomentAs(lastDate)) ? 30 : 0;
-    });
+    // 오른쪽 Y축(kimchiAxis)만 처리
+    if (args.axisName == 'kimchiAxis' && kimchiPremium.isNotEmpty) {
+      final DateTime? minX = args.visibleMin as DateTime?;
+      final DateTime? maxX = args.visibleMax as DateTime?;
+      if (minX != null && maxX != null) {
+        // 현재 화면에 보이는 구간의 김치프리미엄 데이터만 추출
+        final visibleData = kimchiPremium.where(
+          (d) => !d.time.isBefore(minX) && !d.time.isAfter(maxX),
+        );
+        if (visibleData.isNotEmpty) {
+          final minY = visibleData
+              .map((d) => d.value)
+              .reduce((a, b) => a < b ? a : b);
+          final maxY = visibleData
+              .map((d) => d.value)
+              .reduce((a, b) => a > b ? a : b);
+          final padding = (maxY - minY) * 0.1; // 10% 여유
+          args.visibleMin = minY - padding;
+          args.visibleMax = maxY + padding;
+        }
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final double chartHeight =
+        MediaQuery.of(context).size.height * 0.5; // 화면의 절반 높이
+
     return Scaffold(
       appBar: AppBar(title: const Text("시세 차트")),
       body: Column(
         children: [
-          SizedBox(
-            height: 300,
-            width: double.infinity,
-            child: SfCartesianChart(
-              legend: const Legend(
-                isVisible: true,
-                position: LegendPosition.bottom, // 아래쪽에 범례 표시
-              ),
-              margin: const EdgeInsets.all(10),
-              primaryXAxis: DateTimeAxis(
-                edgeLabelPlacement: EdgeLabelPlacement.shift,
-                intervalType: DateTimeIntervalType.days,
-                dateFormat: DateFormat.yMd(),
-                rangePadding: ChartRangePadding.additionalEnd,
-                initialZoomFactor: 0.9,
-                initialZoomPosition: 0.8,
-              ),
-              primaryYAxis: NumericAxis(
-                rangePadding: ChartRangePadding.auto,
-                labelFormat: '{value}',
-                numberFormat: NumberFormat("###,##0.0"),
-              ),
-              axes: <ChartAxis>[
-                NumericAxis(
-                  name: 'kimchiAxis',
-                  opposedPosition: true,
-                  title: AxisTitle(text: '김치 프리미엄(%)'),
-                  labelFormat: '{value}%',
-                  numberFormat: NumberFormat("##0.0"), // ← 소수점 첫째자리까지
-                  axisLine: const AxisLine(width: 2, color: Colors.red),
-                  majorTickLines: const MajorTickLines(
-                    size: 2,
-                    color: Colors.red,
+          // 차트 캡처를 위해 RepaintBoundary로 감쌈
+          RepaintBoundary(
+            key: chartKey,
+            child: SizedBox(
+              height: 300,
+              width: double.infinity,
+              child: SfCartesianChart(
+                legend: const Legend(
+                  isVisible: true,
+                  position: LegendPosition.bottom, // 아래쪽에 범례 표시
+                ),
+                margin: const EdgeInsets.all(10),
+                primaryXAxis: DateTimeAxis(
+                  edgeLabelPlacement: EdgeLabelPlacement.shift,
+                  intervalType: DateTimeIntervalType.days,
+                  dateFormat: DateFormat.yMd(),
+                  rangePadding: ChartRangePadding.additionalEnd,
+                  initialZoomFactor: 0.9,
+                  initialZoomPosition: 0.8,
+                ),
+                primaryYAxis: NumericAxis(
+                  rangePadding: ChartRangePadding.auto,
+                  labelFormat: '{value}',
+                  numberFormat: NumberFormat("###,##0.0"),
+                ),
+                axes: <ChartAxis>[
+                  NumericAxis(
+                    name: 'kimchiAxis',
+                    opposedPosition: true,
+                    title: AxisTitle(text: '김치 프리미엄(%)'),
+                    labelFormat: '{value}%',
+                    numberFormat: NumberFormat("##0.0"), // ← 소수점 첫째자리까지
+                    axisLine: const AxisLine(width: 2, color: Colors.red),
+                    majorTickLines: const MajorTickLines(
+                      size: 2,
+                      color: Colors.red,
+                    ),
+                    rangePadding: ChartRangePadding.round,
                   ),
-                  rangePadding: ChartRangePadding.round,
+                ],
+                zoomPanBehavior: ZoomPanBehavior(
+                  enablePinching: true,
+                  enablePanning: true,
+                  enableDoubleTapZooming: true,
+                  zoomMode: ZoomMode.xy,
                 ),
-              ],
-              zoomPanBehavior: ZoomPanBehavior(
-                enablePinching: true,
-                enablePanning: true,
-                enableDoubleTapZooming: true,
-                zoomMode: ZoomMode.xy,
-              ),
-              tooltipBehavior: TooltipBehavior(enable: true),
-              series: <CartesianSeries>[
-                LineSeries<ChartData, DateTime>(
-                  name: '환율',
-                  dataSource:
-                      exchangeRates.isNotEmpty
-                          ? exchangeRates
-                          : [ChartData(DateTime.now(), 0)],
-                  xValueMapper: (ChartData data, _) => data.time,
-                  yValueMapper: (ChartData data, _) => data.value,
-                ),
-                LineSeries<ChartData, DateTime>(
-                  name: 'USDT',
-                  dataSource:
-                      usdtPrices.isNotEmpty
-                          ? usdtPrices
-                          : [ChartData(DateTime.now(), 0)],
-                  xValueMapper: (ChartData data, _) => data.time,
-                  yValueMapper: (ChartData data, _) => data.value,
-                ),
-                if (showKimchiPremium)
+                tooltipBehavior: TooltipBehavior(enable: true),
+                series: <CartesianSeries>[
                   LineSeries<ChartData, DateTime>(
-                    name: '김치 프리미엄(%)',
+                    name: '환율',
                     dataSource:
-                        kimchiPremium.isNotEmpty
-                            ? kimchiPremium
+                        exchangeRates.isNotEmpty
+                            ? exchangeRates
                             : [ChartData(DateTime.now(), 0)],
                     xValueMapper: (ChartData data, _) => data.time,
                     yValueMapper: (ChartData data, _) => data.value,
-                    color: Colors.red,
-                    yAxisName: 'kimchiAxis',
-                    width: 2,
-                    markerSettings: const MarkerSettings(
-                      isVisible: true,
-                      width: 3, // 동그라미(마커) 크기 줄이기
-                      height: 3, // 동그라미(마커) 크기 줄이기
-                    ),
                   ),
-              ],
+                  LineSeries<ChartData, DateTime>(
+                    name: 'USDT',
+                    dataSource:
+                        usdtPrices.isNotEmpty
+                            ? usdtPrices
+                            : [ChartData(DateTime.now(), 0)],
+                    xValueMapper: (ChartData data, _) => data.time,
+                    yValueMapper: (ChartData data, _) => data.value,
+                  ),
+                  if (showKimchiPremium)
+                    LineSeries<ChartData, DateTime>(
+                      name: '김치 프리미엄(%)',
+                      dataSource:
+                          kimchiPremium.isNotEmpty
+                              ? kimchiPremium
+                              : [ChartData(DateTime.now(), 0)],
+                      xValueMapper: (ChartData data, _) => data.time,
+                      yValueMapper: (ChartData data, _) => data.value,
+                      color: Colors.red,
+                      yAxisName: 'kimchiAxis',
+                      width: 2,
+                      markerSettings: const MarkerSettings(
+                        isVisible: true,
+                        width: 3, // 동그라미(마커) 크기 줄이기
+                        height: 3, // 동그라미(마커) 크기 줄이기
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
           Row(
