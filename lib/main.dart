@@ -165,7 +165,7 @@ class _MyHomePageState extends State<MyHomePage> {
           RepaintBoundary(
             key: chartKey,
             child: SizedBox(
-              height: 300,
+              height: chartHeight, // 여기서 높이를 화면의 절반으로 지정
               width: double.infinity,
               child: SfCartesianChart(
                 legend: const Legend(
@@ -190,7 +190,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   NumericAxis(
                     name: 'kimchiAxis',
                     opposedPosition: true,
-                    title: AxisTitle(text: '김치 프리미엄(%)'),
                     labelFormat: '{value}%',
                     numberFormat: NumberFormat("##0.0"), // ← 소수점 첫째자리까지
                     axisLine: const AxisLine(width: 2, color: Colors.red),
