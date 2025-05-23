@@ -13,6 +13,8 @@ const String rateHistoryUrl =
     "https://rate-history.vercel.app/api/rate-history?days=$days";
 const String gimchHistoryUrl =
     "https://rate-history.vercel.app/api/gimch-history?days=$days";
+const String strategyUrl =
+    "https://hqztxxpafzkrwephbonq.supabase.co/storage/v1/object/public/rate-history//analyze-strategy.json";
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -43,17 +45,16 @@ class _MyHomePageState extends State<MyHomePage> {
   List<ChartData> exchangeRates = [];
   double plotOffsetEnd = 0;
   bool showKimchiPremium = true; // 김치 프리미엄 표시 여부
-  final TextEditingController questionController = TextEditingController(
-    text:
-        "이 차트는 김치 프리미엄과 환율 테더를 그리고 있어 데더를 싸게 사서 비싸게 팔아 이익을 취한다는 관점에서 봤을때 이 그래프를 보고 김치 프리미엄과 환율이 얼마일때 테더를 사고 얼마일때 팔아야 할지 기준을 대충 정해 볼 수 있겠어?",
-  );
+  String? strategyText;
+  Map<String, dynamic>? parsedStrategy;
 
   @override
   void initState() {
     super.initState();
     fetchExchangeRateData();
     fetchUSDTData();
-    fetchKimchiPremiumData(); // 김치 프리미엄 데이터도 불러오기
+    fetchKimchiPremiumData();
+    fetchStrategy(); // 매매 전략도 불러오기
   }
 
   Future<void> fetchUSDTData() async {
@@ -127,47 +128,94 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _onActualRangeChanged(ActualRangeChangedArgs args) {
-    // 오른쪽 Y축(kimchiAxis)만 처리
-    if (args.axisName == 'kimchiAxis' && kimchiPremium.isNotEmpty) {
-      final DateTime? minX = args.visibleMin as DateTime?;
-      final DateTime? maxX = args.visibleMax as DateTime?;
-      if (minX != null && maxX != null) {
-        // 현재 화면에 보이는 구간의 김치프리미엄 데이터만 추출
-        final visibleData = kimchiPremium.where(
-          (d) => !d.time.isBefore(minX) && !d.time.isAfter(maxX),
-        );
-        if (visibleData.isNotEmpty) {
-          final minY = visibleData
-              .map((d) => d.value)
-              .reduce((a, b) => a < b ? a : b);
-          final maxY = visibleData
-              .map((d) => d.value)
-              .reduce((a, b) => a > b ? a : b);
-          final padding = (maxY - minY) * 0.1; // 10% 여유
-          args.visibleMin = minY - padding;
-          args.visibleMax = maxY + padding;
+  Future<void> fetchStrategy() async {
+    try {
+      final response = await http.get(Uri.parse(strategyUrl));
+      if (response.statusCode == 200) {
+        // 바이트를 직접 UTF-8로 디코딩
+        strategyText = utf8.decode(response.bodyBytes);
+        print("Strategy Data: $strategyText");
+
+        // 매매 전략 파싱
+        Map<String, dynamic>? strategyData;
+        if (strategyText != null) {
+          try {
+            // 1차 파싱: {"strategy": "...json string..."}
+            final outer = json.decode(strategyText!) as Map<String, dynamic>;
+            print('outer: $outer');
+            // 2차 파싱: {"buy_price":..., ...}
+            final inner =
+                outer is Map && outer['strategy'] != null
+                    ? json.decode(outer['strategy'])
+                    : null;
+            print('inner: $inner');
+            if (inner is Map<String, dynamic>) {
+              strategyData = inner;
+            }
+          } catch (e) {
+            print('파싱 에러: $e');
+            strategyData = null;
+          }
         }
+
+        setState(() {
+          parsedStrategy = strategyData;
+        });
+      } else {
+        print("Failed to fetch strategy: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching strategy: $e");
+    }
+  }
+
+  void _onActualRangeChanged(ActualRangeChangedArgs args) {
+    if (args.axisName == 'primaryXAxis' && kimchiPremium.isNotEmpty) {
+      // X축 min/max는 chart의 primaryXAxis에서 가져와야 함
+      final dynamic minXValue = args.visibleMin;
+      final dynamic maxXValue = args.visibleMax;
+      if (minXValue == null || maxXValue == null) return;
+
+      final DateTime minX =
+          minXValue is DateTime
+              ? minXValue
+              : DateTime.fromMillisecondsSinceEpoch(minXValue.toInt());
+      final DateTime maxX =
+          maxXValue is DateTime
+              ? maxXValue
+              : DateTime.fromMillisecondsSinceEpoch(maxXValue.toInt());
+
+      final visibleData = kimchiPremium.where(
+        (d) => !d.time.isBefore(minX) && !d.time.isAfter(maxX),
+      );
+      if (visibleData.isNotEmpty) {
+        final minY = visibleData
+            .map((d) => d.value)
+            .reduce((a, b) => a < b ? a : b);
+        final maxY = visibleData
+            .map((d) => d.value)
+            .reduce((a, b) => a > b ? a : b);
+        final padding = (maxY - minY) * 0.1;
+        args.visibleMin = minY - padding;
+        args.visibleMax = maxY + padding;
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final double chartHeight =
-        MediaQuery.of(context).size.height * 0.5; // 화면의 절반 높이
+    final double chartHeight = MediaQuery.of(context).size.height * 0.5;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("시세 차트")),
-      body: Column(
-        children: [
-          // 차트 캡처를 위해 RepaintBoundary로 감쌈
-          RepaintBoundary(
-            key: chartKey,
-            child: SizedBox(
-              height: chartHeight, // 여기서 높이를 화면의 절반으로 지정
+      appBar: AppBar(title: const Text("USDT, 환율, 김치 프리미엄")),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(
+              height: chartHeight,
               width: double.infinity,
               child: SfCartesianChart(
+                // onActualRangeChanged: _onActualRangeChanged,
                 legend: const Legend(
                   isVisible: true,
                   position: LegendPosition.bottom, // 아래쪽에 범례 표시
@@ -191,7 +239,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     name: 'kimchiAxis',
                     opposedPosition: true,
                     labelFormat: '{value}%',
-                    numberFormat: NumberFormat("##0.0"), // ← 소수점 첫째자리까지
+                    numberFormat: NumberFormat("##0.0"),
                     axisLine: const AxisLine(width: 2, color: Colors.red),
                     majorTickLines: const MajorTickLines(
                       size: 2,
@@ -240,41 +288,113 @@ class _MyHomePageState extends State<MyHomePage> {
                       width: 2,
                       markerSettings: const MarkerSettings(
                         isVisible: true,
-                        width: 3, // 동그라미(마커) 크기 줄이기
-                        height: 3, // 동그라미(마커) 크기 줄이기
+                        width: 3,
+                        height: 3,
                       ),
                     ),
                 ],
               ),
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Checkbox(
-                value: showKimchiPremium,
-                onChanged: (val) {
-                  setState(() {
-                    showKimchiPremium = val ?? true;
-                  });
-                },
-              ),
-              const Text('gimch premium'),
-            ],
-          ),
-          // 질문 에디트 박스 추가
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: TextField(
-              controller: questionController,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: '질문을 입력하세요',
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Checkbox(
+                  value: showKimchiPremium,
+                  onChanged: (val) {
+                    setState(() {
+                      showKimchiPremium = val ?? true;
+                    });
+                  },
+                ),
+                const Text('gimch premium'),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '매매 전략',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Table(
+                    border: TableBorder.all(),
+                    children: [
+                      TableRow(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              '추천 매수 가격',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              '${parsedStrategy?['buy_price'] ?? '-'}',
+                            ),
+                          ),
+                        ],
+                      ),
+                      TableRow(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              '추천 매도 가격',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              '${parsedStrategy?['sell_price'] ?? '-'}',
+                            ),
+                          ),
+                        ],
+                      ),
+                      TableRow(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              '예상 기대 수익',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              '${parsedStrategy?['expected_return'] ?? '-'}',
+                            ),
+                          ),
+                        ],
+                      ),
+                      TableRow(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'AI 요약',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text('${parsedStrategy?['summary'] ?? '-'}'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
