@@ -14,7 +14,7 @@ const String rateHistoryUrl =
 const String gimchHistoryUrl =
     "https://rate-history.vercel.app/api/gimch-history?days=$days";
 const String strategyUrl =
-    "https://hqztxxpafzkrwephbonq.supabase.co/storage/v1/object/public/rate-history//analyze-strategy.json";
+    "https://rate-history.vercel.app/api/analyze-strategy";
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -136,21 +136,14 @@ class _MyHomePageState extends State<MyHomePage> {
         strategyText = utf8.decode(response.bodyBytes);
         print("Strategy Data: $strategyText");
 
-        // 매매 전략 파싱
+        // 매매 전략 파싱 (1차 파싱만)
         Map<String, dynamic>? strategyData;
         if (strategyText != null) {
           try {
-            // 1차 파싱: {"strategy": "...json string..."}
-            final outer = json.decode(strategyText!) as Map<String, dynamic>;
-            print('outer: $outer');
-            // 2차 파싱: {"buy_price":..., ...}
-            final inner =
-                outer is Map && outer['strategy'] != null
-                    ? json.decode(outer['strategy'])
-                    : null;
-            print('inner: $inner');
-            if (inner is Map<String, dynamic>) {
-              strategyData = inner;
+            final parsed = json.decode(strategyText!);
+            print('parsed: $parsed');
+            if (parsed is Map<String, dynamic>) {
+              strategyData = parsed;
             }
           } catch (e) {
             print('파싱 에러: $e');
