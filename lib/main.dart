@@ -201,192 +201,200 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("USDT, 환율, 김치 프리미엄")),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(
-              height: chartHeight,
-              width: double.infinity,
-              child: SfCartesianChart(
-                // onActualRangeChanged: _onActualRangeChanged,
-                legend: const Legend(
-                  isVisible: true,
-                  position: LegendPosition.bottom, // 아래쪽에 범례 표시
-                ),
-                margin: const EdgeInsets.all(10),
-                primaryXAxis: DateTimeAxis(
-                  edgeLabelPlacement: EdgeLabelPlacement.shift,
-                  intervalType: DateTimeIntervalType.days,
-                  dateFormat: DateFormat.yMd(),
-                  rangePadding: ChartRangePadding.additionalEnd,
-                  initialZoomFactor: 0.9,
-                  initialZoomPosition: 0.8,
-                ),
-                primaryYAxis: NumericAxis(
-                  rangePadding: ChartRangePadding.auto,
-                  labelFormat: '{value}',
-                  numberFormat: NumberFormat("###,##0.0"),
-                ),
-                axes: <ChartAxis>[
-                  NumericAxis(
-                    name: 'kimchiAxis',
-                    opposedPosition: true,
-                    labelFormat: '{value}%',
-                    numberFormat: NumberFormat("##0.0"),
-                    axisLine: const AxisLine(width: 2, color: Colors.red),
-                    majorTickLines: const MajorTickLines(
-                      size: 2,
-                      color: Colors.red,
+      body: SafeArea(
+        // ← 추가
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(
+                height: chartHeight,
+                width: double.infinity,
+                child: SfCartesianChart(
+                  // onActualRangeChanged: _onActualRangeChanged,
+                  legend: const Legend(
+                    isVisible: true,
+                    position: LegendPosition.bottom, // 아래쪽에 범례 표시
+                  ),
+                  margin: const EdgeInsets.all(10),
+                  primaryXAxis: DateTimeAxis(
+                    edgeLabelPlacement: EdgeLabelPlacement.shift,
+                    intervalType: DateTimeIntervalType.days,
+                    dateFormat: DateFormat.yMd(),
+                    rangePadding: ChartRangePadding.additionalEnd,
+                    initialZoomFactor: 0.9,
+                    initialZoomPosition: 0.8,
+                  ),
+                  primaryYAxis: NumericAxis(
+                    rangePadding: ChartRangePadding.auto,
+                    labelFormat: '{value}',
+                    numberFormat: NumberFormat("###,##0.0"),
+                  ),
+                  axes: <ChartAxis>[
+                    NumericAxis(
+                      name: 'kimchiAxis',
+                      opposedPosition: true,
+                      labelFormat: '{value}%',
+                      numberFormat: NumberFormat("##0.0"),
+                      axisLine: const AxisLine(width: 2, color: Colors.red),
+                      majorTickLines: const MajorTickLines(
+                        size: 2,
+                        color: Colors.red,
+                      ),
+                      rangePadding: ChartRangePadding.round,
                     ),
-                    rangePadding: ChartRangePadding.round,
+                  ],
+                  zoomPanBehavior: ZoomPanBehavior(
+                    enablePinching: true,
+                    enablePanning: true,
+                    enableDoubleTapZooming: true,
+                    zoomMode: ZoomMode.xy,
                   ),
-                ],
-                zoomPanBehavior: ZoomPanBehavior(
-                  enablePinching: true,
-                  enablePanning: true,
-                  enableDoubleTapZooming: true,
-                  zoomMode: ZoomMode.xy,
-                ),
-                tooltipBehavior: TooltipBehavior(enable: true),
-                series: <CartesianSeries>[
-                  LineSeries<ChartData, DateTime>(
-                    name: '환율',
-                    dataSource:
-                        exchangeRates.isNotEmpty
-                            ? exchangeRates
-                            : [ChartData(DateTime.now(), 0)],
-                    xValueMapper: (ChartData data, _) => data.time,
-                    yValueMapper: (ChartData data, _) => data.value,
-                  ),
-                  LineSeries<ChartData, DateTime>(
-                    name: 'USDT',
-                    dataSource:
-                        usdtPrices.isNotEmpty
-                            ? usdtPrices
-                            : [ChartData(DateTime.now(), 0)],
-                    xValueMapper: (ChartData data, _) => data.time,
-                    yValueMapper: (ChartData data, _) => data.value,
-                  ),
-                  if (showKimchiPremium)
+                  tooltipBehavior: TooltipBehavior(enable: true),
+                  series: <CartesianSeries>[
                     LineSeries<ChartData, DateTime>(
-                      name: '김치 프리미엄(%)',
+                      name: '환율',
                       dataSource:
-                          kimchiPremium.isNotEmpty
-                              ? kimchiPremium
+                          exchangeRates.isNotEmpty
+                              ? exchangeRates
                               : [ChartData(DateTime.now(), 0)],
                       xValueMapper: (ChartData data, _) => data.time,
                       yValueMapper: (ChartData data, _) => data.value,
-                      color: Colors.red,
-                      yAxisName: 'kimchiAxis',
-                      width: 2,
-                      markerSettings: const MarkerSettings(
-                        isVisible: true,
-                        width: 3,
-                        height: 3,
+                    ),
+                    LineSeries<ChartData, DateTime>(
+                      name: 'USDT',
+                      dataSource:
+                          usdtPrices.isNotEmpty
+                              ? usdtPrices
+                              : [ChartData(DateTime.now(), 0)],
+                      xValueMapper: (ChartData data, _) => data.time,
+                      yValueMapper: (ChartData data, _) => data.value,
+                    ),
+                    if (showKimchiPremium)
+                      LineSeries<ChartData, DateTime>(
+                        name: '김치 프리미엄(%)',
+                        dataSource:
+                            kimchiPremium.isNotEmpty
+                                ? kimchiPremium
+                                : [ChartData(DateTime.now(), 0)],
+                        xValueMapper: (ChartData data, _) => data.time,
+                        yValueMapper: (ChartData data, _) => data.value,
+                        color: Colors.red,
+                        yAxisName: 'kimchiAxis',
+                        width: 2,
+                        markerSettings: const MarkerSettings(
+                          isVisible: true,
+                          width: 3,
+                          height: 3,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Checkbox(
+                    value: showKimchiPremium,
+                    onChanged: (val) {
+                      setState(() {
+                        showKimchiPremium = val ?? true;
+                      });
+                    },
+                  ),
+                  const Text('gimch premium'),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '매매 전략',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                ],
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Checkbox(
-                  value: showKimchiPremium,
-                  onChanged: (val) {
-                    setState(() {
-                      showKimchiPremium = val ?? true;
-                    });
-                  },
+                    const SizedBox(height: 8),
+                    Table(
+                      border: TableBorder.all(),
+                      children: [
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                '추천 매수 가격',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                '${parsedStrategy?['buy_price'] ?? '-'}',
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                '추천 매도 가격',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                '${parsedStrategy?['sell_price'] ?? '-'}',
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                '예상 기대 수익',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                '${parsedStrategy?['expected_return'] ?? '-'}',
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                'AI 요약',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                '${parsedStrategy?['summary'] ?? '-'}',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                const Text('gimch premium'),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '매매 전략',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Table(
-                    border: TableBorder.all(),
-                    children: [
-                      TableRow(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              '추천 매수 가격',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              '${parsedStrategy?['buy_price'] ?? '-'}',
-                            ),
-                          ),
-                        ],
-                      ),
-                      TableRow(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              '추천 매도 가격',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              '${parsedStrategy?['sell_price'] ?? '-'}',
-                            ),
-                          ),
-                        ],
-                      ),
-                      TableRow(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              '예상 기대 수익',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              '${parsedStrategy?['expected_return'] ?? '-'}',
-                            ),
-                          ),
-                        ],
-                      ),
-                      TableRow(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              'AI 요약',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text('${parsedStrategy?['summary'] ?? '-'}'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
