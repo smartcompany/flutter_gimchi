@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
+import 'AISimulationPage.dart';
 
 void main() => runApp(const MyApp());
 
@@ -309,6 +310,34 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Padding(
                 padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    const Text(
+                      '매매 전략',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    ElevatedButton(
+                      onPressed:
+                          parsedStrategy == null
+                              ? null
+                              : () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => AISimulationPage(),
+                                  ),
+                                );
+                              },
+                      child: const Text('AI 수익 시뮬레이션'),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
