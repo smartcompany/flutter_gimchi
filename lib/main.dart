@@ -132,18 +132,21 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       final response = await http.get(Uri.parse(strategyUrl));
       if (response.statusCode == 200) {
-        // 바이트를 직접 UTF-8로 디코딩
         strategyText = utf8.decode(response.bodyBytes);
         print("Strategy Data: $strategyText");
 
-        // 매매 전략 파싱 (1차 파싱만)
         Map<String, dynamic>? strategyData;
         if (strategyText != null) {
           try {
             final parsed = json.decode(strategyText!);
             print('parsed: $parsed');
-            if (parsed is Map<String, dynamic>) {
-              strategyData = parsed;
+            // 배열이 아니면 파싱 에러 처리
+            if (parsed is List &&
+                parsed.isNotEmpty &&
+                parsed[0] is Map<String, dynamic>) {
+              strategyData = parsed[0];
+            } else {
+              throw Exception('전략 응답이 배열이 아님');
             }
           } catch (e) {
             print('파싱 에러: $e');
