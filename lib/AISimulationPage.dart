@@ -150,113 +150,96 @@ class _AISimulationPageState extends State<AISimulationPage> {
                 ? const Center(child: CircularProgressIndicator())
                 : error != null
                 ? Center(child: Text('에러: $error'))
-                : Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child:
-                      results.isEmpty
-                          ? const Text('시뮬레이션 결과가 없습니다.')
-                          : Column(
+                : ListView(
+                  // SafeArea 내부에서 ListView를 직접 사용
+                  padding: const EdgeInsets.all(16.0), // ListView에 Padding 추가
+                  children: [
+                    const Text(
+                      'AI 전략 실전 수익 시뮬레이션',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ...results.map(
+                      (r) => Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        child: ListTile(
+                          title: Text(
+                            '${r.analysisDate} 매수→${r.buyDate} / 매도→${r.sellDate}',
+                          ),
+                          subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'AI 전략 실전 수익 시뮬레이션',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              Text(
+                                '매수: ${krwFormat.format(r.buyPrice)}원, 매도: ${krwFormat.format(r.sellPrice)}원',
                               ),
-                              const SizedBox(height: 16),
-                              Expanded(
-                                child: ListView.builder(
-                                  itemCount: results.length,
-                                  itemBuilder: (context, idx) {
-                                    final r = results[idx];
-                                    return Card(
-                                      margin: const EdgeInsets.symmetric(
-                                        vertical: 8,
-                                      ),
-                                      child: ListTile(
-                                        title: Text(
-                                          '${r.analysisDate} 매수→${r.buyDate} / 매도→${r.sellDate}',
-                                        ),
-                                        subtitle: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              '매수: ${krwFormat.format(r.buyPrice)}원, 매도: ${krwFormat.format(r.sellPrice)}원',
-                                            ),
-                                            Text(
-                                              '실현 수익: ${r.profitRate.toStringAsFixed(2)}% (${krwFormat.format(r.profit.round())}원)',
-                                            ),
-                                            Text(
-                                              '최종 원화: ${krwFormat.format(r.finalKRW.round())}원',
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
+                              Text(
+                                '실현 수익: ${r.profitRate.toStringAsFixed(2)}% (${krwFormat.format(r.profit.round())}원)',
                               ),
-                              const SizedBox(height: 16),
-                              // 총 수익률 표시
-                              Container(
-                                padding: const EdgeInsets.all(12.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      '누적 최종 원화:',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      '${krwFormat.format(results.isNotEmpty ? results.last.finalKRW.round() : 1000000)}원',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(12.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      '총 수익률:',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              Text(
+                                '최종 원화: ${krwFormat.format(r.finalKRW.round())}원',
                               ),
                             ],
                           ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12.0),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            '누적 최종 원화:',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '${krwFormat.format(results.isNotEmpty ? results.last.finalKRW.round() : 1000000)}원',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(12.0),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            '총 수익률:',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
       ),
     );
