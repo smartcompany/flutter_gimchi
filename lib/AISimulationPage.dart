@@ -42,6 +42,14 @@ class _AISimulationPageState extends State<AISimulationPage> {
       final strategyList = json.decode(utf8.decode(strategyRes.bodyBytes));
       if (strategyList is! List) throw Exception('전략 데이터가 배열이 아닙니다.');
 
+      // 날짜 오름차순 정렬
+      strategyList.sort((a, b) {
+        final dateA = a['analysis_date'];
+        final dateB = b['analysis_date'];
+        if (dateA == null || dateB == null) return 0;
+        return dateA.compareTo(dateB);
+      });
+
       // 2. USDT 가격 히스토리 가져오기
       final usdtRes = await http.get(Uri.parse(upbitUsdtUrl));
       final usdtMap = json.decode(utf8.decode(usdtRes.bodyBytes));
