@@ -39,6 +39,15 @@ class ChartData {
   ChartData(this.time, this.value);
 }
 
+class USDTChartData {
+  final DateTime time;
+  final double open;
+  final double close;
+  final double high;
+  final double low;
+  USDTChartData(this.time, this.open, this.close, this.high, this.low);
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   final GlobalKey chartKey = GlobalKey();
   List<ChartData> kimchiPremium = [];
@@ -48,6 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool showKimchiPremium = true; // 김치 프리미엄 표시 여부
   String? strategyText;
   Map<String, dynamic>? parsedStrategy;
+  List<USDTChartData> usdtChartData = [];
 
   @override
   void initState() {
@@ -61,20 +71,20 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> fetchUSDTData() async {
     try {
       final response = await http.get(Uri.parse(upbitUsdtUrl));
-
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
-        final List<ChartData> rate = [];
-
+        final List<USDTChartData> rate = [];
         data.forEach((key, value) {
-          rate.add(ChartData(DateTime.parse(key), value.toDouble()));
+          final close = value['price']?.toDouble() ?? 0;
+          final high = value['high']?.toDouble() ?? 0;
+          final low = value['low']?.toDouble() ?? 0;
+          final open = close; // open 값이 없으므로 close로 대체
+          rate.add(USDTChartData(DateTime.parse(key), open, close, high, low));
         });
-
         setState(() {
-          usdtPrices = rate;
+          usdtChartData = rate;
         });
-
-        print("USDT prices Data: $usdtPrices");
+        print("USDT prices Data: $usdtChartData");
       } else {
         print("Failed to fetch data: ${response.statusCode}");
       }
@@ -255,20 +265,18 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   tooltipBehavior: TooltipBehavior(enable: true),
                   series: <CartesianSeries>[
+                    LineSeries<USDTChartData, DateTime>(
+                      name: 'USDT',
+                      dataSource: usdtChartData,
+                      xValueMapper: (USDTChartData data, _) => data.time,
+                      yValueMapper: (USDTChartData data, _) => data.close,
+                      color: Colors.blue,
+                    ),
                     LineSeries<ChartData, DateTime>(
                       name: '환율',
                       dataSource:
                           exchangeRates.isNotEmpty
                               ? exchangeRates
-                              : [ChartData(DateTime.now(), 0)],
-                      xValueMapper: (ChartData data, _) => data.time,
-                      yValueMapper: (ChartData data, _) => data.value,
-                    ),
-                    LineSeries<ChartData, DateTime>(
-                      name: 'USDT',
-                      dataSource:
-                          usdtPrices.isNotEmpty
-                              ? usdtPrices
                               : [ChartData(DateTime.now(), 0)],
                       xValueMapper: (ChartData data, _) => data.time,
                       yValueMapper: (ChartData data, _) => data.value,
