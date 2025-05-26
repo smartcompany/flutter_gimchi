@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart'; // ← 추가
 
 const int days = 200;
 const String upbitUsdtUrl =
@@ -17,10 +18,11 @@ class AISimulationPage extends StatefulWidget {
 
 class _AISimulationPageState extends State<AISimulationPage> {
   List<Map<String, dynamic>>? strategies;
-  Map<String, double>? usdtHistory;
   List<SimulationResult> results = [];
   bool loading = true;
   String? error;
+
+  final NumberFormat krwFormat = NumberFormat("#,##0", "ko_KR");
 
   @override
   void initState() {
@@ -50,7 +52,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
       // 3. 전략별 시뮬레이션
       List<SimulationResult> simResults = [];
-      double initialKRW = 10000000;
+      double initialKRW = 1000000; // 100만원으로 변경
       double totalKRW = initialKRW;
 
       for (final strat in strategyList) {
@@ -59,30 +61,32 @@ class _AISimulationPageState extends State<AISimulationPage> {
         final double? sellPrice = _toDouble(strat['sell_price']);
         if (date == null || buyPrice == null || sellPrice == null) continue;
 
-        // 매수: 해당 날짜 이후 buyPrice 이하가 처음 등장하는 날짜
+        // 매수: 해당 날짜 이후 buyPrice 이하가 처음 등장하는 날짜 (저가 기준)
         String? buyDate;
         for (final d in sortedDates.where((d) => d.compareTo(date) >= 0)) {
-          final price = _toDouble(usdtMap[d]);
-          if (price != null && price <= buyPrice) {
+          final dayData = usdtMap[d];
+          final low = _toDouble(dayData?['low']);
+          if (low != null && low <= buyPrice) {
             buyDate = d;
             break;
           }
         }
         if (buyDate == null) continue; // 매수 불가
 
-        // 매도: 매수일 이후 sellPrice 이상이 처음 등장하는 날짜
+        // 매도: 매수일 이후 sellPrice 이상이 처음 등장하는 날짜 (고가 기준)
         String? sellDate;
         for (final d in sortedDates.where((d) => d.compareTo(buyDate) > 0)) {
-          final price = _toDouble(usdtMap[d]);
-          if (price != null && price >= sellPrice) {
+          final dayData = usdtMap[d];
+          final high = _toDouble(dayData?['high']);
+          if (high != null && high >= sellPrice) {
             sellDate = d;
             break;
           }
         }
         if (sellDate == null) continue; // 매도 불가
 
-        final buyPriceActual = _toDouble(usdtMap[buyDate]);
-        final sellPriceActual = _toDouble(usdtMap[sellDate]);
+        final buyPriceActual = _toDouble(usdtMap[buyDate]?['low']);
+        final sellPriceActual = _toDouble(usdtMap[sellDate]?['high']);
         if (buyPriceActual == null || sellPriceActual == null) continue;
 
         final usdtAmount = totalKRW / buyPriceActual;
@@ -108,9 +112,6 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
       setState(() {
         strategies = List<Map<String, dynamic>>.from(strategyList);
-        usdtHistory = Map<String, double>.fromEntries(
-          usdtMap.entries.map((e) => MapEntry(e.key, _toDouble(e.value) ?? 0)),
-        );
         results = simResults;
         loading = false;
       });
@@ -173,13 +174,13 @@ class _AISimulationPageState extends State<AISimulationPage> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            '매수: ${r.buyPrice.toStringAsFixed(2)}원, 매도: ${r.sellPrice.toStringAsFixed(2)}원',
+                                            '매수: ${krwFormat.format(r.buyPrice)}원, 매도: ${krwFormat.format(r.sellPrice)}원',
                                           ),
                                           Text(
-                                            '실현 수익: ${r.profitRate.toStringAsFixed(2)}% (${r.profit.toStringAsFixed(0)}원)',
+                                            '실현 수익: ${r.profitRate.toStringAsFixed(2)}% (${krwFormat.format(r.profit)}원)',
                                           ),
                                           Text(
-                                            '최종 원화: ${r.finalKRW.toStringAsFixed(0)}원',
+                                            '최종 원화: ${krwFormat.format(r.finalKRW)}원',
                                           ),
                                         ],
                                       ),
@@ -190,7 +191,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              '누적 최종 원화: ${results.isNotEmpty ? results.last.finalKRW.toStringAsFixed(0) : '-'}원',
+                              '누적 최종 원화: ${results.isNotEmpty ? krwFormat.format(results.last.finalKRW) : '-'}원',
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
