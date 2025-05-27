@@ -127,7 +127,6 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           kimchiPremium = premium;
         });
-        print("Kimchi Premium Data: $kimchiPremium");
       } else {
         print("Failed to fetch kimchi premium: ${response.statusCode}");
       }

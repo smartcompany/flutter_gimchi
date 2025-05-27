@@ -51,6 +51,11 @@ class _AISimulationPageState extends State<AISimulationPage> {
         return dateA.compareTo(dateB);
       });
 
+      final Map<String, Map<String, dynamic>> strategyMap = {
+        for (var strat in strategyList)
+          if (strat['analysis_date'] != null) strat['analysis_date']: strat,
+      };
+
       // 2. USDT 가격 히스토리 가져오기
       final usdtRes = await http.get(Uri.parse(upbitUsdtUrl));
       final usdtMap = json.decode(utf8.decode(usdtRes.bodyBytes));
@@ -58,86 +63,111 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
       // 날짜 오름차순 정렬
       final sortedDates = usdtMap.keys.toList()..sort();
+
       // 3. 전략별 시뮬레이션
       List<SimulationResult> simResults = [];
       double initialKRW = 1000000; // 100만원으로 변경
       double totalKRW = initialKRW;
+      SimulationResult? unselledResult = null;
 
-      for (final strat in strategyList) {
-        final String? date = strat['analysis_date'];
-        final double? buyPrice = _toDouble(strat['buy_price']);
-        final double? sellPrice = _toDouble(strat['sell_price']);
-        if (date == null || buyPrice == null || sellPrice == null) continue;
+      String? sellDate = null;
+      String? buyDate = null;
+
+      String strategyDate = strategyList.first['analysis_date']; // 조회를 시작할 날짜
+      final filteredEntries = getEntriesFromDate(
+        usdtMap.cast<String, dynamic>(),
+        strategyDate,
+      );
+
+      // 필터링된 데이터 출력
+      Map<String, dynamic>? strategy = strategyMap[strategyDate];
+
+      for (final entry in filteredEntries) {
+        final String date = entry.key;
+        final newStrategy = strategyMap[date];
+        if (newStrategy != null) {
+          strategy = newStrategy; // 새로운 전략으로 업데이트
+          strategyDate = date; // 전략 날짜 업데이트
+        }
+
+        final double? buyPrice = _toDouble(strategy?['buy_price']);
+        final double? sellPrice = _toDouble(strategy?['sell_price']);
+
+        if (buyPrice == null || sellPrice == null) {
+          print('Skipping strategy due to missing buy/sell price for $date');
+          continue; // 매수/매도 가격이 없으면 건너뜀
+        }
+
         print(
-          'Running strategy for $date: buyPrice=$buyPrice, sellPrice=$sellPrice',
+          'Running strategy for $strategyDate: buyPrice=$buyPrice, sellPrice=$sellPrice',
         );
 
-        // 매수: 해당 날짜 이후 buyPrice 이하가 처음 등장하는 날짜 (저가 기준)
-        String? buyDate;
-        for (final d in sortedDates.where((d) => d.compareTo(date) >= 0)) {
-          final dayData = usdtMap[d];
-          final low = _toDouble(dayData?['low']);
+        // 사지도 팔지도 못했을때 전략을 참조해서 매수 시도
+        if (buyDate == null && sellDate == null) {
+          final low = _toDouble(usdtMap[date]?['low']);
           print(
             'Checking buy condition for $date: low=$low, buyPrice=$buyPrice',
           );
 
+          // 최저가 보다 크면 매수가 됨
           if (low != null && low <= buyPrice) {
-            buyDate = d;
-            break;
+            buyDate = date;
+            print('Buy condition met: buyDate=$buyDate');
+          }
+
+          if (buyDate == null) {
+            print('Skipping strategy due to missing buyDate for $date');
+            continue;
           }
         }
-        if (buyDate == null) {
-          print('Skipping strategy due to missing buyDate for $date');
-          continue;
-        }
 
-        // 매도: 매수일 이후 sellPrice 이상이 처음 등장하는 날짜 (고가 기준)
-        String? sellDate;
-        for (final d in sortedDates.where((d) => d.compareTo(buyDate) > 0)) {
-          final dayData = usdtMap[d];
-          final high = _toDouble(dayData?['high']);
-          print(
-            'Checking sell condition for $buyDate: high=$high, sellPrice=$sellPrice',
-          );
-          if (high != null && high >= sellPrice) {
-            sellDate = d;
-            print('Sell condition met: sellDate=$sellDate');
-            break;
-          }
-        }
-        if (sellDate == null) {
-          print('Skipping strategy due to missing sellDate for $buyDate');
-          continue;
-        }
-
-        final buyPriceActual = _toDouble(usdtMap[buyDate]?['low']);
-        final sellPriceActual = _toDouble(usdtMap[sellDate]?['high']);
-        if (buyPriceActual == null || sellPriceActual == null) {
-          print(
-            'Skipping strategy due to null prices: buyPriceActual=$buyPriceActual, sellPriceActual=$sellPriceActual',
-          );
-          continue;
-        }
-
-        final usdtAmount = totalKRW / buyPriceActual;
-        final finalKRW = usdtAmount * sellPriceActual;
-        final profit = finalKRW - totalKRW;
-        final profitRate = profit / totalKRW * 100;
-
-        simResults.add(
-          SimulationResult(
-            analysisDate: date,
-            buyDate: buyDate,
-            buyPrice: buyPriceActual,
-            sellDate: sellDate,
-            sellPrice: sellPriceActual,
-            profit: profit,
-            profitRate: profitRate,
-            finalKRW: finalKRW,
-          ),
+        // 매도 시도
+        final high = _toDouble(usdtMap[date]?['high']);
+        print(
+          'Checking sell condition anaysisDate=$date high=$high, sellPrice=$sellPrice',
         );
 
-        totalKRW = finalKRW; // 누적 투자금 갱신(복리)
+        if (high != null && high >= sellPrice) {
+          sellDate = date;
+          totalKRW = addResultCard(
+            sellDate,
+            date,
+            buyPrice,
+            sellPrice,
+            totalKRW,
+            simResults,
+            buyDate,
+          );
+
+          buyDate = null; // 다음 거래를 위해 초기화
+          sellDate = null; // 다음 거래를 위해 초기화
+          unselledResult = null; // 매도하지 못한 경우 초기화
+        } else {
+          print(
+            'No sellDate found for buyDate=$buyDate anaysisDate=$date Holding USDT.',
+          );
+
+          final usdtPrice = _toDouble(usdtMap[date]?['price']);
+          final usdtCount = totalKRW / buyPrice; // 현재 보유 USDT 수량
+          final finalKRW = usdtCount * (usdtPrice ?? 0);
+
+          unselledResult = SimulationResult(
+            analysisDate: date,
+            buyDate: buyDate!,
+            buyPrice: buyPrice,
+            sellDate: null,
+            sellPrice: null,
+            profit: 0,
+            profitRate: 0,
+            finalKRW: finalKRW,
+            finalUSDT: usdtCount, // USDT 보유량 추가
+          );
+        }
+      }
+
+      // 마지막 단계에서 매도하지 못한 경우 처리
+      if (unselledResult != null) {
+        simResults.add(unselledResult);
       }
 
       setState(() {
@@ -146,11 +176,55 @@ class _AISimulationPageState extends State<AISimulationPage> {
         loading = false;
       });
     } catch (e) {
+      print('Error during simulation: $e');
       setState(() {
         error = e.toString();
         loading = false;
       });
     }
+  }
+
+  double addResultCard(
+    String sellDate,
+    String date,
+    double buyPrice,
+    double sellPrice,
+    double totalKRW,
+    List<SimulationResult> simResults,
+    String? buyDate,
+  ) {
+    print('Sell condition met: sellDate=$sellDate anaysisDate=$date');
+
+    final buyPriceActual = buyPrice;
+    final sellPriceActual = sellPrice;
+
+    double usdtAmount = totalKRW / buyPriceActual;
+    double? finalKRW;
+    double? profit;
+    double? profitRate;
+
+    finalKRW = usdtAmount * sellPriceActual;
+    profit = finalKRW - totalKRW;
+    profitRate = profit / totalKRW * 100;
+    totalKRW = finalKRW; // 누적 투자금 갱신(복리)
+    print(
+      'Transaction complete: finalKRW=$finalKRW, profit=$profit, profitRate=$profitRate',
+    );
+
+    simResults.add(
+      SimulationResult(
+        analysisDate: date,
+        buyDate: buyDate!,
+        buyPrice: buyPriceActual,
+        sellDate: sellDate,
+        sellPrice: sellPriceActual,
+        profit: profit ?? 0,
+        profitRate: profitRate ?? 0,
+        finalKRW: finalKRW ?? 0,
+        finalUSDT: null,
+      ),
+    );
+    return totalKRW;
   }
 
   static double? _toDouble(dynamic v) {
@@ -159,6 +233,21 @@ class _AISimulationPageState extends State<AISimulationPage> {
     if (v is int) return v.toDouble();
     if (v is String) return double.tryParse(v);
     return null;
+  }
+
+  // 특정 날짜부터 usdtMap 데이터를 조회하는 함수
+  List<MapEntry<String, dynamic>> getEntriesFromDate(
+    Map<String, dynamic> usdtMap,
+    String startDate,
+  ) {
+    // 날짜 오름차순 정렬
+    final sortedEntries =
+        usdtMap.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+
+    // 특정 날짜 이후의 데이터 필터링
+    return sortedEntries
+        .where((entry) => entry.key.compareTo(startDate) >= 0)
+        .toList();
   }
 
   @override
@@ -188,20 +277,25 @@ class _AISimulationPageState extends State<AISimulationPage> {
                         margin: const EdgeInsets.symmetric(vertical: 8),
                         child: ListTile(
                           title: Text(
-                            '${r.analysisDate} 매수→${r.buyDate} / 매도→${r.sellDate}',
+                            '매수→${r.buyDate} / 매도→${r.sellDate ?? "미체결"}',
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                '매수: ${krwFormat.format(r.buyPrice)}원, 매도: ${krwFormat.format(r.sellPrice)}원',
-                              ),
-                              Text(
-                                '실현 수익: ${r.profitRate.toStringAsFixed(2)}% (${krwFormat.format(r.profit.round())}원)',
-                              ),
-                              Text(
-                                '최종 원화: ${krwFormat.format(r.finalKRW.round())}원',
-                              ),
+                              Text('매수: ${krwFormat.format(r.buyPrice)}원'),
+                              if (r.sellDate != null) ...[
+                                Text('매도: ${krwFormat.format(r.sellPrice!)}원'),
+                                Text(
+                                  '최종 원화: ${krwFormat.format(r.finalKRW.round())}원',
+                                ),
+                              ] else if (r.finalUSDT != null) ...[
+                                Text(
+                                  '최종 USDT: ${r.finalUSDT?.toStringAsFixed(4)} USDT',
+                                ),
+                                Text(
+                                  '현재가 매도시: ${krwFormat.format(r.finalKRW.round())}원',
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -271,20 +365,22 @@ class SimulationResult {
   final String analysisDate;
   final String buyDate;
   final double buyPrice;
-  final String sellDate;
-  final double sellPrice;
+  final String? sellDate; // 매도하지 못한 경우 null
+  final double? sellPrice; // 매도하지 못한 경우 null
   final double profit;
   final double profitRate;
   final double finalKRW;
+  final double? finalUSDT; // USDT 보유량 추가
 
   SimulationResult({
     required this.analysisDate,
     required this.buyDate,
     required this.buyPrice,
-    required this.sellDate,
-    required this.sellPrice,
+    this.sellDate,
+    this.sellPrice,
     required this.profit,
     required this.profitRate,
     required this.finalKRW,
+    this.finalUSDT,
   });
 }
