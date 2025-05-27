@@ -84,7 +84,6 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           usdtChartData = rate;
         });
-        print("USDT prices Data: $usdtChartData");
       } else {
         print("Failed to fetch data: ${response.statusCode}");
       }
@@ -108,8 +107,6 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           exchangeRates = rate;
         });
-
-        print("Exchange Rates Data: $exchangeRates");
       } else {
         print("Failed to fetch data: ${response.statusCode}");
       }

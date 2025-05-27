@@ -58,7 +58,6 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
       // 날짜 오름차순 정렬
       final sortedDates = usdtMap.keys.toList()..sort();
-
       // 3. 전략별 시뮬레이션
       List<SimulationResult> simResults = [];
       double initialKRW = 1000000; // 100만원으로 변경
@@ -69,34 +68,56 @@ class _AISimulationPageState extends State<AISimulationPage> {
         final double? buyPrice = _toDouble(strat['buy_price']);
         final double? sellPrice = _toDouble(strat['sell_price']);
         if (date == null || buyPrice == null || sellPrice == null) continue;
+        print(
+          'Running strategy for $date: buyPrice=$buyPrice, sellPrice=$sellPrice',
+        );
 
         // 매수: 해당 날짜 이후 buyPrice 이하가 처음 등장하는 날짜 (저가 기준)
         String? buyDate;
         for (final d in sortedDates.where((d) => d.compareTo(date) >= 0)) {
           final dayData = usdtMap[d];
           final low = _toDouble(dayData?['low']);
+          print(
+            'Checking buy condition for $date: low=$low, buyPrice=$buyPrice',
+          );
+
           if (low != null && low <= buyPrice) {
             buyDate = d;
             break;
           }
         }
-        if (buyDate == null) continue; // 매수 불가
+        if (buyDate == null) {
+          print('Skipping strategy due to missing buyDate for $date');
+          continue;
+        }
 
         // 매도: 매수일 이후 sellPrice 이상이 처음 등장하는 날짜 (고가 기준)
         String? sellDate;
         for (final d in sortedDates.where((d) => d.compareTo(buyDate) > 0)) {
           final dayData = usdtMap[d];
           final high = _toDouble(dayData?['high']);
+          print(
+            'Checking sell condition for $buyDate: high=$high, sellPrice=$sellPrice',
+          );
           if (high != null && high >= sellPrice) {
             sellDate = d;
+            print('Sell condition met: sellDate=$sellDate');
             break;
           }
         }
-        if (sellDate == null) continue; // 매도 불가
+        if (sellDate == null) {
+          print('Skipping strategy due to missing sellDate for $buyDate');
+          continue;
+        }
 
         final buyPriceActual = _toDouble(usdtMap[buyDate]?['low']);
         final sellPriceActual = _toDouble(usdtMap[sellDate]?['high']);
-        if (buyPriceActual == null || sellPriceActual == null) continue;
+        if (buyPriceActual == null || sellPriceActual == null) {
+          print(
+            'Skipping strategy due to null prices: buyPriceActual=$buyPriceActual, sellPriceActual=$sellPriceActual',
+          );
+          continue;
+        }
 
         final usdtAmount = totalKRW / buyPriceActual;
         final finalKRW = usdtAmount * sellPriceActual;
