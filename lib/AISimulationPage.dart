@@ -84,7 +84,6 @@ class _AISimulationPageState extends State<AISimulationPage> {
       Map<String, dynamic>? strategy = strategyMap[strategyDate];
 
       double buyPrice = 0;
-      double? sellPrice = null;
 
       for (final entry in filteredEntries) {
         final String date = entry.key;
@@ -134,7 +133,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
         if (high != null && high >= sellStrategyPrice) {
           sellDate = date;
-          sellPrice = sellStrategyPrice;
+          final sellPrice = sellStrategyPrice;
 
           totalKRW = addResultCard(
             sellDate,
