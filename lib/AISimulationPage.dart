@@ -22,7 +22,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
   bool loading = true;
   String? error;
 
-  final NumberFormat krwFormat = NumberFormat("#,##0", "ko_KR");
+  // 소수점 4자리까지 표시하는 포맷
+  final NumberFormat krwFormat = NumberFormat("#,##0.#", "ko_KR");
   double totalProfitRate = 0; // 총 수익률 변수 추가
 
   @override
@@ -82,6 +83,9 @@ class _AISimulationPageState extends State<AISimulationPage> {
       // 필터링된 데이터 출력
       Map<String, dynamic>? strategy = strategyMap[strategyDate];
 
+      double buyPrice = 0;
+      double? sellPrice = null;
+
       for (final entry in filteredEntries) {
         final String date = entry.key;
         final newStrategy = strategyMap[date];
@@ -90,28 +94,29 @@ class _AISimulationPageState extends State<AISimulationPage> {
           strategyDate = date; // 전략 날짜 업데이트
         }
 
-        final double? buyPrice = _toDouble(strategy?['buy_price']);
-        final double? sellPrice = _toDouble(strategy?['sell_price']);
+        final double? buyStrategyPrice = _toDouble(strategy?['buy_price']);
+        final double? sellStrategyPrice = _toDouble(strategy?['sell_price']);
 
-        if (buyPrice == null || sellPrice == null) {
+        if (buyStrategyPrice == null || sellStrategyPrice == null) {
           print('Skipping strategy due to missing buy/sell price for $date');
-          continue; // 매수/매도 가격이 없으면 건너뜀
+          continue; // 매수/매도 가격이 없으면 스킵
         }
 
         print(
-          'Running strategy for $strategyDate: buyPrice=$buyPrice, sellPrice=$sellPrice',
+          'Running strategy for $strategyDate: buyStrategyPrice=$buyStrategyPrice, sellStrategyPrice=$sellStrategyPrice',
         );
 
         // 사지도 팔지도 못했을때 전략을 참조해서 매수 시도
         if (buyDate == null && sellDate == null) {
           final low = _toDouble(usdtMap[date]?['low']);
           print(
-            'Checking buy condition for $date: low=$low, buyPrice=$buyPrice',
+            'Checking buy condition for $date: low=$low, buyStrategyPrice=$buyStrategyPrice',
           );
 
           // 최저가 보다 크면 매수가 됨
-          if (low != null && low <= buyPrice) {
+          if (low != null && low <= buyStrategyPrice) {
             buyDate = date;
+            buyPrice = buyStrategyPrice;
             print('Buy condition met: buyDate=$buyDate');
           }
 
@@ -124,11 +129,13 @@ class _AISimulationPageState extends State<AISimulationPage> {
         // 매도 시도
         final high = _toDouble(usdtMap[date]?['high']);
         print(
-          'Checking sell condition anaysisDate=$date high=$high, sellPrice=$sellPrice',
+          'Checking sell condition anaysisDate=$date high=$high, sellStrategyPrice=$sellStrategyPrice',
         );
 
-        if (high != null && high >= sellPrice) {
+        if (high != null && high >= sellStrategyPrice) {
           sellDate = date;
+          sellPrice = sellStrategyPrice;
+
           totalKRW = addResultCard(
             sellDate,
             date,
@@ -188,22 +195,19 @@ class _AISimulationPageState extends State<AISimulationPage> {
     String sellDate,
     String date,
     double buyPrice,
-    double sellPrice,
+    double? sellPrice,
     double totalKRW,
     List<SimulationResult> simResults,
     String? buyDate,
   ) {
     print('Sell condition met: sellDate=$sellDate anaysisDate=$date');
 
-    final buyPriceActual = buyPrice;
-    final sellPriceActual = sellPrice;
-
-    double usdtAmount = totalKRW / buyPriceActual;
+    double usdtAmount = totalKRW / buyPrice;
     double? finalKRW;
     double? profit;
     double? profitRate;
 
-    finalKRW = usdtAmount * sellPriceActual;
+    finalKRW = usdtAmount * (sellPrice ?? 0); // 매도 시 최종 원화 계산
     profit = finalKRW - totalKRW;
     profitRate = profit / totalKRW * 100;
     totalKRW = finalKRW; // 누적 투자금 갱신(복리)
@@ -215,9 +219,9 @@ class _AISimulationPageState extends State<AISimulationPage> {
       SimulationResult(
         analysisDate: date,
         buyDate: buyDate!,
-        buyPrice: buyPriceActual,
+        buyPrice: buyPrice,
         sellDate: sellDate,
-        sellPrice: sellPriceActual,
+        sellPrice: sellPrice,
         profit: profit ?? 0,
         profitRate: profitRate ?? 0,
         finalKRW: finalKRW ?? 0,
