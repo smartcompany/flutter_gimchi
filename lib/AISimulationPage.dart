@@ -299,7 +299,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('AI 수익 시뮬레이션')),
+      appBar: AppBar(title: const Text('AI 수익 시뮬레이션 (100 만원 기준)')),
       body: SafeArea(
         child:
             loading
