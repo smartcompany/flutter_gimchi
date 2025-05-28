@@ -298,6 +298,16 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final buttonStyle = ElevatedButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+      minimumSize: const Size(0, 0),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      textStyle: const TextStyle(fontSize: 12),
+      visualDensity: VisualDensity.compact,
+      elevation: 2, // 입체감(그림자) 정도
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+    );
+
     return Scaffold(
       appBar: AppBar(title: const Text('AI 매매 전략 시뮬레이션')),
       body: SafeArea(
@@ -336,13 +346,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
                                     onPressed: () {
                                       _showStrategyDialog(context, r.buyDate);
                                     },
-                                    style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 4,
-                                      ),
-                                      textStyle: const TextStyle(fontSize: 12),
-                                    ),
+                                    style: buttonStyle,
                                     child: const Text('전략 보기'),
                                   ),
                                 ],
@@ -361,15 +365,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
                                           r.sellDate!,
                                         );
                                       },
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 4,
-                                        ),
-                                        textStyle: const TextStyle(
-                                          fontSize: 12,
-                                        ),
-                                      ),
+                                      style: buttonStyle,
                                       child: const Text('전략 보기'),
                                     ),
                                   ],
