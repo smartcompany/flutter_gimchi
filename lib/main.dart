@@ -318,7 +318,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                 );
                               },
-                      child: const Text('AI 수익 시뮬레이션'),
+                      child: const Text('AI 매매 전략 시뮬레이션'),
                     ),
                   ],
                 ),

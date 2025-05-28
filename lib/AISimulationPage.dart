@@ -299,7 +299,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('AI 수익 시뮬레이션 (100 만원 기준)')),
+      appBar: AppBar(title: const Text('AI 매매 전략 시뮬레이션')),
       body: SafeArea(
         child:
             loading
@@ -311,7 +311,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
                   padding: const EdgeInsets.all(16.0), // ListView에 Padding 추가
                   children: [
                     const Text(
-                      'AI 전략 실전 수익 시뮬레이션',
+                      'AI 시뮬레이션 (100 만원 기준)',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
