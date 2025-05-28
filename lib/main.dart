@@ -81,6 +81,9 @@ class _MyHomePageState extends State<MyHomePage> {
           final open = close; // open 값이 없으므로 close로 대체
           rate.add(USDTChartData(DateTime.parse(key), open, close, high, low));
         });
+
+        rate.sort((a, b) => a.time.compareTo(b.time));
+
         setState(() {
           usdtChartData = rate;
         });
@@ -104,6 +107,8 @@ class _MyHomePageState extends State<MyHomePage> {
           rate.add(ChartData(DateTime.parse(key), value.toDouble()));
         });
 
+        rate.sort((a, b) => a.time.compareTo(b.time));
+
         setState(() {
           exchangeRates = rate;
         });
@@ -124,6 +129,9 @@ class _MyHomePageState extends State<MyHomePage> {
         data.forEach((key, value) {
           premium.add(ChartData(DateTime.parse(key), value.toDouble()));
         });
+
+        premium.sort((a, b) => a.time.compareTo(b.time));
+
         setState(() {
           kimchiPremium = premium;
         });
@@ -140,13 +148,11 @@ class _MyHomePageState extends State<MyHomePage> {
       final response = await http.get(Uri.parse(strategyUrl));
       if (response.statusCode == 200) {
         strategyText = utf8.decode(response.bodyBytes);
-        print("Strategy Data: $strategyText");
 
         Map<String, dynamic>? strategyData;
         if (strategyText != null) {
           try {
             final parsed = json.decode(strategyText!);
-            print('parsed: $parsed');
             // 배열이 아니면 파싱 에러 처리
             if (parsed is List &&
                 parsed.isNotEmpty &&
@@ -172,41 +178,19 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _onActualRangeChanged(ActualRangeChangedArgs args) {
-    if (args.axisName == 'primaryXAxis' && kimchiPremium.isNotEmpty) {
-      // X축 min/max는 chart의 primaryXAxis에서 가져와야 함
-      final dynamic minXValue = args.visibleMin;
-      final dynamic maxXValue = args.visibleMax;
-      if (minXValue == null || maxXValue == null) return;
-
-      final DateTime minX =
-          minXValue is DateTime
-              ? minXValue
-              : DateTime.fromMillisecondsSinceEpoch(minXValue.toInt());
-      final DateTime maxX =
-          maxXValue is DateTime
-              ? maxXValue
-              : DateTime.fromMillisecondsSinceEpoch(maxXValue.toInt());
-
-      final visibleData = kimchiPremium.where(
-        (d) => !d.time.isBefore(minX) && !d.time.isAfter(maxX),
-      );
-      if (visibleData.isNotEmpty) {
-        final minY = visibleData
-            .map((d) => d.value)
-            .reduce((a, b) => a < b ? a : b);
-        final maxY = visibleData
-            .map((d) => d.value)
-            .reduce((a, b) => a > b ? a : b);
-        final padding = (maxY - minY) * 0.1;
-        args.visibleMin = minY - padding;
-        args.visibleMax = maxY + padding;
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    // 마지막 날짜 로그 추가
+    if (kimchiPremium.isNotEmpty) {
+      print('김치프리미엄 마지막 날짜: ${kimchiPremium.last.time}');
+    }
+    if (exchangeRates.isNotEmpty) {
+      print('환율 마지막 날짜: ${exchangeRates.last.time}');
+    }
+    if (usdtChartData.isNotEmpty) {
+      print('USDT 마지막 날짜: ${usdtChartData.last.time}');
+    }
+
     final double chartHeight = MediaQuery.of(context).size.height * 0.5;
 
     return Scaffold(
@@ -220,7 +204,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 height: chartHeight,
                 width: double.infinity,
                 child: SfCartesianChart(
-                  // onActualRangeChanged: _onActualRangeChanged,
                   legend: const Legend(
                     isVisible: true,
                     position: LegendPosition.bottom, // 아래쪽에 범례 표시
