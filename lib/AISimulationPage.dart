@@ -250,6 +250,49 @@ class _AISimulationPageState extends State<AISimulationPage> {
         .toList();
   }
 
+  void _showStrategyDialog(BuildContext context, String date) {
+    final strategy = strategies?.firstWhere(
+      (s) => s['analysis_date'] == date,
+      orElse: () => {},
+    );
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('$date 전략'),
+          content:
+              strategy != null && strategy.isNotEmpty
+                  ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('매수 가격: ${strategy['buy_price']}'),
+                      Text('매도 가격: ${strategy['sell_price']}'),
+                      Text('기대 수익율: ${strategy['expected_return']}'),
+                      const SizedBox(height: 8),
+                      const Text(
+                        '요약:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        strategy['summary'] ?? '',
+                        style: const TextStyle(color: Colors.black87),
+                      ),
+                    ],
+                  )
+                  : const Text('해당 날짜에 대한 전략이 없습니다.'),
+          actions: [
+            TextButton(
+              child: const Text('닫기'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -282,9 +325,52 @@ class _AISimulationPageState extends State<AISimulationPage> {
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('매수: ${krwFormat.format(r.buyPrice)}원'),
+                              Row(
+                                children: [
+                                  Text('매수: ${krwFormat.format(r.buyPrice)}원'),
+                                  const SizedBox(width: 8),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      _showStrategyDialog(context, r.buyDate);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 4,
+                                      ),
+                                      textStyle: const TextStyle(fontSize: 12),
+                                    ),
+                                    child: const Text('전략 보기'),
+                                  ),
+                                ],
+                              ),
                               if (r.sellDate != null) ...[
-                                Text('매도: ${krwFormat.format(r.sellPrice!)}원'),
+                                Row(
+                                  children: [
+                                    Text(
+                                      '매도: ${krwFormat.format(r.sellPrice!)}원',
+                                    ),
+                                    const SizedBox(width: 8),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        _showStrategyDialog(
+                                          context,
+                                          r.sellDate!,
+                                        );
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 4,
+                                        ),
+                                        textStyle: const TextStyle(
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      child: const Text('전략 보기'),
+                                    ),
+                                  ],
+                                ),
                                 Text(
                                   '최종 원화: ${krwFormat.format(r.finalKRW.round())}원',
                                 ),
