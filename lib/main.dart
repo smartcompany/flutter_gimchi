@@ -232,6 +232,21 @@ class _MyHomePageState extends State<MyHomePage> {
                     rangePadding: ChartRangePadding.auto,
                     labelFormat: '{value}',
                     numberFormat: NumberFormat("###,##0.0"),
+                    // 아래 두 줄을 추가!
+                    minimum:
+                        usdtChartData.isNotEmpty
+                            ? usdtChartData
+                                    .map((e) => e.low)
+                                    .reduce((a, b) => a < b ? a : b) *
+                                0.98
+                            : null,
+                    maximum:
+                        usdtChartData.isNotEmpty
+                            ? usdtChartData
+                                    .map((e) => e.high)
+                                    .reduce((a, b) => a > b ? a : b) *
+                                1.02
+                            : null,
                   ),
                   axes: <ChartAxis>[
                     NumericAxis(
@@ -263,8 +278,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       highValueMapper: (USDTChartData data, _) => data.high,
                       openValueMapper: (USDTChartData data, _) => data.open,
                       closeValueMapper: (USDTChartData data, _) => data.close,
-                      bearColor: Colors.blue[100]!,
-                      bullColor: Colors.blue,
+                      bearColor: Colors.blue,
+                      bullColor: Colors.red,
                     ),
                     LineSeries<ChartData, DateTime>(
                       name: '환율',
