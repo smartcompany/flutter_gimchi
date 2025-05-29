@@ -55,6 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<ChartData> exchangeRates = [];
   double plotOffsetEnd = 0;
   bool showKimchiPremium = true; // 김치 프리미엄 표시 여부
+  bool showAITrading = false; // AI trading 표시 여부 추가
   String? strategyText;
   Map<String, dynamic>? parsedStrategy;
   List<USDTChartData> usdtChartData = [];
@@ -205,7 +206,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(title: const Text("USDT Signal")),
       body: SafeArea(
-        // ← 추가
         child: SingleChildScrollView(
           child: Column(
             children: [
@@ -303,6 +303,16 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                   ),
                   const Text('gimch premium'),
+                  const SizedBox(width: 16),
+                  Checkbox(
+                    value: showAITrading,
+                    onChanged: (val) {
+                      setState(() {
+                        showAITrading = val ?? false;
+                      });
+                    },
+                  ),
+                  const Text('AI trading'),
                 ],
               ),
               Padding(
