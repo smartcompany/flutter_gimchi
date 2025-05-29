@@ -192,9 +192,18 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     final double chartHeight = MediaQuery.of(context).size.height * 0.5;
+    final buttonStyle = ElevatedButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+      minimumSize: const Size(0, 0),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      textStyle: const TextStyle(fontSize: 18),
+      visualDensity: VisualDensity.compact,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+    );
 
     return Scaffold(
-      appBar: AppBar(title: const Text("USDT, 환율, 김치 프리미엄")),
+      appBar: AppBar(title: const Text("USDT Signal")),
       body: SafeArea(
         // ← 추가
         child: SingleChildScrollView(
@@ -306,6 +315,80 @@ class _MyHomePageState extends State<MyHomePage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () async {
+                        // 전략 전체 히스토리 불러오기
+                        final response = await http.get(Uri.parse(strategyUrl));
+                        if (response.statusCode == 200) {
+                          final List<dynamic> history = json.decode(
+                            utf8.decode(response.bodyBytes),
+                          );
+                          if (context.mounted) {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text('매매 전략 히스토리'),
+                                  content: SizedBox(
+                                    width: double.maxFinite,
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: history.length,
+                                      itemBuilder: (context, idx) {
+                                        final strat = history[idx];
+                                        return ListTile(
+                                          title: Text(
+                                            '날짜: ${strat['analysis_date'] ?? '-'}',
+                                          ),
+                                          subtitle: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                '매수: ${strat['buy_price'] ?? '-'}',
+                                              ),
+                                              Text(
+                                                '매도: ${strat['sell_price'] ?? '-'}',
+                                              ),
+                                              Text(
+                                                '예상 수익: ${strat['expected_return'] ?? '-'}',
+                                              ),
+                                              Text(
+                                                '요약: ${strat['summary'] ?? '-'}',
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed:
+                                          () => Navigator.of(context).pop(),
+                                      child: const Text('닫기'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
+                        } else {
+                          if (context.mounted) {
+                            showDialog(
+                              context: context,
+                              builder:
+                                  (_) => const AlertDialog(
+                                    content: Text('전략 히스토리 불러오기 실패'),
+                                  ),
+                            );
+                          }
+                        }
+                      },
+                      style: buttonStyle,
+                      child: const Text('히스토리'),
+                    ),
                     const Spacer(),
                     ElevatedButton(
                       onPressed:
@@ -318,6 +401,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                 );
                               },
+                      style: buttonStyle,
                       child: const Text('AI 매매 전략 시뮬레이션'),
                     ),
                   ],
