@@ -255,12 +255,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   tooltipBehavior: TooltipBehavior(enable: true),
                   series: <CartesianSeries>[
-                    LineSeries<USDTChartData, DateTime>(
+                    CandleSeries<USDTChartData, DateTime>(
                       name: 'USDT',
                       dataSource: usdtChartData,
                       xValueMapper: (USDTChartData data, _) => data.time,
-                      yValueMapper: (USDTChartData data, _) => data.close,
-                      color: Colors.blue,
+                      lowValueMapper: (USDTChartData data, _) => data.low,
+                      highValueMapper: (USDTChartData data, _) => data.high,
+                      openValueMapper: (USDTChartData data, _) => data.open,
+                      closeValueMapper: (USDTChartData data, _) => data.close,
+                      bearColor: Colors.blue[100]!,
+                      bullColor: Colors.blue,
                     ),
                     LineSeries<ChartData, DateTime>(
                       name: '환율',
