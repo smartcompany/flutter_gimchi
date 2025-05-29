@@ -43,14 +43,6 @@ class _AISimulationPageState extends State<AISimulationPage> {
       final strategyList = json.decode(utf8.decode(strategyRes.bodyBytes));
       if (strategyList is! List) throw Exception('전략 데이터가 배열이 아닙니다.');
 
-      // 날짜 오름차순 정렬
-      strategyList.sort((a, b) {
-        final dateA = a['analysis_date'];
-        final dateB = b['analysis_date'];
-        if (dateA == null || dateB == null) return 0;
-        return dateA.compareTo(dateB);
-      });
-
       final usdtRes = await http.get(Uri.parse(upbitUsdtUrl));
       final usdtMap = json.decode(utf8.decode(usdtRes.bodyBytes));
       if (usdtMap is! Map) throw Exception('USDT 데이터가 맵이 아닙니다.');
@@ -71,8 +63,34 @@ class _AISimulationPageState extends State<AISimulationPage> {
     }
   }
 
+  // 특정 날짜부터 usdtMap 데이터를 조회하는 함수
+  static List<MapEntry<String, dynamic>> getEntriesFromDate(
+    Map<String, dynamic> usdtMap,
+    String startDate,
+  ) {
+    // 날짜 오름차순 정렬
+    final sortedEntries =
+        usdtMap.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+
+    // 특정 날짜 이후의 데이터 필터링
+    return sortedEntries
+        .where((entry) => entry.key.compareTo(startDate) >= 0)
+        .toList();
+  }
+
   // simResults 생성 로직을 별도 함수로 분리
-  List<SimulationResult> simulateResults(List strategyList, Map usdtMap) {
+  static List<SimulationResult> simulateResults(
+    List strategyList,
+    Map usdtMap,
+  ) {
+    // 날짜 오름차순 정렬
+    strategyList.sort((a, b) {
+      final dateA = a['analysis_date'];
+      final dateB = b['analysis_date'];
+      if (dateA == null || dateB == null) return 0;
+      return dateA.compareTo(dateB);
+    });
+
     final Map<String, Map<String, dynamic>> strategyMap = {
       for (var strat in strategyList)
         if (strat['analysis_date'] != null) strat['analysis_date']: strat,
@@ -163,7 +181,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
     return simResults;
   }
 
-  double addResultCard(
+  static double addResultCard(
     String sellDate,
     String date,
     double buyPrice,
@@ -209,21 +227,6 @@ class _AISimulationPageState extends State<AISimulationPage> {
     if (v is int) return v.toDouble();
     if (v is String) return double.tryParse(v);
     return null;
-  }
-
-  // 특정 날짜부터 usdtMap 데이터를 조회하는 함수
-  List<MapEntry<String, dynamic>> getEntriesFromDate(
-    Map<String, dynamic> usdtMap,
-    String startDate,
-  ) {
-    // 날짜 오름차순 정렬
-    final sortedEntries =
-        usdtMap.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
-
-    // 특정 날짜 이후의 데이터 필터링
-    return sortedEntries
-        .where((entry) => entry.key.compareTo(startDate) >= 0)
-        .toList();
   }
 
   void _showStrategyDialog(BuildContext context, String date) {
