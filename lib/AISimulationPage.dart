@@ -12,6 +12,13 @@ const String strategyUrl =
 class AISimulationPage extends StatefulWidget {
   const AISimulationPage({super.key});
 
+  static List<SimulationResult> simulateResults(
+    List strategyList,
+    Map usdtMap,
+  ) {
+    return _AISimulationPageState.simulateResults(strategyList, usdtMap);
+  }
+
   @override
   State<AISimulationPage> createState() => _AISimulationPageState();
 }

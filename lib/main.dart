@@ -59,6 +59,9 @@ class _MyHomePageState extends State<MyHomePage> {
   String? strategyText;
   Map<String, dynamic>? parsedStrategy;
   List<USDTChartData> usdtChartData = [];
+  Map<String, dynamic> usdtMap = {};
+  List<SimulationResult> aiTradeResults = [];
+  List strategyList = [];
 
   @override
   void initState() {
@@ -73,9 +76,9 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       final response = await http.get(Uri.parse(upbitUsdtUrl));
       if (response.statusCode == 200) {
-        final data = json.decode(response.body) as Map<String, dynamic>;
+        usdtMap = json.decode(response.body) as Map<String, dynamic>;
         final List<USDTChartData> rate = [];
-        data.forEach((key, value) {
+        usdtMap.forEach((key, value) {
           final close = value['price']?.toDouble() ?? 0;
           final high = value['high']?.toDouble() ?? 0;
           final low = value['low']?.toDouble() ?? 0;
@@ -153,12 +156,11 @@ class _MyHomePageState extends State<MyHomePage> {
         Map<String, dynamic>? strategyData;
         if (strategyText != null) {
           try {
-            final parsed = json.decode(strategyText!);
+            strategyList = json.decode(strategyText!);
             // 배열이 아니면 파싱 에러 처리
-            if (parsed is List &&
-                parsed.isNotEmpty &&
-                parsed[0] is Map<String, dynamic>) {
-              strategyData = parsed[0];
+            if (strategyList.isNotEmpty &&
+                strategyList[0] is Map<String, dynamic>) {
+              strategyData = strategyList[0];
             } else {
               throw Exception('전략 응답이 배열이 아님');
             }
@@ -288,6 +290,40 @@ class _MyHomePageState extends State<MyHomePage> {
                           height: 3,
                         ),
                       ),
+                    if (showAITrading && aiTradeResults.isNotEmpty) ...[
+                      ScatterSeries<dynamic, DateTime>(
+                        name: 'AI 매수',
+                        dataSource:
+                            aiTradeResults
+                                .where((r) => r.buyDate != null)
+                                .toList(),
+                        xValueMapper: (r, _) => DateTime.parse(r.buyDate),
+                        yValueMapper: (r, _) => r.buyPrice,
+                        markerSettings: const MarkerSettings(
+                          isVisible: true,
+                          shape: DataMarkerType.triangle,
+                          color: Colors.red,
+                          width: 12,
+                          height: 12,
+                        ),
+                      ),
+                      ScatterSeries<dynamic, DateTime>(
+                        name: 'AI 매도',
+                        dataSource:
+                            aiTradeResults
+                                .where((r) => r.sellDate != null)
+                                .toList(),
+                        xValueMapper: (r, _) => DateTime.parse(r.sellDate!),
+                        yValueMapper: (r, _) => r.sellPrice!,
+                        markerSettings: const MarkerSettings(
+                          isVisible: true,
+                          shape: DataMarkerType.invertedTriangle,
+                          color: Colors.blue,
+                          width: 12,
+                          height: 12,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -309,6 +345,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     onChanged: (val) {
                       setState(() {
                         showAITrading = val ?? false;
+                        if (showAITrading) {
+                          aiTradeResults = AISimulationPage.simulateResults(
+                            strategyList, // 전략 리스트 필요시 교체
+                            usdtMap,
+                          );
+                        } else {
+                          aiTradeResults = [];
+                        }
                       });
                     },
                   ),
