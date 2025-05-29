@@ -39,7 +39,6 @@ class _AISimulationPageState extends State<AISimulationPage> {
     });
 
     try {
-      // 1. 전략 데이터 가져오기
       final strategyRes = await http.get(Uri.parse(strategyUrl));
       final strategyList = json.decode(utf8.decode(strategyRes.bodyBytes));
       if (strategyList is! List) throw Exception('전략 데이터가 배열이 아닙니다.');
@@ -52,129 +51,11 @@ class _AISimulationPageState extends State<AISimulationPage> {
         return dateA.compareTo(dateB);
       });
 
-      final Map<String, Map<String, dynamic>> strategyMap = {
-        for (var strat in strategyList)
-          if (strat['analysis_date'] != null) strat['analysis_date']: strat,
-      };
-
-      // 2. USDT 가격 히스토리 가져오기
       final usdtRes = await http.get(Uri.parse(upbitUsdtUrl));
       final usdtMap = json.decode(utf8.decode(usdtRes.bodyBytes));
       if (usdtMap is! Map) throw Exception('USDT 데이터가 맵이 아닙니다.');
 
-      // 날짜 오름차순 정렬
-      final sortedDates = usdtMap.keys.toList()..sort();
-
-      // 3. 전략별 시뮬레이션
-      List<SimulationResult> simResults = [];
-      double initialKRW = 1000000; // 100만원으로 변경
-      double totalKRW = initialKRW;
-      SimulationResult? unselledResult = null;
-
-      String? sellDate = null;
-      String? buyDate = null;
-
-      String strategyDate = strategyList.first['analysis_date']; // 조회를 시작할 날짜
-      final filteredEntries = getEntriesFromDate(
-        usdtMap.cast<String, dynamic>(),
-        strategyDate,
-      );
-
-      // 필터링된 데이터 출력
-      Map<String, dynamic>? strategy = strategyMap[strategyDate];
-
-      double buyPrice = 0;
-
-      for (final entry in filteredEntries) {
-        final String date = entry.key;
-        final newStrategy = strategyMap[date];
-        if (newStrategy != null) {
-          strategy = newStrategy; // 새로운 전략으로 업데이트
-          strategyDate = date; // 전략 날짜 업데이트
-        }
-
-        final double? buyStrategyPrice = _toDouble(strategy?['buy_price']);
-        final double? sellStrategyPrice = _toDouble(strategy?['sell_price']);
-
-        if (buyStrategyPrice == null || sellStrategyPrice == null) {
-          print('Skipping strategy due to missing buy/sell price for $date');
-          continue; // 매수/매도 가격이 없으면 스킵
-        }
-
-        print(
-          'Running strategy for $strategyDate: buyStrategyPrice=$buyStrategyPrice, sellStrategyPrice=$sellStrategyPrice',
-        );
-
-        // 사지도 팔지도 못했을때 전략을 참조해서 매수 시도
-        if (buyDate == null && sellDate == null) {
-          final low = _toDouble(usdtMap[date]?['low']);
-          print(
-            'Checking buy condition for $date: low=$low, buyStrategyPrice=$buyStrategyPrice',
-          );
-
-          // 최저가 보다 크면 매수가 됨
-          if (low != null && low <= buyStrategyPrice) {
-            buyDate = date;
-            buyPrice = buyStrategyPrice;
-            print('Buy condition met: buyDate=$buyDate');
-          }
-
-          if (buyDate == null) {
-            print('Skipping strategy due to missing buyDate for $date');
-            continue;
-          }
-        }
-
-        // 매도 시도
-        final high = _toDouble(usdtMap[date]?['high']);
-        print(
-          'Checking sell condition anaysisDate=$date high=$high, sellStrategyPrice=$sellStrategyPrice',
-        );
-
-        if (high != null && high >= sellStrategyPrice) {
-          sellDate = date;
-          final sellPrice = sellStrategyPrice;
-
-          totalKRW = addResultCard(
-            sellDate,
-            date,
-            buyPrice,
-            sellPrice,
-            totalKRW,
-            simResults,
-            buyDate,
-          );
-
-          buyDate = null; // 다음 거래를 위해 초기화
-          sellDate = null; // 다음 거래를 위해 초기화
-          unselledResult = null; // 매도하지 못한 경우 초기화
-        } else {
-          print(
-            'No sellDate found for buyDate=$buyDate anaysisDate=$date Holding USDT.',
-          );
-
-          final usdtPrice = _toDouble(usdtMap[date]?['price']);
-          final usdtCount = totalKRW / buyPrice; // 현재 보유 USDT 수량
-          final finalKRW = usdtCount * (usdtPrice ?? 0);
-
-          unselledResult = SimulationResult(
-            analysisDate: date,
-            buyDate: buyDate!,
-            buyPrice: buyPrice,
-            sellDate: null,
-            sellPrice: null,
-            profit: 0,
-            profitRate: 0,
-            finalKRW: finalKRW,
-            finalUSDT: usdtCount, // USDT 보유량 추가
-          );
-        }
-      }
-
-      // 마지막 단계에서 매도하지 못한 경우 처리
-      if (unselledResult != null) {
-        simResults.add(unselledResult);
-      }
+      final simResults = simulateResults(strategyList, usdtMap);
 
       setState(() {
         strategies = List<Map<String, dynamic>>.from(strategyList);
@@ -188,6 +69,98 @@ class _AISimulationPageState extends State<AISimulationPage> {
         loading = false;
       });
     }
+  }
+
+  // simResults 생성 로직을 별도 함수로 분리
+  List<SimulationResult> simulateResults(List strategyList, Map usdtMap) {
+    final Map<String, Map<String, dynamic>> strategyMap = {
+      for (var strat in strategyList)
+        if (strat['analysis_date'] != null) strat['analysis_date']: strat,
+    };
+
+    List<SimulationResult> simResults = [];
+    double initialKRW = 1000000;
+    double totalKRW = initialKRW;
+    SimulationResult? unselledResult;
+
+    String? sellDate;
+    String? buyDate;
+
+    String strategyDate = strategyList.first['analysis_date'];
+    final filteredEntries = getEntriesFromDate(
+      usdtMap.cast<String, dynamic>(),
+      strategyDate,
+    );
+
+    Map<String, dynamic>? strategy = strategyMap[strategyDate];
+    double buyPrice = 0;
+
+    for (final entry in filteredEntries) {
+      final String date = entry.key;
+      final newStrategy = strategyMap[date];
+      if (newStrategy != null) {
+        strategy = newStrategy;
+        strategyDate = date;
+      }
+
+      final double? buyStrategyPrice = _toDouble(strategy?['buy_price']);
+      final double? sellStrategyPrice = _toDouble(strategy?['sell_price']);
+
+      if (buyStrategyPrice == null || sellStrategyPrice == null) {
+        continue;
+      }
+
+      if (buyDate == null && sellDate == null) {
+        final low = _toDouble(usdtMap[date]?['low']);
+        if (low != null && low <= buyStrategyPrice) {
+          buyDate = date;
+          buyPrice = buyStrategyPrice;
+        }
+        if (buyDate == null) continue;
+      }
+
+      final high = _toDouble(usdtMap[date]?['high']);
+      if (high != null && high >= sellStrategyPrice) {
+        sellDate = date;
+        final sellPrice = sellStrategyPrice;
+
+        totalKRW = addResultCard(
+          sellDate,
+          date,
+          buyPrice,
+          sellPrice,
+          totalKRW,
+          simResults,
+          buyDate,
+        );
+
+        buyDate = null;
+        sellDate = null;
+        unselledResult = null;
+      } else {
+        final usdtPrice = _toDouble(usdtMap[date]?['price']);
+        final usdtCount = totalKRW / buyPrice;
+        final finalKRW = usdtCount * (usdtPrice ?? 0);
+
+        unselledResult = SimulationResult(
+          analysisDate: date,
+          buyDate: buyDate!,
+          buyPrice: buyPrice,
+          sellDate: null,
+          sellPrice: null,
+          profit: 0,
+          profitRate: 0,
+          finalKRW: finalKRW,
+          finalUSDT: usdtCount,
+        );
+      }
+    }
+
+    if (unselledResult != null) {
+      simResults.add(unselledResult);
+    }
+
+    return simResults;
   }
 
   double addResultCard(
