@@ -55,7 +55,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   
 flutter_launcher_icons:
-  android: "launcher_icon"
+  android: true
   ios: true
   image_path: "assets/icon/app_icon.png" # 아이콘으로 사용할 이미지 경로
   remove_alpha_ios: true
@@ -65,6 +65,9 @@ flutter_native_splash:
   image: assets/splash/splash_image.png
   android: true
   ios: true
+  android_12:
+    image: assets/splash/splash_image.png
+    color: "#ffffff"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -75,9 +78,9 @@ flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
-  uses-material-design: true
-  assets:
-    - assets/splash/splash_image.png
+  # uses-material-design: true
+  # assets:
+  #  - assets/splash/splash_image.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
