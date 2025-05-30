@@ -357,7 +357,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       });
                     },
                   ),
-                  const Text('gimch premium'),
+                  const Text('김치 프리미엄 표시'),
                   const SizedBox(width: 16),
                   Checkbox(
                     value: showAITrading,
@@ -375,7 +375,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       });
                     },
                   ),
-                  const Text('AI trading'),
+                  const Text('AI 매수 매도 표시'),
                 ],
               ),
               Padding(
