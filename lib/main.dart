@@ -85,10 +85,10 @@ class _MyHomePageState extends State<MyHomePage> {
         usdtMap = json.decode(response.body) as Map<String, dynamic>;
         final List<USDTChartData> rate = [];
         usdtMap.forEach((key, value) {
-          final close = value['price']?.toDouble() ?? 0;
+          final close = value['close']?.toDouble() ?? 0;
           final high = value['high']?.toDouble() ?? 0;
           final low = value['low']?.toDouble() ?? 0;
-          final open = close; // open 값이 없으므로 close로 대체
+          final open = value['open']?.toDouble() ?? 0;
           rate.add(USDTChartData(DateTime.parse(key), open, close, high, low));
         });
 
@@ -314,7 +314,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 : [ChartData(DateTime.now(), 0)],
                         xValueMapper: (ChartData data, _) => data.time,
                         yValueMapper: (ChartData data, _) => data.value,
-                        color: Colors.red,
+                        color: Colors.yellow,
                         yAxisName: 'kimchiAxis',
                         width: 2,
                         markerSettings: const MarkerSettings(

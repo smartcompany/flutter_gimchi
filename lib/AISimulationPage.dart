@@ -144,8 +144,12 @@ class _AISimulationPageState extends State<AISimulationPage> {
         if (buyDate == null) continue;
       }
 
-      final high = _toDouble(usdtMap[date]?['high']);
-      if (high != null && high >= sellStrategyPrice) {
+      final high = _toDouble(usdtMap[date]?['high']) ?? 0;
+      final open = _toDouble(usdtMap[date]?['open']) ?? 0;
+      final close = _toDouble(usdtMap[date]?['close']) ?? 0;
+      final canSell = (buyDate == date) ? (open < close) : true;
+
+      if (canSell && high >= sellStrategyPrice) {
         sellDate = date;
         final sellPrice = sellStrategyPrice;
 
@@ -163,7 +167,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
         sellDate = null;
         unselledResult = null;
       } else {
-        final usdtPrice = _toDouble(usdtMap[date]?['price']);
+        final usdtPrice = _toDouble(usdtMap[date]?['close']);
         final usdtCount = totalKRW / buyPrice;
         final finalKRW = usdtCount * (usdtPrice ?? 0);
 
