@@ -50,6 +50,12 @@ class USDTChartData {
 
 class _MyHomePageState extends State<MyHomePage> {
   final GlobalKey chartKey = GlobalKey();
+  final ZoomPanBehavior _zoomPanBehavior = ZoomPanBehavior(
+    enablePinching: true,
+    enablePanning: true,
+    enableDoubleTapZooming: true,
+    zoomMode: ZoomMode.xy,
+  );
   List<ChartData> kimchiPremium = [];
   List<ChartData> usdtPrices = [];
   List<ChartData> exchangeRates = [];
@@ -211,6 +217,19 @@ class _MyHomePageState extends State<MyHomePage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // 2. 리셋 버튼 추가 (차트 위나 아래 원하는 위치에)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0, right: 16.0),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _zoomPanBehavior.reset();
+                    },
+                    child: const Text('차트 리셋'),
+                  ),
+                ),
+              ),
               SizedBox(
                 height: chartHeight,
                 width: double.infinity,
@@ -262,12 +281,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       rangePadding: ChartRangePadding.round,
                     ),
                   ],
-                  zoomPanBehavior: ZoomPanBehavior(
-                    enablePinching: true,
-                    enablePanning: true,
-                    enableDoubleTapZooming: true,
-                    zoomMode: ZoomMode.xy,
-                  ),
+                  zoomPanBehavior: _zoomPanBehavior, // 3. 적용
                   tooltipBehavior: TooltipBehavior(enable: true),
                   series: <CartesianSeries>[
                     CandleSeries<USDTChartData, DateTime>(
