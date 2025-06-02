@@ -4,8 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 import 'AISimulationPage.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart'; // kIsWeb을 사용하기 위해 import
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 void main() => runApp(const MyApp());
 
@@ -76,10 +77,13 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    MobileAds.instance.initialize().then((InitializationStatus status) {
-      print('AdMob initialized: ${status.adapterStatuses}');
-      _loadRewardedAd();
-    });
+    // 웹이 아닐때만 AdMob 초기화
+    if (!kIsWeb) {
+      MobileAds.instance.initialize().then((InitializationStatus status) {
+        print('AdMob initialized: ${status.adapterStatuses}');
+        _loadRewardedAd();
+      });
+    }
     fetchExchangeRateData();
     fetchUSDTData();
     fetchKimchiPremiumData();
@@ -483,19 +487,187 @@ class _MyHomePageState extends State<MyHomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // 광고를 보기 전에는 버튼만, 본 후에는 테이블 표시
-                    if (!_strategyUnlocked)
-                      Center(
-                        child: ElevatedButton(
-                          onPressed:
-                              _rewardedAd == null
-                                  ? null
-                                  : () {
-                                    _showRewardedAd();
-                                  },
-                          child: const Text('광고 보고 전략 보기'),
-                        ),
-                      )
-                    else
+                    if (!kIsWeb) // 웹이 아닐때만 광고 로직 실행
+                      if (!_strategyUnlocked)
+                        Center(
+                          child: ElevatedButton(
+                            onPressed:
+                                _rewardedAd == null
+                                    ? null
+                                    : () {
+                                      _showRewardedAd();
+                                    },
+                            child: const Text('광고 보고 전략 보기'),
+                          ),
+                        )
+                      else
+                        Column(
+                          children: [
+                            Table(
+                              border: TableBorder.all(),
+                              children: [
+                                TableRow(
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text(
+                                        '추천 매수 가격',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        '${parsedStrategy?['buy_price'] ?? '-'}',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                TableRow(
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text(
+                                        '추천 매도 가격',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        '${parsedStrategy?['sell_price'] ?? '-'}',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                TableRow(
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text(
+                                        '예상 기대 수익',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        '${parsedStrategy?['expected_return'] ?? '-'}',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                TableRow(
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text(
+                                        'AI 요약',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        '${parsedStrategy?['summary'] ?? '-'}',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            ElevatedButton(
+                              onPressed: () async {
+                                // 전략 전체 히스토리 불러오기
+                                final response = await http.get(
+                                  Uri.parse(strategyUrl),
+                                );
+                                if (response.statusCode == 200) {
+                                  final List<dynamic> history = json.decode(
+                                    utf8.decode(response.bodyBytes),
+                                  );
+                                  if (context.mounted) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          title: const Text('매매 전략 히스토리'),
+                                          content: SizedBox(
+                                            width: double.maxFinite,
+                                            child: ListView.builder(
+                                              shrinkWrap: true,
+                                              itemCount: history.length,
+                                              itemBuilder: (context, idx) {
+                                                final strat = history[idx];
+                                                return ListTile(
+                                                  title: Text(
+                                                    '날짜: ${strat['analysis_date'] ?? '-'}',
+                                                  ),
+                                                  subtitle: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        '매수: ${strat['buy_price'] ?? '-'}',
+                                                      ),
+                                                      Text(
+                                                        '매도: ${strat['sell_price'] ?? '-'}',
+                                                      ),
+                                                      Text(
+                                                        '예상 수익: ${strat['expected_return'] ?? '-'}',
+                                                      ),
+                                                      Text(
+                                                        '요약: ${strat['summary'] ?? '-'}',
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed:
+                                                  () =>
+                                                      Navigator.of(
+                                                        context,
+                                                      ).pop(),
+                                              child: const Text('닫기'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  }
+                                } else {
+                                  if (context.mounted) {
+                                    showDialog(
+                                      context: context,
+                                      builder:
+                                          (_) => const AlertDialog(
+                                            content: Text('전략 히스토리 불러오기 실패'),
+                                          ),
+                                    );
+                                  }
+                                }
+                              },
+                              style: buttonStyle,
+                              child: const Text('히스토리'),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                        )
+                    else // 웹에서는 바로 테이블 표시
                       Column(
                         children: [
                           Table(
