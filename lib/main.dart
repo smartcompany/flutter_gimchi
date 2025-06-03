@@ -77,7 +77,12 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    // 웹이 아닐때만 AdMob 초기화
+
+    // 테스트 기기 ID 로깅
+    MobileAds.instance.getRequestConfiguration().then((config) {
+      print('AdMob Test Device IDs: ${config.testDeviceIds}');
+    });
+
     if (!kIsWeb) {
       MobileAds.instance.initialize().then((InitializationStatus status) {
         print('AdMob initialized: ${status.adapterStatuses}');
@@ -91,31 +96,33 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _loadRewardedAd() {
-    // 실제 ca-app-pub-5520596727761259~7268669207
-    final adUnitId =
-        Platform.isAndroid
-            ? 'ca-app-pub-3940256099942544/5224354917'
-            : 'ca-app-pub-3940256099942544/1712485313';
+    try {
+      final adUnitId =
+          Platform.isAndroid
+              ? 'ca-app-pub-5520596727761259/2854023304'
+              : 'ca-app-pub-3940256099942544/1712485313';
 
-    RewardedAd.load(
-      adUnitId: adUnitId, // ← 테스트 광고 ID
-      request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: (ad) {
-          setState(() {
-            _rewardedAd = ad;
-          });
-          print('Rewarded Ad Loaded Successfully');
-        },
-        onAdFailedToLoad: (error) {
-          setState(() {
-            _rewardedAd = null;
-          });
-          // 에러 로그 출력
-          print('Failed to load rewarded ad: ${error.message}');
-        },
-      ),
-    );
+      RewardedAd.load(
+        adUnitId: adUnitId,
+        request: const AdRequest(),
+        rewardedAdLoadCallback: RewardedAdLoadCallback(
+          onAdLoaded: (ad) {
+            setState(() {
+              _rewardedAd = ad;
+            });
+            print('Rewarded Ad Loaded Successfully');
+          },
+          onAdFailedToLoad: (error) {
+            setState(() {
+              _rewardedAd = null;
+            });
+            print('Failed to load rewarded ad: ${error.message}');
+          },
+        ),
+      );
+    } catch (e, s) {
+      print('Ad load exception: $e\n$s');
+    }
   }
 
   void _showRewardedAd() {
