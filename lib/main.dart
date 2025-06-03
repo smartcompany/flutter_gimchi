@@ -75,6 +75,9 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _strategyUnlocked = false; // 광고 시청 여부
   RewardedAd? _rewardedAd;
 
+  double? kimchiMin;
+  double? kimchiMax;
+
   @override
   void initState() {
     super.initState();
@@ -207,6 +210,14 @@ class _MyHomePageState extends State<MyHomePage> {
         });
 
         premium.sort((a, b) => a.time.compareTo(b.time));
+
+        // 김치 프리미엄 Y축 min/max 계산 및 고정
+        if (premium.isNotEmpty) {
+          final min = premium.map((e) => e.value).reduce((a, b) => a < b ? a : b);
+          final max = premium.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+          kimchiMin = (min * 0.98).floorToDouble();
+          kimchiMax = (max * 1.02).ceilToDouble();
+        }
 
         setState(() {
           kimchiPremium = premium;
@@ -346,6 +357,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         color: Colors.red,
                       ),
                       rangePadding: ChartRangePadding.round,
+                      minimum: kimchiMin, // 고정된 min
+                      maximum: kimchiMax, // 고정된 max
                     ),
                   ],
                   zoomPanBehavior: _zoomPanBehavior, // 3. 적용
