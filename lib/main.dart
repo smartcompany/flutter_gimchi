@@ -115,6 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
           onAdFailedToLoad: (error) {
             setState(() {
               _rewardedAd = null;
+              _strategyUnlocked = true; // 광고 실패 시 전략 바로 공개
             });
             print('Failed to load rewarded ad: ${error.message}');
           },
@@ -122,6 +123,9 @@ class _MyHomePageState extends State<MyHomePage> {
       );
     } catch (e, s) {
       print('Ad load exception: $e\n$s');
+      setState(() {
+        _strategyUnlocked = true; // 예외 발생 시도 전략 바로 공개
+      });
     }
   }
 
