@@ -65,6 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double plotOffsetEnd = 0;
   bool showKimchiPremium = true; // 김치 프리미엄 표시 여부
   bool showAITrading = false; // AI trading 표시 여부 추가
+  bool showExchangeRate = true; // 환율 표시 여부 추가
   String? strategyText;
   Map<String, dynamic>? parsedStrategy;
   List<USDTChartData> usdtChartData = [];
@@ -77,11 +78,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-
-    // 테스트 기기 ID 로깅
-    MobileAds.instance.getRequestConfiguration().then((config) {
-      print('AdMob Test Device IDs: ${config.testDeviceIds}');
-    });
 
     if (!kIsWeb) {
       MobileAds.instance.initialize().then((InitializationStatus status) {
@@ -257,6 +253,20 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  // USDT 최소값 계산 함수
+  double? getUsdtMin(List<USDTChartData> data) {
+    if (data.isEmpty) return null;
+    final min = data.map((e) => e.low).reduce((a, b) => a < b ? a : b) * 0.98;
+    return min < 1300 ? 1300 : min;
+  }
+
+  // USDT 최대값 계산 함수
+  double? getUsdtMax(List<USDTChartData> data) {
+    if (data.isEmpty) return null;
+    final max = data.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+    return max * 1.02;
+  }
+
   @override
   Widget build(BuildContext context) {
     // 마지막 날짜 로그 추가
@@ -321,21 +331,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     rangePadding: ChartRangePadding.auto,
                     labelFormat: '{value}',
                     numberFormat: NumberFormat("###,##0.0"),
-                    // 아래 두 줄을 추가!
-                    minimum:
-                        usdtChartData.isNotEmpty
-                            ? usdtChartData
-                                    .map((e) => e.low)
-                                    .reduce((a, b) => a < b ? a : b) *
-                                0.98
-                            : null,
-                    maximum:
-                        usdtChartData.isNotEmpty
-                            ? usdtChartData
-                                    .map((e) => e.high)
-                                    .reduce((a, b) => a > b ? a : b) *
-                                1.02
-                            : null,
+                    minimum: getUsdtMin(usdtChartData),
+                    maximum: getUsdtMax(usdtChartData),
                   ),
                   axes: <ChartAxis>[
                     NumericAxis(
@@ -365,16 +362,18 @@ class _MyHomePageState extends State<MyHomePage> {
                       bearColor: Colors.blue,
                       bullColor: Colors.red,
                     ),
-                    LineSeries<ChartData, DateTime>(
-                      name: '환율',
-                      dataSource:
-                          exchangeRates.isNotEmpty
-                              ? exchangeRates
-                              : [ChartData(DateTime.now(), 0)],
-                      xValueMapper: (ChartData data, _) => data.time,
-                      yValueMapper: (ChartData data, _) => data.value,
-                      color: Colors.green,
-                    ),
+                    // 환율 그래프를 showExchangeRate가 true일 때만 표시
+                    if (showExchangeRate)
+                      LineSeries<ChartData, DateTime>(
+                        name: '환율',
+                        dataSource:
+                            exchangeRates.isNotEmpty
+                                ? exchangeRates
+                                : [ChartData(DateTime.now(), 0)],
+                        xValueMapper: (ChartData data, _) => data.time,
+                        yValueMapper: (ChartData data, _) => data.value,
+                        color: Colors.green,
+                      ),
                     if (showKimchiPremium)
                       LineSeries<ChartData, DateTime>(
                         name: '김치 프리미엄(%)',
@@ -430,38 +429,54 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Checkbox(
-                    value: showKimchiPremium,
-                    onChanged: (val) {
-                      setState(() {
-                        showKimchiPremium = val ?? true;
-                      });
-                    },
-                  ),
-                  const Text('김치 프리미엄 표시'),
-                  const SizedBox(width: 16),
-                  Checkbox(
-                    value: showAITrading,
-                    onChanged: (val) {
-                      setState(() {
-                        showAITrading = val ?? false;
-                        if (showAITrading) {
-                          aiTradeResults = AISimulationPage.simulateResults(
-                            strategyList, // 전략 리스트 필요시 교체
-                            usdtMap,
-                          );
-                        } else {
-                          aiTradeResults = [];
-                        }
-                      });
-                    },
-                  ),
-                  const Text('AI 매수 매도 표시'),
-                ],
+
+              // 체크박스 Row를 차트 바로 밑에 위치
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Checkbox(
+                      value: showExchangeRate,
+                      onChanged: (val) {
+                        setState(() {
+                          showExchangeRate = val ?? true;
+                        });
+                      },
+                    ),
+                    const Text('환율'),
+                    const SizedBox(width: 8),
+                    Checkbox(
+                      value: showKimchiPremium,
+                      onChanged: (val) {
+                        setState(() {
+                          showKimchiPremium = val ?? true;
+                        });
+                      },
+                    ),
+                    const Text('김치 프리미엄'),
+                    const SizedBox(width: 8),
+                    Checkbox(
+                      value: showAITrading,
+                      onChanged: (val) {
+                        setState(() {
+                          showAITrading = val ?? false;
+                          if (showAITrading) {
+                            aiTradeResults = AISimulationPage.simulateResults(
+                              strategyList,
+                              usdtMap,
+                            );
+                          } else {
+                            aiTradeResults = [];
+                          }
+                        });
+                      },
+                    ),
+                    const Text('AI 매수/매도 마크'),
+                  ],
+                ),
               ),
+
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
