@@ -213,8 +213,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
         // 김치 프리미엄 Y축 min/max 계산 및 고정
         if (premium.isNotEmpty) {
-          final min = premium.map((e) => e.value).reduce((a, b) => a < b ? a : b);
-          final max = premium.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+          final min = premium
+              .map((e) => e.value)
+              .reduce((a, b) => a < b ? a : b);
+          final max = premium
+              .map((e) => e.value)
+              .reduce((a, b) => a > b ? a : b);
           kimchiMin = (min * 0.98).floorToDouble();
           kimchiMax = (max * 1.02).ceilToDouble();
         }
@@ -351,7 +355,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       opposedPosition: true,
                       labelFormat: '{value}%',
                       numberFormat: NumberFormat("##0.0"),
-                      axisLine: const AxisLine(width: 2, color: Colors.red),
                       majorTickLines: const MajorTickLines(
                         size: 2,
                         color: Colors.red,
@@ -364,17 +367,30 @@ class _MyHomePageState extends State<MyHomePage> {
                   zoomPanBehavior: _zoomPanBehavior, // 3. 적용
                   tooltipBehavior: TooltipBehavior(enable: true),
                   series: <CartesianSeries>[
-                    CandleSeries<USDTChartData, DateTime>(
-                      name: 'USDT',
-                      dataSource: usdtChartData,
-                      xValueMapper: (USDTChartData data, _) => data.time,
-                      lowValueMapper: (USDTChartData data, _) => data.low,
-                      highValueMapper: (USDTChartData data, _) => data.high,
-                      openValueMapper: (USDTChartData data, _) => data.open,
-                      closeValueMapper: (USDTChartData data, _) => data.close,
-                      bearColor: Colors.blue,
-                      bullColor: Colors.red,
-                    ),
+                    if (!showAITrading)
+                      // 일반 라인 차트 (USDT)
+                      LineSeries<USDTChartData, DateTime>(
+                        name: 'USDT',
+                        dataSource: usdtChartData,
+                        xValueMapper: (USDTChartData data, _) => data.time,
+                        yValueMapper: (USDTChartData data, _) => data.close,
+                        color: Colors.blue,
+                        animationDuration: 0,
+                      )
+                    else
+                      // 기존 캔들 차트
+                      CandleSeries<USDTChartData, DateTime>(
+                        name: 'USDT',
+                        dataSource: usdtChartData,
+                        xValueMapper: (USDTChartData data, _) => data.time,
+                        lowValueMapper: (USDTChartData data, _) => data.low,
+                        highValueMapper: (USDTChartData data, _) => data.high,
+                        openValueMapper: (USDTChartData data, _) => data.open,
+                        closeValueMapper: (USDTChartData data, _) => data.close,
+                        bearColor: Colors.blue,
+                        bullColor: Colors.red,
+                        animationDuration: 0,
+                      ),
                     // 환율 그래프를 showExchangeRate가 true일 때만 표시
                     if (showExchangeRate)
                       LineSeries<ChartData, DateTime>(
@@ -383,6 +399,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         xValueMapper: (ChartData data, _) => data.time,
                         yValueMapper: (ChartData data, _) => data.value,
                         color: Colors.green,
+                        animationDuration: 0,
                       ),
                     if (showKimchiPremium)
                       LineSeries<ChartData, DateTime>(
@@ -392,20 +409,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         yValueMapper: (ChartData data, _) => data.value,
                         color: Colors.yellow,
                         yAxisName: 'kimchiAxis',
-                        width: 2,
-                        markerSettings: const MarkerSettings(
-                          isVisible: true,
-                          width: 3,
-                          height: 3,
-                        ),
+                        animationDuration: 0,
                       ),
                     if (showAITrading && aiTradeResults.isNotEmpty) ...[
                       ScatterSeries<dynamic, DateTime>(
                         name: 'AI 매수',
-                        dataSource:
-                            aiTradeResults
-                                .where((r) => r.buyDate != null)
-                                .toList(),
+                        dataSource: aiTradeResults.where((r) => r.buyDate != null).toList(),
                         xValueMapper: (r, _) => DateTime.parse(r.buyDate),
                         yValueMapper: (r, _) => r.buyPrice,
                         markerSettings: const MarkerSettings(
@@ -418,10 +427,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       ScatterSeries<dynamic, DateTime>(
                         name: 'AI 매도',
-                        dataSource:
-                            aiTradeResults
-                                .where((r) => r.sellDate != null)
-                                .toList(),
+                        dataSource: aiTradeResults.where((r) => r.sellDate != null).toList(),
                         xValueMapper: (r, _) => DateTime.parse(r.sellDate!),
                         yValueMapper: (r, _) => r.sellPrice!,
                         markerSettings: const MarkerSettings(
