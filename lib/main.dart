@@ -78,6 +78,15 @@ class _MyHomePageState extends State<MyHomePage> {
   double? kimchiMin;
   double? kimchiMax;
 
+  DateTimeAxis primaryXAxis = DateTimeAxis(
+    edgeLabelPlacement: EdgeLabelPlacement.shift,
+    intervalType: DateTimeIntervalType.days,
+    dateFormat: DateFormat.yMd(),
+    rangePadding: ChartRangePadding.additionalEnd,
+    initialZoomFactor: 0.9,
+    initialZoomPosition: 0.8,
+  );
+
   @override
   void initState() {
     super.initState();
@@ -282,6 +291,43 @@ class _MyHomePageState extends State<MyHomePage> {
     return max * 1.02;
   }
 
+  void _autoZoomToAITrades() {
+    if (showAITrading && aiTradeResults.isNotEmpty && usdtChartData.isNotEmpty) {
+      // AI 매수/매도 날짜 리스트
+      final allDates = [
+        ...aiTradeResults.where((r) => r.buyDate != null).map((r) => DateTime.parse(r.buyDate)),
+        ...aiTradeResults.where((r) => r.sellDate != null).map((r) => DateTime.parse(r.sellDate!)),
+      ];
+      if (allDates.isNotEmpty) {
+        allDates.sort();
+        DateTime aiStart = allDates.first;
+        DateTime aiEnd = allDates.last;
+
+        // 여유를 위해 좌우로 2~3일 추가
+        aiStart = aiStart.subtract(const Duration(days: 2));
+        aiEnd = aiEnd.add(const Duration(days: 2));
+
+        // 전체 차트 날짜 범위
+        final chartStart = usdtChartData.first.time;
+        final chartEnd = usdtChartData.last.time;
+        final totalSpan = chartEnd.difference(chartStart).inMilliseconds.toDouble();
+        final aiSpan = aiEnd.difference(aiStart).inMilliseconds.toDouble();
+
+        // AI 매매 구간이 전체의 150%만 보이도록 줌 (여유 있게)
+        final zoomFactor = (aiSpan / totalSpan) * 0.5; // 더 크게 줌인
+        final zoomPosition = (aiStart.difference(chartStart).inMilliseconds.toDouble() / totalSpan).clamp(0.0, 1.0);
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _zoomPanBehavior.zoomToSingleAxis(
+            primaryXAxis,
+            zoomPosition,
+            zoomFactor.clamp(0.01, 1.0), // 최소 5%까지 줌인 허용
+          );
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // 마지막 날짜 로그 추가
@@ -334,14 +380,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     position: LegendPosition.bottom, // 아래쪽에 범례 표시
                   ),
                   margin: const EdgeInsets.all(10),
-                  primaryXAxis: DateTimeAxis(
-                    edgeLabelPlacement: EdgeLabelPlacement.shift,
-                    intervalType: DateTimeIntervalType.days,
-                    dateFormat: DateFormat.yMd(),
-                    rangePadding: ChartRangePadding.additionalEnd,
-                    initialZoomFactor: 0.9,
-                    initialZoomPosition: 0.8,
-                  ),
+                  primaryXAxis: primaryXAxis,
                   primaryYAxis: NumericAxis(
                     rangePadding: ChartRangePadding.auto,
                     labelFormat: '{value}',
@@ -414,7 +453,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     if (showAITrading && aiTradeResults.isNotEmpty) ...[
                       ScatterSeries<dynamic, DateTime>(
                         name: 'AI 매수',
-                        dataSource: aiTradeResults.where((r) => r.buyDate != null).toList(),
+                        dataSource:
+                            aiTradeResults
+                                .where((r) => r.buyDate != null)
+                                .toList(),
                         xValueMapper: (r, _) => DateTime.parse(r.buyDate),
                         yValueMapper: (r, _) => r.buyPrice,
                         markerSettings: const MarkerSettings(
@@ -427,7 +469,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       ScatterSeries<dynamic, DateTime>(
                         name: 'AI 매도',
-                        dataSource: aiTradeResults.where((r) => r.sellDate != null).toList(),
+                        dataSource:
+                            aiTradeResults
+                                .where((r) => r.sellDate != null)
+                                .toList(),
                         xValueMapper: (r, _) => DateTime.parse(r.sellDate!),
                         yValueMapper: (r, _) => r.sellPrice!,
                         markerSettings: const MarkerSettings(
@@ -479,6 +524,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               strategyList,
                               usdtMap,
                             );
+                            _autoZoomToAITrades(); // <-- AI 트레이딩 켜질 때 자동 줌
                           } else {
                             aiTradeResults = [];
                           }
