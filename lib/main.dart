@@ -366,10 +366,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     if (showExchangeRate)
                       LineSeries<ChartData, DateTime>(
                         name: '환율',
-                        dataSource:
-                            exchangeRates.isNotEmpty
-                                ? exchangeRates
-                                : [ChartData(DateTime.now(), 0)],
+                        dataSource: exchangeRates,
                         xValueMapper: (ChartData data, _) => data.time,
                         yValueMapper: (ChartData data, _) => data.value,
                         color: Colors.green,
@@ -377,10 +374,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     if (showKimchiPremium)
                       LineSeries<ChartData, DateTime>(
                         name: '김치 프리미엄(%)',
-                        dataSource:
-                            kimchiPremium.isNotEmpty
-                                ? kimchiPremium
-                                : [ChartData(DateTime.now(), 0)],
+                        dataSource: kimchiPremium,
                         xValueMapper: (ChartData data, _) => data.time,
                         yValueMapper: (ChartData data, _) => data.value,
                         color: Colors.yellow,
