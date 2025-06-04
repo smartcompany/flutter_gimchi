@@ -22,10 +22,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
       imageDesc: "한국 vs 해외 USDT 가격 비교 그래프",
     ),
     _OnboardingSlide(
-      title: "똑같은 1달러, 왜 가격이 다를까?",
+      title: "김치 프리미엄 + 환율 차이 = 수익의 기회",
       body:
-          "예: 해외에서 1 USDT를 1,350원에 사고, 한국에서 1,370원에 팔면 20원 이익.\n"
-          "이런 식으로 시세 차이만으로 수익을 낼 수 있습니다.",
+          "한국에서는 USDT가 해외보다 비싸게 거래되는 경우가 많습니다. (이걸 ‘김치 프리미엄’이라 부릅니다.)\n"
+          "여기에 환율까지 고려하면, 시세 차익이 더 커질 수 있습니다.\n"
+          "우리 앱은 AI가 김프와 환율을 분석해, 최적의 매수/매도 시점을 찾아줍니다.",
       image: Icons.swap_horiz,
       imageDesc: "1 USDT → 사고 → 송금 → 팔기 흐름 다이어그램",
     ),
