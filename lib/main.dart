@@ -388,7 +388,24 @@ class _MyHomePageState extends State<MyHomePage> {
       print('USDT 마지막 날짜: ${usdtChartData.last.time}');
     }
 
-    final double chartHeight = MediaQuery.of(context).size.height * 0.5;
+    // 오늘 날짜 데이터 추출
+    DateTime today = DateTime.now();
+    String todayStr = DateFormat('yyyy-MM-dd').format(today);
+
+    // USDT 오늘 데이터
+    USDTChartData? todayUsdt = usdtChartData.isNotEmpty
+        ? usdtChartData.last
+        : null;
+    // 환율 오늘 데이터
+    ChartData? todayRate = exchangeRates.isNotEmpty
+        ? exchangeRates.last
+        : null;
+    // 김치 프리미엄 오늘 데이터
+    ChartData? todayKimchi = kimchiPremium.isNotEmpty
+        ? kimchiPremium.last
+        : null;
+
+    final double chartHeight = MediaQuery.of(context).size.height * 0.6;
     final buttonStyle = ElevatedButton.styleFrom(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
       minimumSize: const Size(0, 0),
@@ -405,6 +422,33 @@ class _MyHomePageState extends State<MyHomePage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // 오늘 데이터 표시 영역 추가
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Column(
+                      children: [
+                        const Text('USDT', style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text(todayUsdt != null ? todayUsdt.close.toStringAsFixed(2) : '-'),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        const Text('환율', style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text(todayRate != null ? todayRate.value.toStringAsFixed(2) : '-'),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        const Text('김치 프리미엄', style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text(todayKimchi != null ? '${todayKimchi.value.toStringAsFixed(2)}%' : '-'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
               // 2. 리셋 버튼 추가 (차트 위나 아래 원하는 위치에)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0, right: 16.0),
