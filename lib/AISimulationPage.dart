@@ -249,35 +249,49 @@ class _AISimulationPageState extends State<AISimulationPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('$date 전략'),
-          content:
-              strategy != null && strategy.isNotEmpty
-                  ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('매수 가격: ${strategy['buy_price']}'),
-                      Text('매도 가격: ${strategy['sell_price']}'),
-                      Text('기대 수익율: ${strategy['expected_return']}'),
-                      const SizedBox(height: 8),
-                      const Text(
-                        '요약:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      '$date 전략',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
                       ),
-                      Text(
-                        strategy['summary'] ?? '',
-                        style: const TextStyle(color: Colors.black87),
-                      ),
-                    ],
-                  )
-                  : const Text('해당 날짜에 대한 전략이 없습니다.'),
-          actions: [
-            TextButton(
-              child: const Text('닫기'),
-              onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.deepPurple),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (strategy != null && strategy.isNotEmpty) ...[
+                  _StrategyDialogRow(label: '매수 가격', value: '${strategy['buy_price']}'),
+                  _StrategyDialogRow(label: '매도 가격', value: '${strategy['sell_price']}'),
+                  _StrategyDialogRow(label: '기대 수익률', value: '${strategy['expected_return']}'),
+                  const SizedBox(height: 10),
+                  const Text('요약', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  const SizedBox(height: 4),
+                  Text(
+                    strategy['summary'] ?? '',
+                    style: const TextStyle(color: Colors.black87, fontSize: 14),
+                  ),
+                ] else ...[
+                  const Text('해당 날짜에 대한 전략이 없습니다.'),
+                ],
+              ],
             ),
-          ],
+          ),
         );
       },
     );
@@ -285,138 +299,169 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
   @override
   Widget build(BuildContext context) {
-    final buttonStyle = ElevatedButton.styleFrom(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-      minimumSize: const Size(0, 0),
-      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      textStyle: const TextStyle(fontSize: 12),
-      visualDensity: VisualDensity.compact,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+    final buttonStyle = OutlinedButton.styleFrom(
+      foregroundColor: Colors.deepPurple,
+      side: const BorderSide(color: Colors.deepPurple),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      textStyle: const TextStyle(fontSize: 14),
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('AI 매매 전략 시뮬레이션')),
+      backgroundColor: const Color(0xFFF8F5FA),
+      appBar: AppBar(
+        title: const Text('AI 매매 전략 시뮬레이션', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        foregroundColor: Colors.black87,
+      ),
       body: SafeArea(
-        child:
-            loading
-                ? const Center(child: CircularProgressIndicator())
-                : error != null
+        child: loading
+            ? const Center(child: CircularProgressIndicator())
+            : error != null
                 ? Center(child: Text('에러: $error'))
                 : ListView(
-                  padding: const EdgeInsets.all(16.0),
-                  children: [
-                    const Text(
-                      'AI 시뮬레이션 (100 만원 기준)',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ...results.map(
-                      (r) => Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: ListTile(
-                          title: Text(
-                            '매수→${r.buyDate} / 매도→${r.sellDate ?? "미체결"}',
-                          ),
-                          subtitle: Column(
+                    padding: const EdgeInsets.all(16.0),
+                    children: [
+                      Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        color: Colors.white,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 16),
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Text('매수: ${krwFormat.format(r.buyPrice)}원'),
-                                  const SizedBox(width: 8),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      _showStrategyDialog(context, r.buyDate);
-                                    },
-                                    style: buttonStyle,
-                                    child: const Text('전략 보기'),
-                                  ),
-                                ],
+                              const Text(
+                                'AI 시뮬레이션 (100 만원 기준)',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              if (r.sellDate != null) ...[
-                                Row(
-                                  children: [
-                                    Text(
-                                      '매도: ${krwFormat.format(r.sellPrice!)}원',
+                              const SizedBox(height: 12),
+                              ...results.map(
+                                (r) => Card(
+                                  elevation: 1,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  color: Colors.grey[50],
+                                  margin: const EdgeInsets.symmetric(vertical: 8),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '매수→${r.buyDate} / 매도→${r.sellDate ?? "미체결"}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          children: [
+                                            Text('매수: ${krwFormat.format(r.buyPrice)}원'),
+                                            const SizedBox(width: 8),
+                                            OutlinedButton(
+                                              onPressed: () {
+                                                _showStrategyDialog(context, r.buyDate);
+                                              },
+                                              style: buttonStyle,
+                                              child: const Text('전략 보기'),
+                                            ),
+                                          ],
+                                        ),
+                                        if (r.sellDate != null) ...[
+                                          Row(
+                                            children: [
+                                              Text('매도: ${krwFormat.format(r.sellPrice!)}원'),
+                                              const SizedBox(width: 8),
+                                              OutlinedButton(
+                                                onPressed: () {
+                                                  _showStrategyDialog(context, r.sellDate!);
+                                                },
+                                                style: buttonStyle,
+                                                child: const Text('전략 보기'),
+                                              ),
+                                            ],
+                                          ),
+                                          Text(
+                                            '최종 원화: ${krwFormat.format(r.finalKRW.round())}원',
+                                            style: const TextStyle(fontWeight: FontWeight.w500),
+                                          ),
+                                        ] else if (r.finalUSDT != null) ...[
+                                          Text(
+                                            '최종 USDT: ${r.finalUSDT?.toStringAsFixed(4)} USDT',
+                                            style: const TextStyle(fontWeight: FontWeight.w500),
+                                          ),
+                                          Text(
+                                            '현재가 매도시: ${krwFormat.format(r.finalKRW.round())}원',
+                                            style: const TextStyle(fontWeight: FontWeight.w500),
+                                          ),
+                                        ],
+                                      ],
                                     ),
-                                    const SizedBox(width: 8),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        _showStrategyDialog(
-                                          context,
-                                          r.sellDate!,
-                                        );
-                                      },
-                                      style: buttonStyle,
-                                      child: const Text('전략 보기'),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                                Text(
-                                  '최종 원화: ${krwFormat.format(r.finalKRW.round())}원',
-                                ),
-                              ] else if (r.finalUSDT != null) ...[
-                                Text(
-                                  '최종 USDT: ${r.finalUSDT?.toStringAsFixed(4)} USDT',
-                                ),
-                                Text(
-                                  '현재가 매도시: ${krwFormat.format(r.finalKRW.round())}원',
-                                ),
-                              ],
+                              ),
                             ],
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 80), // 하단 고정 영역과 겹치지 않게 여유 공간
-                  ],
-                ),
+                      const SizedBox(height: 80), // 하단 고정 영역과 겹치지 않게 여유 공간
+                    ],
+                  ),
       ),
       bottomNavigationBar: SafeArea(
-        child: Container(
-          color: Colors.grey[200],
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    '누적 최종 원화:',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    '${krwFormat.format(results.isNotEmpty ? results.last.finalKRW.round() : 1000000)}원',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+        child: Card(
+          elevation: 2,
+          margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '누적 최종 원화',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    '총 수익률:',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                    Text(
+                      '${krwFormat.format(results.isNotEmpty ? results.last.finalKRW.round() : 1000000)}원',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '총 수익률',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -446,4 +491,29 @@ class SimulationResult {
     required this.finalKRW,
     this.finalUSDT,
   });
+}
+
+class _StrategyDialogRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _StrategyDialogRow({required this.label, required this.value});
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: Colors.deepPurple),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
 }
