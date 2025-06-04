@@ -19,7 +19,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           "1 USDT ≒ 1 USD이지만, 거래소·시세·환율에 따라 실제 가격은 달라요.\n"
           "특히 한국에서는 ‘김치 프리미엄’과 ‘환율 차이’로 시세 차이가 자주 발생합니다.",
       image: Icons.show_chart, // 실제 앱에서는 이미지로 교체
-      imageDesc: "한국 vs 해외 USDT 가격 비교 그래프",
+      imageDesc: "USDT vs 김치 프리미엄 비교 그래프",
     ),
     _OnboardingSlide(
       title: "김치 프리미엄 + 환율 차이 = 수익의 기회",
@@ -28,7 +28,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           "여기에 환율까지 고려하면, 시세 차익이 더 커질 수 있습니다.\n"
           "우리 앱은 AI가 김프와 환율을 분석해, 최적의 매수/매도 시점을 찾아줍니다.",
       image: Icons.swap_horiz,
-      imageDesc: "1 USDT → 사고 → 송금 → 팔기 흐름 다이어그램",
+      imageDesc: "USDT → 저가 매수 → 고가 매도 → 안정적인 수익 구조",
     ),
     _OnboardingSlide(
       title: "매수/매도 타이밍? 우리가 알려드려요",
@@ -40,7 +40,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     ),
     _OnboardingSlide(
       title: "만약 100만원으로 시작했다면?",
-      body: "실제 과거 데이터를 기반으로, 우리 전략을 썼을 때 수익률 보여주기",
+      body: "실제 과거 데이터를 기반으로, 우리 전략을 썼을 때 수익률 보여드릴게요.",
       image: Icons.show_chart,
       imageDesc: "날짜별 자산 변화 시각화",
     ),
