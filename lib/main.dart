@@ -292,11 +292,17 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _autoZoomToAITrades() {
-    if (showAITrading && aiTradeResults.isNotEmpty && usdtChartData.isNotEmpty) {
+    if (showAITrading &&
+        aiTradeResults.isNotEmpty &&
+        usdtChartData.isNotEmpty) {
       // AI 매수/매도 날짜 리스트
       final allDates = [
-        ...aiTradeResults.where((r) => r.buyDate != null).map((r) => DateTime.parse(r.buyDate)),
-        ...aiTradeResults.where((r) => r.sellDate != null).map((r) => DateTime.parse(r.sellDate!)),
+        ...aiTradeResults
+            .where((r) => r.buyDate != null)
+            .map((r) => DateTime.parse(r.buyDate)),
+        ...aiTradeResults
+            .where((r) => r.sellDate != null)
+            .map((r) => DateTime.parse(r.sellDate!)),
       ];
       if (allDates.isNotEmpty) {
         allDates.sort();
@@ -310,12 +316,21 @@ class _MyHomePageState extends State<MyHomePage> {
         // 전체 차트 날짜 범위
         final chartStart = usdtChartData.first.time;
         final chartEnd = usdtChartData.last.time;
-        final totalSpan = chartEnd.difference(chartStart).inMilliseconds.toDouble();
+        final totalSpan =
+            chartEnd.difference(chartStart).inMilliseconds.toDouble();
         final aiSpan = aiEnd.difference(aiStart).inMilliseconds.toDouble();
 
         // AI 매매 구간이 전체의 150%만 보이도록 줌 (여유 있게)
-        final zoomFactor = (aiSpan / totalSpan) * 0.5; // 더 크게 줌인
-        final zoomPosition = (aiStart.difference(chartStart).inMilliseconds.toDouble() / totalSpan).clamp(0.0, 1.0);
+        final zoomFactor = (aiSpan / totalSpan) * 2; // 더 크게 줌인
+        final zoomPosition = (aiStart
+                    .difference(chartStart)
+                    .inMilliseconds
+                    .toDouble() /
+                totalSpan)
+            .clamp(0.0, 1.0);
+
+        print('zoomFactor: $zoomFactor');
+        print('zoomPosition: $zoomPosition');
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _zoomPanBehavior.zoomToSingleAxis(
