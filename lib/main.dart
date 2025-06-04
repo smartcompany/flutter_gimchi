@@ -7,6 +7,7 @@ import 'AISimulationPage.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart'; // kIsWeb을 사용하기 위해 import
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'OnboardingPage.dart'; // 온보딩 페이지 import
 
 void main() => runApp(const MyApp());
 
@@ -25,7 +26,34 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: MyHomePage());
+    return MaterialApp(home: OnboardingLauncher());
+  }
+}
+
+// 온보딩 → 메인페이지 전환을 담당하는 위젯
+class OnboardingLauncher extends StatefulWidget {
+  const OnboardingLauncher({super.key});
+
+  @override
+  State<OnboardingLauncher> createState() => _OnboardingLauncherState();
+}
+
+class _OnboardingLauncherState extends State<OnboardingLauncher> {
+  bool _onboardingDone = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_onboardingDone) {
+      return const MyHomePage();
+    }
+    return OnboardingPage(
+      // 온보딩이 끝나면 콜백으로 상태 변경
+      onFinish: () {
+        setState(() {
+          _onboardingDone = true;
+        });
+      },
+    );
   }
 }
 
@@ -106,9 +134,13 @@ class _MyHomePageState extends State<MyHomePage> {
   void _loadRewardedAd() {
     try {
       final adUnitId =
-          Platform.isAndroid
-              ? 'ca-app-pub-5520596727761259/2854023304'
-              : 'ca-app-pub-3940256099942544/1712485313';
+          kDebugMode
+              ? (Platform.isAndroid
+                  ? 'ca-app-pub-3940256099942544/5224354917' // Android 테스트 보상형 광고
+                  : 'ca-app-pub-3940256099942544/1712485313') // iOS 테스트 보상형 광고
+              : (Platform.isAndroid
+                  ? 'ca-app-pub-5520596727761259/2854023304' // 실제 광고 ID
+                  : 'ca-app-pub-3940256099942544/1712485313'); // 실제 광고 ID
 
       RewardedAd.load(
         adUnitId: adUnitId,
@@ -505,48 +537,66 @@ class _MyHomePageState extends State<MyHomePage> {
 
               // 체크박스 Row를 차트 바로 밑에 위치
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.all(4.0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment:
+                      MainAxisAlignment.spaceEvenly, // 간격을 자동으로 맞춤
                   children: [
-                    Checkbox(
-                      value: showExchangeRate,
-                      onChanged: (val) {
-                        setState(() {
-                          showExchangeRate = val ?? true;
-                        });
-                      },
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Checkbox(
+                          value: showExchangeRate,
+                          onChanged: (val) {
+                            setState(() {
+                              showExchangeRate = val ?? true;
+                            });
+                          },
+                        ),
+                        const Text('환율', style: TextStyle(fontSize: 13)),
+                      ],
                     ),
-                    const Text('환율'),
-                    const SizedBox(width: 8),
-                    Checkbox(
-                      value: showKimchiPremium,
-                      onChanged: (val) {
-                        setState(() {
-                          showKimchiPremium = val ?? true;
-                        });
-                      },
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Checkbox(
+                          value: showKimchiPremium,
+                          onChanged: (val) {
+                            setState(() {
+                              showKimchiPremium = val ?? true;
+                            });
+                          },
+                        ),
+                        const Text('김치 프리미엄', style: TextStyle(fontSize: 13)),
+                      ],
                     ),
-                    const Text('김치 프리미엄'),
-                    const SizedBox(width: 8),
-                    Checkbox(
-                      value: showAITrading,
-                      onChanged: (val) {
-                        setState(() {
-                          showAITrading = val ?? false;
-                          if (showAITrading) {
-                            aiTradeResults = AISimulationPage.simulateResults(
-                              strategyList,
-                              usdtMap,
-                            );
-                            _autoZoomToAITrades(); // <-- AI 트레이딩 켜질 때 자동 줌
-                          } else {
-                            aiTradeResults = [];
-                          }
-                        });
-                      },
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Checkbox(
+                          value: showAITrading,
+                          onChanged: (val) {
+                            setState(() {
+                              showAITrading = val ?? false;
+                              if (showAITrading) {
+                                aiTradeResults =
+                                    AISimulationPage.simulateResults(
+                                      strategyList,
+                                      usdtMap,
+                                    );
+                                _autoZoomToAITrades();
+                              } else {
+                                aiTradeResults = [];
+                              }
+                            });
+                          },
+                        ),
+                        const Text(
+                          'AI 매수/매도 마크',
+                          style: TextStyle(fontSize: 13),
+                        ),
+                      ],
                     ),
-                    const Text('AI 매수/매도 마크'),
                   ],
                 ),
               ),

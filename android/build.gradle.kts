@@ -1,3 +1,12 @@
+import java.util.Properties
+
+val keystoreProperties = Properties().apply {
+    val keystorePropertiesFile = rootProject.file("key.properties")
+    if (keystorePropertiesFile.exists()) {
+        load(keystorePropertiesFile.inputStream())
+    }
+}
+
 allprojects {
     repositories {
         google()
