@@ -406,228 +406,215 @@ class _MyHomePageState extends State<MyHomePage> {
         : null;
 
     final double chartHeight = MediaQuery.of(context).size.height * 0.6;
-    final buttonStyle = ElevatedButton.styleFrom(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-      minimumSize: const Size(0, 0),
-      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      textStyle: const TextStyle(fontSize: 18),
-      visualDensity: VisualDensity.compact,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-    );
 
     return Scaffold(
-      appBar: AppBar(title: const Text("USDT Signal")),
+      backgroundColor: const Color(0xFFF8F5FA),
+      appBar: AppBar(
+        title: const Text("USDT Signal", style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        foregroundColor: Colors.black87,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // 오늘 데이터 표시 영역 추가
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Column(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+            child: Column(
+              children: [
+                // 1. 오늘 데이터 카드
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        const Text('USDT', style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text(todayUsdt != null ? todayUsdt.close.toStringAsFixed(2) : '-'),
+                        _InfoItem(label: 'USDT', value: todayUsdt != null ? todayUsdt.close.toStringAsFixed(2) : '-', color: Colors.blue),
+                        _InfoItem(label: '환율', value: todayRate != null ? todayRate.value.toStringAsFixed(2) : '-', color: Colors.green),
+                        _InfoItem(label: '김치 프리미엄', value: todayKimchi != null ? '${todayKimchi.value.toStringAsFixed(2)}%' : '-', color: Colors.orange),
                       ],
                     ),
-                    Column(
-                      children: [
-                        const Text('환율', style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text(todayRate != null ? todayRate.value.toStringAsFixed(2) : '-'),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        const Text('김치 프리미엄', style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text(todayKimchi != null ? '${todayKimchi.value.toStringAsFixed(2)}%' : '-'),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              // 2. 리셋 버튼 추가 (차트 위나 아래 원하는 위치에)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0, right: 16.0),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _zoomPanBehavior.reset();
-                    },
-                    child: const Text('차트 리셋'),
                   ),
                 ),
-              ),
-              SizedBox(
-                height: chartHeight,
-                width: double.infinity,
-                child: SfCartesianChart(
-                  legend: const Legend(
-                    isVisible: true,
-                    position: LegendPosition.bottom, // 아래쪽에 범례 표시
-                  ),
-                  margin: const EdgeInsets.all(10),
-                  primaryXAxis: primaryXAxis,
-                  primaryYAxis: NumericAxis(
-                    rangePadding: ChartRangePadding.auto,
-                    labelFormat: '{value}',
-                    numberFormat: NumberFormat("###,##0.0"),
-                    minimum: getUsdtMin(usdtChartData),
-                    maximum: getUsdtMax(usdtChartData),
-                  ),
-                  axes: <ChartAxis>[
-                    NumericAxis(
-                      name: 'kimchiAxis',
-                      opposedPosition: true,
-                      labelFormat: '{value}%',
-                      numberFormat: NumberFormat("##0.0"),
-                      majorTickLines: const MajorTickLines(
-                        size: 2,
-                        color: Colors.red,
-                      ),
-                      rangePadding: ChartRangePadding.round,
-                      minimum: kimchiMin, // 고정된 min
-                      maximum: kimchiMax, // 고정된 max
-                    ),
-                  ],
-                  zoomPanBehavior: _zoomPanBehavior, // 3. 적용
-                  tooltipBehavior: TooltipBehavior(enable: true),
-                  series: <CartesianSeries>[
-                    if (!showAITrading)
-                      // 일반 라인 차트 (USDT)
-                      LineSeries<USDTChartData, DateTime>(
-                        name: 'USDT',
-                        dataSource: usdtChartData,
-                        xValueMapper: (USDTChartData data, _) => data.time,
-                        yValueMapper: (USDTChartData data, _) => data.close,
-                        color: Colors.blue,
-                        animationDuration: 0,
-                      )
-                    else
-                      // 기존 캔들 차트
-                      CandleSeries<USDTChartData, DateTime>(
-                        name: 'USDT',
-                        dataSource: usdtChartData,
-                        xValueMapper: (USDTChartData data, _) => data.time,
-                        lowValueMapper: (USDTChartData data, _) => data.low,
-                        highValueMapper: (USDTChartData data, _) => data.high,
-                        openValueMapper: (USDTChartData data, _) => data.open,
-                        closeValueMapper: (USDTChartData data, _) => data.close,
-                        bearColor: Colors.blue,
-                        bullColor: Colors.red,
-                        animationDuration: 0,
-                      ),
-                    // 환율 그래프를 showExchangeRate가 true일 때만 표시
-                    if (showExchangeRate)
-                      LineSeries<ChartData, DateTime>(
-                        name: '환율',
-                        dataSource: exchangeRates,
-                        xValueMapper: (ChartData data, _) => data.time,
-                        yValueMapper: (ChartData data, _) => data.value,
-                        color: Colors.green,
-                        animationDuration: 0,
-                      ),
-                    if (showKimchiPremium)
-                      LineSeries<ChartData, DateTime>(
-                        name: '김치 프리미엄(%)',
-                        dataSource: kimchiPremium,
-                        xValueMapper: (ChartData data, _) => data.time,
-                        yValueMapper: (ChartData data, _) => data.value,
-                        color: Colors.yellow,
-                        yAxisName: 'kimchiAxis',
-                        animationDuration: 0,
-                      ),
-                    if (showAITrading && aiTradeResults.isNotEmpty) ...[
-                      ScatterSeries<dynamic, DateTime>(
-                        name: 'AI 매수',
-                        dataSource:
-                            aiTradeResults
-                                .where((r) => r.buyDate != null)
-                                .toList(),
-                        xValueMapper: (r, _) => DateTime.parse(r.buyDate),
-                        yValueMapper: (r, _) => r.buyPrice,
-                        markerSettings: const MarkerSettings(
-                          isVisible: true,
-                          shape: DataMarkerType.triangle,
-                          color: Colors.red,
-                          width: 12,
-                          height: 12,
-                        ),
-                      ),
-                      ScatterSeries<dynamic, DateTime>(
-                        name: 'AI 매도',
-                        dataSource:
-                            aiTradeResults
-                                .where((r) => r.sellDate != null)
-                                .toList(),
-                        xValueMapper: (r, _) => DateTime.parse(r.sellDate!),
-                        yValueMapper: (r, _) => r.sellPrice!,
-                        markerSettings: const MarkerSettings(
-                          isVisible: true,
-                          shape: DataMarkerType.invertedTriangle,
-                          color: Colors.blue,
-                          width: 12,
-                          height: 12,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+                const SizedBox(height: 8),
 
-              // 체크박스 Row를 차트 바로 밑에 위치
-              Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.spaceEvenly, // 간격을 자동으로 맞춤
+                // 2. 리셋 버튼 우상단
+                Row(
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
+                    const Spacer(),
+                    OutlinedButton.icon(
+                      onPressed: () => _zoomPanBehavior.reset(),
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: const Text('차트 리셋', style: TextStyle(fontSize: 15)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.deepPurple,
+                        side: const BorderSide(color: Colors.deepPurple),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+
+                // 3. 차트
+                Material(
+                  elevation: 2,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    height: chartHeight,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: SfCartesianChart(
+                      legend: const Legend(
+                        isVisible: true,
+                        position: LegendPosition.bottom,
+                      ),
+                      margin: const EdgeInsets.all(10),
+                      primaryXAxis: primaryXAxis,
+                      primaryYAxis: NumericAxis(
+                        rangePadding: ChartRangePadding.auto,
+                        labelFormat: '{value}',
+                        numberFormat: NumberFormat("###,##0.0"),
+                        minimum: getUsdtMin(usdtChartData),
+                        maximum: getUsdtMax(usdtChartData),
+                      ),
+                      axes: <ChartAxis>[
+                        NumericAxis(
+                          name: 'kimchiAxis',
+                          opposedPosition: true,
+                          labelFormat: '{value}%',
+                          numberFormat: NumberFormat("##0.0"),
+                          majorTickLines: const MajorTickLines(size: 2, color: Colors.red),
+                          rangePadding: ChartRangePadding.round,
+                          minimum: kimchiMin,
+                          maximum: kimchiMax,
+                        ),
+                      ],
+                      zoomPanBehavior: _zoomPanBehavior,
+                      tooltipBehavior: TooltipBehavior(enable: true),
+                      series: <CartesianSeries>[
+                        if (!showAITrading)
+                          // 일반 라인 차트 (USDT)
+                          LineSeries<USDTChartData, DateTime>(
+                            name: 'USDT',
+                            dataSource: usdtChartData,
+                            xValueMapper: (USDTChartData data, _) => data.time,
+                            yValueMapper: (USDTChartData data, _) => data.close,
+                            color: Colors.blue,
+                            animationDuration: 0,
+                          )
+                        else
+                          // 기존 캔들 차트
+                          CandleSeries<USDTChartData, DateTime>(
+                            name: 'USDT',
+                            dataSource: usdtChartData,
+                            xValueMapper: (USDTChartData data, _) => data.time,
+                            lowValueMapper: (USDTChartData data, _) => data.low,
+                            highValueMapper: (USDTChartData data, _) => data.high,
+                            openValueMapper: (USDTChartData data, _) => data.open,
+                            closeValueMapper: (USDTChartData data, _) => data.close,
+                            bearColor: Colors.blue,
+                            bullColor: Colors.red,
+                            animationDuration: 0,
+                          ),
+                        // 환율 그래프를 showExchangeRate가 true일 때만 표시
+                        if (showExchangeRate)
+                          LineSeries<ChartData, DateTime>(
+                            name: '환율',
+                            dataSource: exchangeRates,
+                            xValueMapper: (ChartData data, _) => data.time,
+                            yValueMapper: (ChartData data, _) => data.value,
+                            color: Colors.green,
+                            animationDuration: 0,
+                          ),
+                        if (showKimchiPremium)
+                          LineSeries<ChartData, DateTime>(
+                            name: '김치 프리미엄(%)',
+                            dataSource: kimchiPremium,
+                            xValueMapper: (ChartData data, _) => data.time,
+                            yValueMapper: (ChartData data, _) => data.value,
+                            color: Colors.yellow,
+                            yAxisName: 'kimchiAxis',
+                            animationDuration: 0,
+                          ),
+                        if (showAITrading && aiTradeResults.isNotEmpty) ...[
+                          ScatterSeries<dynamic, DateTime>(
+                            name: 'AI 매수',
+                            dataSource:
+                                aiTradeResults
+                                    .where((r) => r.buyDate != null)
+                                    .toList(),
+                            xValueMapper: (r, _) => DateTime.parse(r.buyDate),
+                            yValueMapper: (r, _) => r.buyPrice,
+                            markerSettings: const MarkerSettings(
+                              isVisible: true,
+                              shape: DataMarkerType.triangle,
+                              color: Colors.red,
+                              width: 12,
+                              height: 12,
+                            ),
+                          ),
+                          ScatterSeries<dynamic, DateTime>(
+                            name: 'AI 매도',
+                            dataSource:
+                                aiTradeResults
+                                    .where((r) => r.sellDate != null)
+                                    .toList(),
+                            xValueMapper: (r, _) => DateTime.parse(r.sellDate!),
+                            yValueMapper: (r, _) => r.sellPrice!,
+                            markerSettings: const MarkerSettings(
+                              isVisible: true,
+                              shape: DataMarkerType.invertedTriangle,
+                              color: Colors.blue,
+                              width: 12,
+                              height: 12,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // 4. 체크박스 영역
+                Card(
+                  elevation: 1,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Checkbox(
+                        _CheckBoxItem(
                           value: showExchangeRate,
-                          onChanged: (val) {
-                            setState(() {
-                              showExchangeRate = val ?? true;
-                            });
-                          },
+                          label: '환율',
+                          color: Colors.green,
+                          onChanged: (val) => setState(() => showExchangeRate = val ?? true),
                         ),
-                        const Text('환율', style: TextStyle(fontSize: 13)),
-                      ],
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Checkbox(
+                        _CheckBoxItem(
                           value: showKimchiPremium,
-                          onChanged: (val) {
-                            setState(() {
-                              showKimchiPremium = val ?? true;
-                            });
-                          },
+                          label: '김치 프리미엄',
+                          color: Colors.orange,
+                          onChanged: (val) => setState(() => showKimchiPremium = val ?? true),
                         ),
-                        const Text('김치 프리미엄', style: TextStyle(fontSize: 13)),
-                      ],
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Checkbox(
+                        _CheckBoxItem(
                           value: showAITrading,
+                          label: 'AI 매수/매도 마크',
+                          color: Colors.deepPurple,
                           onChanged: (val) {
                             setState(() {
                               showAITrading = val ?? false;
                               if (showAITrading) {
-                                aiTradeResults =
-                                    AISimulationPage.simulateResults(
-                                      strategyList,
-                                      usdtMap,
-                                    );
+                                aiTradeResults = AISimulationPage.simulateResults(strategyList, usdtMap);
                                 _autoZoomToAITrades();
                               } else {
                                 aiTradeResults = [];
@@ -635,66 +622,246 @@ class _MyHomePageState extends State<MyHomePage> {
                             });
                           },
                         ),
-                        const Text(
-                          'AI 매수/매도 마크',
-                          style: TextStyle(fontSize: 13),
-                        ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 12),
 
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    const Text(
-                      '매매 전략',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                // 5. 매매 전략 영역(기존 코드 유지)
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      const Text(
+                        '매매 전략',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Spacer(),
-                    ElevatedButton(
-                      onPressed:
-                          parsedStrategy == null
-                              ? null
-                              : () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => AISimulationPage(),
-                                  ),
-                                );
-                              },
-                      style: buttonStyle,
-                      child: const Text('AI 매매 전략 시뮬레이션'),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      const Spacer(),
+                      ElevatedButton(
+                        onPressed:
+                            parsedStrategy == null
+                                ? null
+                                : () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => AISimulationPage(),
+                                    ),
+                                  );
+                                },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                          minimumSize: const Size(0, 0),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          textStyle: const TextStyle(fontSize: 18),
+                          visualDensity: VisualDensity.compact,
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        ),
+                        child: const Text('AI 매매 전략 시뮬레이션'),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 광고를 보기 전에는 버튼만, 본 후에는 테이블 표시
-                    if (!kIsWeb) // 웹이 아닐때만 광고 로직 실행
-                      if (!_strategyUnlocked)
-                        Center(
-                          child: ElevatedButton(
-                            onPressed:
-                                _rewardedAd == null
-                                    ? null
-                                    : () {
-                                      _showRewardedAd();
-                                    },
-                            child: const Text('광고 보고 전략 보기'),
-                          ),
-                        )
-                      else
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 광고를 보기 전에는 버튼만, 본 후에는 테이블 표시
+                      if (!kIsWeb) // 웹이 아닐때만 광고 로직 실행
+                        if (!_strategyUnlocked)
+                          Center(
+                            child: ElevatedButton(
+                              onPressed:
+                                  _rewardedAd == null
+                                      ? null
+                                      : () {
+                                        _showRewardedAd();
+                                      },
+                              child: const Text('광고 보고 전략 보기'),
+                            ),
+                          )
+                        else
+                          Column(
+                            children: [
+                              Table(
+                                border: TableBorder.all(),
+                                children: [
+                                  TableRow(
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Text(
+                                          '추천 매수 가격',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          '${parsedStrategy?['buy_price'] ?? '-'}',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  TableRow(
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Text(
+                                          '추천 매도 가격',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          '${parsedStrategy?['sell_price'] ?? '-'}',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  TableRow(
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Text(
+                                          '예상 기대 수익',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          '${parsedStrategy?['expected_return'] ?? '-'}',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  TableRow(
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Text(
+                                          'AI 요약',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          '${parsedStrategy?['summary'] ?? '-'}',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  // 전략 전체 히스토리 불러오기
+                                  final response = await http.get(
+                                    Uri.parse(strategyUrl),
+                                  );
+                                  if (response.statusCode == 200) {
+                                    final List<dynamic> history = json.decode(
+                                      utf8.decode(response.bodyBytes),
+                                    );
+                                    if (context.mounted) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            title: const Text('매매 전략 히스토리'),
+                                            content: SizedBox(
+                                              width: double.maxFinite,
+                                              child: ListView.builder(
+                                                shrinkWrap: true,
+                                                itemCount: history.length,
+                                                itemBuilder: (context, idx) {
+                                                  final strat = history[idx];
+                                                  return ListTile(
+                                                    title: Text(
+                                                      '날짜: ${strat['analysis_date'] ?? '-'}',
+                                                    ),
+                                                    subtitle: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          '매수: ${strat['buy_price'] ?? '-'}',
+                                                        ),
+                                                        Text(
+                                                          '매도: ${strat['sell_price'] ?? '-'}',
+                                                        ),
+                                                        Text(
+                                                          '예상 수익: ${strat['expected_return'] ?? '-'}',
+                                                        ),
+                                                        Text(
+                                                          '요약: ${strat['summary'] ?? '-'}',
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed:
+                                                    () =>
+                                                        Navigator.of(
+                                                          context,
+                                                        ).pop(),
+                                                child: const Text('닫기'),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    }
+                                  } else {
+                                    if (context.mounted) {
+                                      showDialog(
+                                        context: context,
+                                        builder:
+                                            (_) => const AlertDialog(
+                                              content: Text('전략 히스토리 불러오기 실패'),
+                                            ),
+                                      );
+                                    }
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                                  minimumSize: const Size(0, 0),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  textStyle: const TextStyle(fontSize: 18),
+                                  visualDensity: VisualDensity.compact,
+                                  elevation: 2,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                ),
+                                child: const Text('히스토리'),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                          )
+                      else // 웹에서는 바로 테이블 표시
                         Column(
                           children: [
                             Table(
@@ -808,8 +975,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                   ),
                                                   subtitle: Column(
                                                     crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
+                                                        CrossAxisAlignment.start,
                                                     children: [
                                                       Text(
                                                         '매수: ${strat['buy_price'] ?? '-'}',
@@ -833,9 +999,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                             TextButton(
                                               onPressed:
                                                   () =>
-                                                      Navigator.of(
-                                                        context,
-                                                      ).pop(),
+                                                      Navigator.of(context).pop(),
                                               child: const Text('닫기'),
                                             ),
                                           ],
@@ -855,183 +1019,70 @@ class _MyHomePageState extends State<MyHomePage> {
                                   }
                                 }
                               },
-                              style: buttonStyle,
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                                minimumSize: const Size(0, 0),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                textStyle: const TextStyle(fontSize: 18),
+                                visualDensity: VisualDensity.compact,
+                                elevation: 2,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                              ),
                               child: const Text('히스토리'),
                             ),
                             const SizedBox(height: 8),
                           ],
-                        )
-                    else // 웹에서는 바로 테이블 표시
-                      Column(
-                        children: [
-                          Table(
-                            border: TableBorder.all(),
-                            children: [
-                              TableRow(
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text(
-                                      '추천 매수 가격',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      '${parsedStrategy?['buy_price'] ?? '-'}',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              TableRow(
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text(
-                                      '추천 매도 가격',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      '${parsedStrategy?['sell_price'] ?? '-'}',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              TableRow(
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text(
-                                      '예상 기대 수익',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      '${parsedStrategy?['expected_return'] ?? '-'}',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              TableRow(
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text(
-                                      'AI 요약',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      '${parsedStrategy?['summary'] ?? '-'}',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: () async {
-                              // 전략 전체 히스토리 불러오기
-                              final response = await http.get(
-                                Uri.parse(strategyUrl),
-                              );
-                              if (response.statusCode == 200) {
-                                final List<dynamic> history = json.decode(
-                                  utf8.decode(response.bodyBytes),
-                                );
-                                if (context.mounted) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        title: const Text('매매 전략 히스토리'),
-                                        content: SizedBox(
-                                          width: double.maxFinite,
-                                          child: ListView.builder(
-                                            shrinkWrap: true,
-                                            itemCount: history.length,
-                                            itemBuilder: (context, idx) {
-                                              final strat = history[idx];
-                                              return ListTile(
-                                                title: Text(
-                                                  '날짜: ${strat['analysis_date'] ?? '-'}',
-                                                ),
-                                                subtitle: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      '매수: ${strat['buy_price'] ?? '-'}',
-                                                    ),
-                                                    Text(
-                                                      '매도: ${strat['sell_price'] ?? '-'}',
-                                                    ),
-                                                    Text(
-                                                      '예상 수익: ${strat['expected_return'] ?? '-'}',
-                                                    ),
-                                                    Text(
-                                                      '요약: ${strat['summary'] ?? '-'}',
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed:
-                                                () =>
-                                                    Navigator.of(context).pop(),
-                                            child: const Text('닫기'),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                }
-                              } else {
-                                if (context.mounted) {
-                                  showDialog(
-                                    context: context,
-                                    builder:
-                                        (_) => const AlertDialog(
-                                          content: Text('전략 히스토리 불러오기 실패'),
-                                        ),
-                                  );
-                                }
-                              }
-                            },
-                            style: buttonStyle,
-                            child: const Text('히스토리'),
-                          ),
-                          const SizedBox(height: 8),
-                        ],
-                      ),
-                  ],
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+// 정보 카드용 위젯
+class _InfoItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  const _InfoItem({required this.label, required this.value, required this.color});
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: color)),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+      ],
+    );
+  }
+}
+
+// 체크박스용 위젯
+class _CheckBoxItem extends StatelessWidget {
+  final bool value;
+  final String label;
+  final Color color;
+  final ValueChanged<bool?> onChanged;
+  const _CheckBoxItem({required this.value, required this.label, required this.color, required this.onChanged});
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Checkbox(
+          value: value,
+          onChanged: onChanged,
+          activeColor: color,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        Text(label, style: TextStyle(fontSize: 14, color: color, fontWeight: FontWeight.w500)),
+      ],
     );
   }
 }
