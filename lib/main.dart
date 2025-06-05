@@ -189,7 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   : 'ca-app-pub-3940256099942544/1712485313') // iOS 테스트 보상형 광고
               : (Platform.isAndroid
                   ? 'ca-app-pub-5520596727761259/2854023304' // 실제 광고 ID
-                  : 'ca-app-pub-3940256099942544/1712485313'); // 실제 광고 ID
+                  : 'ca-app-pub-5520596727761259/5241271661'); // 실제 광고 ID
 
       RewardedAd.load(
         adUnitId: adUnitId,
