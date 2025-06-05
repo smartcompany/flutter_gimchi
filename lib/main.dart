@@ -115,20 +115,47 @@ class _MyHomePageState extends State<MyHomePage> {
     initialZoomPosition: 0.8,
   );
 
+  bool _loading = true;
+  String? _loadError;
+
   @override
   void initState() {
     super.initState();
 
     if (!kIsWeb) {
       MobileAds.instance.initialize().then((InitializationStatus status) {
-        print('AdMob initialized: ${status.adapterStatuses}');
         _loadRewardedAd();
       });
     }
-    fetchExchangeRateData();
-    fetchUSDTData();
-    fetchKimchiPremiumData();
-    fetchStrategy(); // 매매 전략도 불러오기
+    _loadAllApis();
+  }
+
+  Future<void> _loadAllApis() async {
+    setState(() {
+      _loading = true;
+      _loadError = null;
+    });
+
+    try {
+      await Future.wait([
+        fetchExchangeRateData(),
+        fetchUSDTData(),
+        fetchKimchiPremiumData(),
+        fetchStrategy(),
+      ]);
+      setState(() {
+        _loading = false;
+        _loadError = null;
+      });
+    } catch (e) {
+      setState(() {
+        _loading = false;
+        _loadError = '데이터를 불러오는데 실패했습니다.';
+      });
+      if (context.mounted) {
+        _showRetryDialog();
+      }
+    }
   }
 
   void _loadRewardedAd() {
@@ -208,10 +235,10 @@ class _MyHomePageState extends State<MyHomePage> {
           usdtChartData = rate;
         });
       } else {
-        print("Failed to fetch data: ${response.statusCode}");
+        throw Exception("Failed to fetch USDT data: ${response.statusCode}");
       }
     } catch (e) {
-      print("Error fetching data: $e");
+      throw Exception("Error fetching USDT data: $e");
     }
   }
 
@@ -380,8 +407,42 @@ class _MyHomePageState extends State<MyHomePage> {
     return !kIsWeb && !_strategyUnlocked;
   }
 
+  void _showRetryDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (_) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text('불러오기 실패'),
+            content: const Text('데이터를 불러오는데 실패했습니다.\n다시 시도하시겠습니까?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('종료'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _loadAllApis();
+                },
+                child: const Text('YES'),
+              ),
+            ],
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF8F5FA),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     // 마지막 날짜 로그 추가
     if (kimchiPremium.isNotEmpty) {
       print('김치프리미엄 마지막 날짜: ${kimchiPremium.last.time}');
