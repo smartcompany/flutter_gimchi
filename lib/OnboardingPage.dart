@@ -16,7 +16,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     _OnboardingSlide(
       title: "USDT는 단순한 달러가 아닙니다",
       body:
-          "1 USDT ≒ 1 USD이지만, 거래소·시세·환율에 따라 실제 가격은 달라요.\n"
+          "1 USDT ≒ 1 USD이지만, 거래소·시세·환율에 따라 실제 가격은 달라요. "
           "특히 한국에서는 ‘김치 프리미엄’과 ‘환율 차이’로 시세 차이가 자주 발생합니다.",
       image: Icons.show_chart, // 실제 앱에서는 이미지로 교체
       imageDesc: "USDT vs 김치 프리미엄 비교 그래프",
@@ -24,8 +24,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
     _OnboardingSlide(
       title: "김치 프리미엄 + 환율 차이 = 수익의 기회",
       body:
-          "한국에서는 USDT가 해외보다 비싸게 거래되는 경우가 많습니다. (이걸 ‘김치 프리미엄’이라 부릅니다.)\n"
-          "여기에 환율까지 고려하면, 시세 차익이 더 커질 수 있습니다.\n"
+          "한국에서는 USDT가 해외보다 비싸게 거래되는 경우가 많습니다. (이걸 ‘김치 프리미엄’이라 부릅니다.) "
+          "여기에 환율까지 고려하면, 시세 차익이 더 커질 수 있습니다. "
           "우리 앱은 AI가 김프와 환율을 분석해, 최적의 매수/매도 시점을 찾아줍니다.",
       image: Icons.swap_horiz,
       imageDesc: "USDT → 저가 매수 → 고가 매도 → 안정적인 수익 구조",
@@ -33,7 +33,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     _OnboardingSlide(
       title: "매수/매도 타이밍? 우리가 알려드려요",
       body:
-          "김치 프리미엄, 환율, 해외 시세를 실시간 분석해서\n"
+          "김치 프리미엄, 환율, 해외 시세를 실시간 분석해서 "
           "“지금 사세요 / 지금 파세요”를 AI가 시그널로 알려줍니다.",
       image: Icons.notifications_active,
       imageDesc: "실제 앱 화면 캡처 예시 (매수 시그널 알림)",
@@ -166,6 +166,8 @@ class _OnboardingSlideWidget extends StatelessWidget {
             slide.body,
             style: const TextStyle(fontSize: 16),
             textAlign: TextAlign.center,
+            softWrap: true, // 자동 줄바꿈 허용
+            maxLines: 5, // 최대 5줄까지만 표시
           ),
         ],
       ),

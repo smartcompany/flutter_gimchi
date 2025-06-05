@@ -555,13 +555,13 @@ class _MyHomePageState extends State<MyHomePage> {
             _InfoItem(
               label: 'USDT',
               value:
-                  todayUsdt != null ? todayUsdt.close.toStringAsFixed(2) : '-',
+                  todayUsdt != null ? todayUsdt.close.toStringAsFixed(1) : '-',
               color: Colors.blue,
             ),
             _InfoItem(
               label: '환율',
               value:
-                  todayRate != null ? todayRate.value.toStringAsFixed(2) : '-',
+                  todayRate != null ? todayRate.value.toStringAsFixed(1) : '-',
               color: Colors.green,
             ),
             _InfoItem(
@@ -681,7 +681,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 dataSource: kimchiPremium,
                 xValueMapper: (ChartData data, _) => data.time,
                 yValueMapper: (ChartData data, _) => data.value,
-                color: Colors.yellow,
+                color: Colors.orange,
                 yAxisName: 'kimchiAxis',
                 animationDuration: 0,
               ),
@@ -729,8 +729,10 @@ class _MyHomePageState extends State<MyHomePage> {
       color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        child: Wrap(
+          alignment: WrapAlignment.spaceEvenly,
+          spacing: 8,
+          runSpacing: 2,
           children: [
             _CheckBoxItem(
               value: showExchangeRate,
@@ -748,7 +750,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             _CheckBoxItem(
               value: showAITrading,
-              label: 'AI 매수/매도 마크',
+              label: 'AI 매수/매도', // 라벨을 더 짧게!
               color: Colors.deepPurple,
               onChanged: (val) {
                 setState(() {
