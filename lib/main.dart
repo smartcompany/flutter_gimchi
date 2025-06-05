@@ -138,6 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   bool _loading = true;
   String? _loadError;
+  ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -217,15 +218,26 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _showRewardedAd() {
+  void _showRewardedAd({required ScrollController scrollController}) {
     if (_rewardedAd != null) {
       _rewardedAd!.show(
-        onUserEarnedReward: (ad, reward) {
+        onUserEarnedReward: (ad, reward) async {
           setState(() {
             _strategyUnlocked = true;
           });
           _rewardedAd?.dispose();
-          _loadRewardedAd(); // 다음 광고 미리 로드
+          _loadRewardedAd();
+
+          // 프레임이 완전히 그려진 뒤 스크롤 이동
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (scrollController.hasClients) {
+              scrollController.animateTo(
+                scrollController.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeInOut,
+              );
+            }
+          });
         },
       );
     } else {
@@ -489,6 +501,25 @@ class _MyHomePageState extends State<MyHomePage> {
         kimchiPremium.isNotEmpty ? kimchiPremium.last : null;
 
     final double chartHeight = MediaQuery.of(context).size.height * 0.6;
+    final singleChildScrollView = SingleChildScrollView(
+      controller: _scrollController,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+        child: Column(
+          children: [
+            _buildTodayInfoCard(todayUsdt, todayRate, todayKimchi),
+            const SizedBox(height: 8),
+            _buildChartResetButton(),
+            const SizedBox(height: 4),
+            _buildChartCard(chartHeight),
+            const SizedBox(height: 8),
+            _buildCheckboxCard(),
+            const SizedBox(height: 12),
+            _buildStrategySection(),
+          ],
+        ),
+      ),
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5FA),
@@ -502,26 +533,7 @@ class _MyHomePageState extends State<MyHomePage> {
         centerTitle: true,
         foregroundColor: Colors.black87,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
-            child: Column(
-              children: [
-                _buildTodayInfoCard(todayUsdt, todayRate, todayKimchi),
-                const SizedBox(height: 8),
-                _buildChartResetButton(),
-                const SizedBox(height: 4),
-                _buildChartCard(chartHeight),
-                const SizedBox(height: 8),
-                _buildCheckboxCard(),
-                const SizedBox(height: 12),
-                _buildStrategySection(),
-              ],
-            ),
-          ),
-        ),
-      ),
+      body: SafeArea(child: singleChildScrollView),
     );
   }
 
@@ -1059,7 +1071,11 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16),
           child: Center(
             child: ElevatedButton.icon(
-              onPressed: _rewardedAd == null ? null : _showRewardedAd,
+              onPressed:
+                  _rewardedAd == null
+                      ? null
+                      : () =>
+                          _showRewardedAd(scrollController: _scrollController),
               icon: const Icon(Icons.ondemand_video, color: Colors.white),
               label: const Text('광고 보고 전략 보기'),
               style: ElevatedButton.styleFrom(
