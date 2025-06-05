@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart'; // kIsWeb을 사용하기 위해 import
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'OnboardingPage.dart'; // 온보딩 페이지 import
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(const MyApp());
 
@@ -40,20 +41,40 @@ class OnboardingLauncher extends StatefulWidget {
 
 class _OnboardingLauncherState extends State<OnboardingLauncher> {
   bool _onboardingDone = false;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkOnboarding();
+  }
+
+  Future<void> _checkOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    final done = prefs.getBool('onboarding_done') ?? false;
+    setState(() {
+      _onboardingDone = done;
+      _loading = false;
+    });
+  }
+
+  Future<void> _finishOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboarding_done', true);
+    setState(() {
+      _onboardingDone = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     if (_onboardingDone) {
       return const MyHomePage();
     }
-    return OnboardingPage(
-      // 온보딩이 끝나면 콜백으로 상태 변경
-      onFinish: () {
-        setState(() {
-          _onboardingDone = true;
-        });
-      },
-    );
+    return OnboardingPage(onFinish: _finishOnboarding);
   }
 }
 
