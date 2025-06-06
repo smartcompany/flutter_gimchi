@@ -27,7 +27,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: OnboardingLauncher());
+    return MaterialApp(
+      home: OnboardingLauncher(),
+      debugShowCheckedModeBanner: false, // 이 줄을 추가!
+    );
   }
 }
 
