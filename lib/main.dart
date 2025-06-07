@@ -168,6 +168,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _initFCM() async {
+    if (kIsWeb) {
+      print('FCM은 웹에서 지원되지 않습니다.');
+      return;
+    }
+
     // 권한 요청 (iOS)
     await FirebaseMessaging.instance.requestPermission();
 
