@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart'; // kIsWeb을 사용하기 위해 impor
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'OnboardingPage.dart'; // 온보딩 페이지 import
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -29,6 +30,7 @@ const String gimchHistoryUrl =
     "https://rate-history.vercel.app/api/gimch-history?days=$days";
 const String strategyUrl =
     "https://rate-history.vercel.app/api/analyze-strategy";
+const String fcmTokenUrl = "https://rate-history.vercel.app/api/fcm-token";
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -173,12 +175,38 @@ class _MyHomePageState extends State<MyHomePage> {
     String? token = await FirebaseMessaging.instance.getToken();
     print('FCM Token: $token');
     // 서버에 토큰을 저장(POST)해야 푸시를 받을 수 있습니다.
+    if (token != null) {
+      final userId = await getOrCreateUserId();
+      await _saveFcmTokenToServer(token, userId);
+    }
 
     // 포그라운드 메시지 수신
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('푸시 수신: ${message.notification?.title}');
       // 원하는 UI 처리
     });
+  }
+
+  // FCM 토큰을 서버에 저장하는 함수
+  Future<void> _saveFcmTokenToServer(String token, String userId) async {
+    try {
+      final response = await http.post(
+        Uri.parse(fcmTokenUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'token': token,
+          'platform': Platform.isIOS ? 'ios' : 'android',
+          'userId': userId,
+        }),
+      );
+      if (response.statusCode == 200) {
+        print('FCM 토큰 서버 저장 성공');
+      } else {
+        print('FCM 토큰 서버 저장 실패: ${response.body}');
+      }
+    } catch (e) {
+      print('FCM 토큰 서버 저장 에러: $e');
+    }
   }
 
   Future<void> _loadAllApis() async {
@@ -1245,4 +1273,15 @@ class _HistoryRow extends StatelessWidget {
       ),
     );
   }
+}
+
+// 사용자 ID 가져오기/생성 함수
+Future<String> getOrCreateUserId() async {
+  final prefs = await SharedPreferences.getInstance();
+  String? userId = prefs.getString('user_id');
+  if (userId == null) {
+    userId = const Uuid().v4();
+    await prefs.setString('user_id', userId);
+  }
+  return userId;
 }
