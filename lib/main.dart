@@ -188,7 +188,22 @@ class _MyHomePageState extends State<MyHomePage> {
     // 포그라운드 메시지 수신
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('푸시 수신: ${message.notification?.title}');
-      // 원하는 UI 처리
+      // 푸시 알림을 다이얼로그로 표시
+      if (message.notification != null && context.mounted) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(message.notification!.title ?? '알림'),
+            content: Text(message.notification!.body ?? ''),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('확인'),
+              ),
+            ],
+          ),
+        );
+      }
     });
   }
 
