@@ -14,7 +14,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  if (!kIsWeb) {
+    await Firebase.initializeApp();
+  }
   runApp(const MyApp());
 }
 
@@ -157,9 +159,10 @@ class _MyHomePageState extends State<MyHomePage> {
       MobileAds.instance.initialize().then((InitializationStatus status) {
         _loadRewardedAd();
       });
+
+      _initFCM();
     }
     _loadAllApis();
-    _initFCM();
   }
 
   void _initFCM() async {
