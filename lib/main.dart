@@ -187,24 +187,38 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // 포그라운드 메시지 수신
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('푸시 수신: ${message.notification?.title}');
-      // 푸시 알림을 다이얼로그로 표시
-      if (message.notification != null && context.mounted) {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: Text(message.notification!.title ?? '알림'),
-            content: Text(message.notification!.body ?? ''),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('확인'),
-              ),
-            ],
-          ),
-        );
-      }
+      print('푸시 수신 포그라운드: ${message.notification?.title}');
+      showPushAlert(message);
     });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('푸시 수신 백그라운드: ${message.notification?.title}');
+      // 푸시 알림을 다이얼로그로 표시
+      showPushAlert(message);
+    });
+  }
+
+  void showPushAlert(RemoteMessage message) {
+    // 푸시 알림을 다이얼로그로 표시
+    if (message.notification != null && context.mounted) {
+      showDialog(
+        context: context,
+        builder:
+            (_) => AlertDialog(
+              title: Text(
+                message.notification!.title ?? '알림',
+                style: const TextStyle(fontSize: 16), // 폰트 사이즈만 추가
+              ),
+              content: Text(message.notification!.body ?? ''),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('확인'),
+                ),
+              ],
+            ),
+      );
+    }
   }
 
   // FCM 토큰을 서버에 저장하는 함수
