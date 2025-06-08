@@ -19,10 +19,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (!kIsWeb) {
     await Firebase.initializeApp();
-  }
 
-  // Crashlytics 에러 자동 수집 활성화
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    // Crashlytics 에러 자동 수집 활성화
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  }
 
   runApp(const MyApp());
 }
