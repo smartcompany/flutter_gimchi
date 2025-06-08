@@ -11,6 +11,7 @@ import 'OnboardingPage.dart'; // 온보딩 페이지 import
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() async {
@@ -18,6 +19,10 @@ void main() async {
   if (!kIsWeb) {
     await Firebase.initializeApp();
   }
+
+  // Crashlytics 에러 자동 수집 활성화
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
   runApp(const MyApp());
 }
 
