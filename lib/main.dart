@@ -13,6 +13,7 @@ import 'package:uuid/uuid.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -176,6 +177,14 @@ class _MyHomePageState extends State<MyHomePage> {
     if (kIsWeb) {
       print('FCM은 웹에서 지원되지 않습니다.');
       return;
+    }
+
+    if (Platform.isIOS) {
+      final simulator = await isIOSSimulator();
+      if (simulator) {
+        print('iOS 시뮬레이터에서는 FCM 토큰을 요청하지 않습니다.');
+        return;
+      }
     }
 
     // 권한 요청 (iOS)
@@ -1323,4 +1332,13 @@ Future<String> getOrCreateUserId() async {
     await prefs.setString('user_id', userId);
   }
   return userId;
+}
+
+// iOS 시뮬레이터 여부 확인 함수
+Future<bool> isIOSSimulator() async {
+  if (!Platform.isIOS) return false;
+  final deviceInfo = DeviceInfoPlugin();
+  final iosInfo = await deviceInfo.iosInfo;
+  // iOS 시뮬레이터는 device name이 "iPhone Simulator" 등으로 나옴
+  return !iosInfo.isPhysicalDevice;
 }
