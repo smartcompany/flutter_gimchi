@@ -621,6 +621,11 @@ class _MyHomePageState extends State<MyHomePage> {
             _buildCheckboxCard(),
             const SizedBox(height: 12),
             _buildStrategySection(),
+            if (kDebugMode) // 디버그 모드일 때만 표시
+              TextButton(
+                onPressed: () => throw Exception(),
+                child: const Text("Throw Test Exception"),
+              ),
           ],
         ),
       ),
