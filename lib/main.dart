@@ -14,6 +14,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:advertising_id/advertising_id.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +25,7 @@ void main() async {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
   }
 
+  await printIDFA();
   runApp(const MyApp());
 }
 
@@ -287,14 +289,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _loadRewardedAd() {
     try {
-      final adUnitId =
-          kDebugMode
-              ? (Platform.isAndroid
-                  ? 'ca-app-pub-3940256099942544/5224354917' // Android 테스트 보상형 광고
-                  : 'ca-app-pub-3940256099942544/1712485313') // iOS 테스트 보상형 광고
-              : (Platform.isAndroid
-                  ? 'ca-app-pub-5520596727761259/2854023304' // 실제 광고 ID
-                  : 'ca-app-pub-5520596727761259/5241271661'); // 실제 광고 ID
+      var adUnitId = "";
+      if (kDebugMode) {
+        if (Platform.isIOS) {
+          adUnitId = 'ca-app-pub-5520596727761259/5241271661';
+          // adUnitId = 'ca-app-pub-3940256099942544/1712485313';
+        } else if (Platform.isAndroid) {
+          adUnitId = 'ca-app-pub-3940256099942544/5224354917';
+        }
+      } else {
+        if (Platform.isIOS) {
+          adUnitId = 'ca-app-pub-5520596727761259/5241271661'; // 실제 광고 ID
+        } else if (Platform.isAndroid) {
+          adUnitId = 'ca-app-pub-5520596727761259/2854023304'; // 실제 광고 ID
+        }
+      }
 
       RewardedAd.load(
         adUnitId: adUnitId,
@@ -1346,4 +1355,20 @@ Future<bool> isIOSSimulator() async {
   final iosInfo = await deviceInfo.iosInfo;
   // iOS 시뮬레이터는 device name이 "iPhone Simulator" 등으로 나옴
   return !iosInfo.isPhysicalDevice;
+}
+
+// IDFA 출력 함수 (iOS 전용)
+Future<void> printIDFA() async {
+  if (!kDebugMode) return;
+
+  if (!Platform.isIOS) {
+    print('IDFA는 iOS에서만 지원됩니다.');
+    return;
+  }
+  try {
+    final idfa = await AdvertisingId.id(true);
+    print('IDFA: $idfa');
+  } catch (e) {
+    print('IDFA 가져오기 실패: $e');
+  }
 }

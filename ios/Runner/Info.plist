@@ -60,5 +60,7 @@
 	</array>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
+    <key>NSUserTrackingUsageDescription</key>
+    <string>광고 식별자(IDFA) 접근을 위해 필요합니다.</string>
 </dict>
 </plist>
