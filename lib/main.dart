@@ -15,6 +15,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:advertising_id/advertising_id.dart';
+import 'api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,17 +30,6 @@ void main() async {
 
   runApp(const MyApp());
 }
-
-const int days = 200;
-const String upbitUsdtUrl =
-    "https://rate-history.vercel.app/api/usdt-history?days=$days";
-const String rateHistoryUrl =
-    "https://rate-history.vercel.app/api/rate-history?days=$days";
-const String gimchHistoryUrl =
-    "https://rate-history.vercel.app/api/gimch-history?days=$days";
-const String strategyUrl =
-    "https://rate-history.vercel.app/api/analyze-strategy";
-const String fcmTokenUrl = "https://rate-history.vercel.app/api/fcm-token";
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -107,22 +97,8 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class ChartData {
-  final DateTime time;
-  final double value;
-  ChartData(this.time, this.value);
-}
-
-class USDTChartData {
-  final DateTime time;
-  final double open;
-  final double close;
-  final double high;
-  final double low;
-  USDTChartData(this.time, this.open, this.close, this.high, this.low);
-}
-
 class _MyHomePageState extends State<MyHomePage> {
+  final ApiService api = ApiService();
   final GlobalKey chartKey = GlobalKey();
   final ZoomPanBehavior _zoomPanBehavior = ZoomPanBehavior(
     enablePinching: true,
@@ -242,7 +218,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _saveFcmTokenToServer(String token, String userId) async {
     try {
       final response = await http.post(
-        Uri.parse(fcmTokenUrl),
+        Uri.parse(ApiService.fcmTokenUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'token': token,
@@ -267,13 +243,32 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     try {
-      await Future.wait([
-        fetchExchangeRateData(),
-        fetchUSDTData(),
-        fetchKimchiPremiumData(),
-        fetchStrategy(),
+      final results = await Future.wait([
+        api.fetchExchangeRateData(),
+        api.fetchUSDTData(),
+        api.fetchKimchiPremiumData(),
+        api.fetchStrategy(),
       ]);
       setState(() {
+        exchangeRates = results[0] as List<ChartData>;
+        usdtMap = results[1] as Map<String, dynamic>;
+        kimchiPremium = results[2] as List<ChartData>;
+        parsedStrategy = results[3] as Map<String, dynamic>?;
+        // usdtChartData 등 기존 파싱 로직은 필요시 추가
+        if (usdtMap.isNotEmpty) {
+          final List<USDTChartData> rate = [];
+          usdtMap.forEach((key, value) {
+            final close = value['close']?.toDouble() ?? 0;
+            final high = value['high']?.toDouble() ?? 0;
+            final low = value['low']?.toDouble() ?? 0;
+            final open = value['open']?.toDouble() ?? 0;
+            rate.add(
+              USDTChartData(DateTime.parse(key), open, close, high, low),
+            );
+          });
+          rate.sort((a, b) => a.time.compareTo(b.time));
+          usdtChartData = rate;
+        }
         _loading = false;
         _loadError = null;
       });
@@ -360,127 +355,6 @@ class _MyHomePageState extends State<MyHomePage> {
         const SnackBar(content: Text('광고를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.')),
       );
       _loadRewardedAd();
-    }
-  }
-
-  Future<void> fetchUSDTData() async {
-    try {
-      final response = await http.get(Uri.parse(upbitUsdtUrl));
-      if (response.statusCode == 200) {
-        usdtMap = json.decode(response.body) as Map<String, dynamic>;
-        final List<USDTChartData> rate = [];
-        usdtMap.forEach((key, value) {
-          final close = value['close']?.toDouble() ?? 0;
-          final high = value['high']?.toDouble() ?? 0;
-          final low = value['low']?.toDouble() ?? 0;
-          final open = value['open']?.toDouble() ?? 0;
-          rate.add(USDTChartData(DateTime.parse(key), open, close, high, low));
-        });
-
-        rate.sort((a, b) => a.time.compareTo(b.time));
-
-        setState(() {
-          usdtChartData = rate;
-        });
-      } else {
-        throw Exception("Failed to fetch USDT data: ${response.statusCode}");
-      }
-    } catch (e) {
-      throw Exception("Error fetching USDT data: $e");
-    }
-  }
-
-  Future<void> fetchExchangeRateData() async {
-    try {
-      final response = await http.get(Uri.parse(rateHistoryUrl));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final List<ChartData> rate = [];
-
-        data.forEach((key, value) {
-          rate.add(ChartData(DateTime.parse(key), value.toDouble()));
-        });
-
-        rate.sort((a, b) => a.time.compareTo(b.time));
-
-        setState(() {
-          exchangeRates = rate;
-        });
-      } else {
-        print("Failed to fetch data: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Error fetching data: $e");
-    }
-  }
-
-  Future<void> fetchKimchiPremiumData() async {
-    try {
-      final response = await http.get(Uri.parse(gimchHistoryUrl));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body) as Map<String, dynamic>;
-        final List<ChartData> premium = [];
-        data.forEach((key, value) {
-          premium.add(ChartData(DateTime.parse(key), value.toDouble()));
-        });
-
-        premium.sort((a, b) => a.time.compareTo(b.time));
-
-        // 김치 프리미엄 Y축 min/max 계산 및 고정
-        if (premium.isNotEmpty) {
-          final min = premium
-              .map((e) => e.value)
-              .reduce((a, b) => a < b ? a : b);
-          final max = premium
-              .map((e) => e.value)
-              .reduce((a, b) => a > b ? a : b);
-          kimchiMin = (min * 0.98).floorToDouble();
-          kimchiMax = (max * 1.02).ceilToDouble();
-        }
-
-        setState(() {
-          kimchiPremium = premium;
-        });
-      } else {
-        print("Failed to fetch kimchi premium: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Error fetching kimchi premium: $e");
-    }
-  }
-
-  Future<void> fetchStrategy() async {
-    try {
-      final response = await http.get(Uri.parse(strategyUrl));
-      if (response.statusCode == 200) {
-        strategyText = utf8.decode(response.bodyBytes);
-
-        Map<String, dynamic>? strategyData;
-        if (strategyText != null) {
-          try {
-            strategyList = json.decode(strategyText!);
-            // 배열이 아니면 파싱 에러 처리
-            if (strategyList.isNotEmpty &&
-                strategyList[0] is Map<String, dynamic>) {
-              strategyData = strategyList[0];
-            } else {
-              throw Exception('전략 응답이 배열이 아님');
-            }
-          } catch (e) {
-            print('파싱 에러: $e');
-            strategyData = null;
-          }
-        }
-
-        setState(() {
-          parsedStrategy = strategyData;
-        });
-      } else {
-        print("Failed to fetch strategy: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Error fetching strategy: $e");
     }
   }
 
