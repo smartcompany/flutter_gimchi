@@ -23,9 +23,10 @@ void main() async {
 
     // Crashlytics 에러 자동 수집 활성화
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+    await printIDFA();
   }
 
-  await printIDFA();
   runApp(const MyApp());
 }
 
