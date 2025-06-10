@@ -72,17 +72,12 @@ class ApiService {
   }
 
   // 전략 데이터
-  Future<Map<String, dynamic>?> fetchStrategy() async {
+  Future<List?> fetchStrategy() async {
     final response = await http.get(Uri.parse(strategyUrl));
     if (response.statusCode == 200) {
       final strategyText = utf8.decode(response.bodyBytes);
-      List strategyList;
       try {
-        strategyList = json.decode(strategyText);
-        if (strategyList.isNotEmpty &&
-            strategyList[0] is Map<String, dynamic>) {
-          return strategyList[0];
-        }
+        return json.decode(strategyText);
       } catch (e) {
         print('전략 파싱 에러: $e');
       }

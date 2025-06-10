@@ -113,7 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool showAITrading = false; // AI trading 표시 여부 추가
   bool showExchangeRate = true; // 환율 표시 여부 추가
   String? strategyText;
-  Map<String, dynamic>? parsedStrategy;
+  Map<String, dynamic>? latestStrategy;
   List<USDTChartData> usdtChartData = [];
   Map<String, dynamic> usdtMap = {};
   List<SimulationResult> aiTradeResults = [];
@@ -252,7 +252,9 @@ class _MyHomePageState extends State<MyHomePage> {
         exchangeRates = results[0] as List<ChartData>;
         usdtMap = results[1] as Map<String, dynamic>;
         kimchiPremium = results[2] as List<ChartData>;
-        parsedStrategy = results[3] as Map<String, dynamic>?;
+        strategyList = results[3] as List;
+        latestStrategy = strategyList[0] as Map<String, dynamic>?;
+
         // usdtChartData 등 기존 파싱 로직은 필요시 추가
         if (usdtMap.isNotEmpty) {
           final List<USDTChartData> rate = [];
@@ -789,7 +791,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   const Spacer(),
                   OutlinedButton(
                     onPressed:
-                        parsedStrategy == null
+                        latestStrategy == null
                             ? null
                             : () {
                               Navigator.of(context).push(
@@ -826,27 +828,27 @@ class _MyHomePageState extends State<MyHomePage> {
                   TableRow(
                     children: [
                       StrategyCell('추천 매수 가격', isHeader: true),
-                      StrategyCell('${parsedStrategy?['buy_price'] ?? '-'}'),
+                      StrategyCell('${latestStrategy?['buy_price'] ?? '-'}'),
                     ],
                   ),
                   TableRow(
                     children: [
                       StrategyCell('추천 매도 가격', isHeader: true),
-                      StrategyCell('${parsedStrategy?['sell_price'] ?? '-'}'),
+                      StrategyCell('${latestStrategy?['sell_price'] ?? '-'}'),
                     ],
                   ),
                   TableRow(
                     children: [
                       StrategyCell('예상 기대 수익', isHeader: true),
                       StrategyCell(
-                        '${parsedStrategy?['expected_return'] ?? '-'}',
+                        '${latestStrategy?['expected_return'] ?? '-'}',
                       ),
                     ],
                   ),
                   TableRow(
                     children: [
                       StrategyCell('AI 요약', isHeader: true),
-                      StrategyCell('${parsedStrategy?['summary'] ?? '-'}'),
+                      StrategyCell('${latestStrategy?['summary'] ?? '-'}'),
                     ],
                   ),
                 ],
