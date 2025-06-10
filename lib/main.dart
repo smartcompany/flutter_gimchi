@@ -9,13 +9,12 @@ import 'package:flutter/foundation.dart'; // kIsWeb을 사용하기 위해 impor
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'OnboardingPage.dart'; // 온보딩 페이지 import
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:advertising_id/advertising_id.dart';
 import 'api_service.dart';
+import 'utils.dart';
+import 'widgets.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -546,19 +545,19 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _InfoItem(
+            InfoItem(
               label: 'USDT',
               value:
                   todayUsdt != null ? todayUsdt.close.toStringAsFixed(1) : '-',
               color: Colors.blue,
             ),
-            _InfoItem(
+            InfoItem(
               label: '환율',
               value:
                   todayRate != null ? todayRate.value.toStringAsFixed(1) : '-',
               color: Colors.green,
             ),
-            _InfoItem(
+            InfoItem(
               label: '김치 프리미엄',
               value:
                   todayKimchi != null
@@ -728,21 +727,21 @@ class _MyHomePageState extends State<MyHomePage> {
           spacing: 8,
           runSpacing: 2,
           children: [
-            _CheckBoxItem(
+            CheckBoxItem(
               value: showExchangeRate,
               label: '환율',
               color: Colors.green,
               onChanged:
                   (val) => setState(() => showExchangeRate = val ?? true),
             ),
-            _CheckBoxItem(
+            CheckBoxItem(
               value: showKimchiPremium,
               label: '김치 프리미엄',
               color: Colors.orange,
               onChanged:
                   (val) => setState(() => showKimchiPremium = val ?? true),
             ),
-            _CheckBoxItem(
+            CheckBoxItem(
               value: showAITrading,
               label: 'AI 매수/매도', // 라벨을 더 짧게!
               color: Colors.deepPurple,
@@ -826,28 +825,28 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   TableRow(
                     children: [
-                      _StrategyCell('추천 매수 가격', isHeader: true),
-                      _StrategyCell('${parsedStrategy?['buy_price'] ?? '-'}'),
+                      StrategyCell('추천 매수 가격', isHeader: true),
+                      StrategyCell('${parsedStrategy?['buy_price'] ?? '-'}'),
                     ],
                   ),
                   TableRow(
                     children: [
-                      _StrategyCell('추천 매도 가격', isHeader: true),
-                      _StrategyCell('${parsedStrategy?['sell_price'] ?? '-'}'),
+                      StrategyCell('추천 매도 가격', isHeader: true),
+                      StrategyCell('${parsedStrategy?['sell_price'] ?? '-'}'),
                     ],
                   ),
                   TableRow(
                     children: [
-                      _StrategyCell('예상 기대 수익', isHeader: true),
-                      _StrategyCell(
+                      StrategyCell('예상 기대 수익', isHeader: true),
+                      StrategyCell(
                         '${parsedStrategy?['expected_return'] ?? '-'}',
                       ),
                     ],
                   ),
                   TableRow(
                     children: [
-                      _StrategyCell('AI 요약', isHeader: true),
-                      _StrategyCell('${parsedStrategy?['summary'] ?? '-'}'),
+                      StrategyCell('AI 요약', isHeader: true),
+                      StrategyCell('${parsedStrategy?['summary'] ?? '-'}'),
                     ],
                   ),
                 ],
@@ -959,16 +958,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                                       ],
                                                     ),
                                                     const SizedBox(height: 8),
-                                                    _HistoryRow(
+                                                    HistoryRow(
                                                       label: '매수',
                                                       value: strat['buy_price'],
                                                     ),
-                                                    _HistoryRow(
+                                                    HistoryRow(
                                                       label: '매도',
                                                       value:
                                                           strat['sell_price'],
                                                     ),
-                                                    _HistoryRow(
+                                                    HistoryRow(
                                                       label: '예상 수익',
                                                       value:
                                                           strat['expected_return'],
@@ -1095,155 +1094,5 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     }
-  }
-}
-
-// 정보 카드용 위젯
-class _InfoItem extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color color;
-  const _InfoItem({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-            color: color,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-        ),
-      ],
-    );
-  }
-}
-
-// 체크박스용 위젯
-class _CheckBoxItem extends StatelessWidget {
-  final bool value;
-  final String label;
-  final Color color;
-  final ValueChanged<bool?> onChanged;
-  const _CheckBoxItem({
-    required this.value,
-    required this.label,
-    required this.color,
-    required this.onChanged,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Checkbox(
-          value: value,
-          onChanged: onChanged,
-          activeColor: color,
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            color: color,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// 전략 테이블 셀 위젯
-class _StrategyCell extends StatelessWidget {
-  final String text;
-  final bool isHeader;
-  const _StrategyCell(this.text, {this.isHeader = false});
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
-          fontSize: 15,
-        ),
-      ),
-    );
-  }
-}
-
-// 히스토리 행 위젯
-class _HistoryRow extends StatelessWidget {
-  final String label;
-  final dynamic value;
-  const _HistoryRow({required this.label, required this.value});
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          Text(
-            '$label: ',
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 13,
-              color: Colors.deepPurple,
-            ),
-          ),
-          Text(value?.toString() ?? '-', style: const TextStyle(fontSize: 13)),
-        ],
-      ),
-    );
-  }
-}
-
-// 사용자 ID 가져오기/생성 함수
-Future<String> getOrCreateUserId() async {
-  final prefs = await SharedPreferences.getInstance();
-  String? userId = prefs.getString('user_id');
-  if (userId == null) {
-    userId = const Uuid().v4();
-    await prefs.setString('user_id', userId);
-  }
-  return userId;
-}
-
-// iOS 시뮬레이터 여부 확인 함수
-Future<bool> isIOSSimulator() async {
-  if (!Platform.isIOS) return false;
-  final deviceInfo = DeviceInfoPlugin();
-  final iosInfo = await deviceInfo.iosInfo;
-  // iOS 시뮬레이터는 device name이 "iPhone Simulator" 등으로 나옴
-  return !iosInfo.isPhysicalDevice;
-}
-
-// IDFA 출력 함수 (iOS 전용)
-Future<void> printIDFA() async {
-  if (!kDebugMode) return;
-
-  if (!Platform.isIOS) {
-    print('IDFA는 iOS에서만 지원됩니다.');
-    return;
-  }
-  try {
-    final idfa = await AdvertisingId.id(true);
-    print('IDFA: $idfa');
-  } catch (e) {
-    print('IDFA 가져오기 실패: $e');
   }
 }

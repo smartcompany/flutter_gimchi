@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "822854861845",
+    "project_id": "usdt-signal",
+    "storage_bucket": "usdt-signal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:822854861845:android:1def66f07020a34bd5ba1c",
+        "android_client_info": {
+          "package_name": "com.smartCompany.usdtSignal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSvhK91rSjxx4okvKRbGpi3DwthqbCCE0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "822854861845-h1a4frebrd8kh8m6a0ebcvr73e84c5at.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.smartcompany.usdtSignal",
+                "app_store_id": "6746846210"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
