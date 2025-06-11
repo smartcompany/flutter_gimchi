@@ -138,7 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
   ScrollController _scrollController = ScrollController();
 
   // PlotBand 표시 여부 상태 추가
-  bool showKimchiPlotBands = true;
+  bool showKimchiPlotBands = false;
 
   @override
   void initState() {
@@ -750,7 +750,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
       // 색상 계산: 낮을수록 파랑, 높을수록 빨강 (0~5% 기준)
       double t = ((data.value - kimchiMin) / maxGimchRange).clamp(0.0, 1.0);
-      Color bandColor = Color.lerp(Colors.blue, Colors.red, t)!;
+      Color bandColor = Color.lerp(
+        Colors.blue,
+        Colors.red,
+        t,
+      )!.withOpacity(0.6);
 
       kimchiPlotBands.add(
         PlotBand(
@@ -758,9 +762,9 @@ class _MyHomePageState extends State<MyHomePage> {
           start: bandStart, // DateTime
           end: data.time, // DateTime
           gradient: LinearGradient(
-            colors: [previousColor ?? bandColor, bandColor],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            colors: [(previousColor ?? bandColor), bandColor],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
         ),
       );
@@ -820,7 +824,7 @@ class _MyHomePageState extends State<MyHomePage> {
             // === 프리미엄 배경 PlotBand 표시/숨김 체크박스 추가 ===
             CheckBoxItem(
               value: showKimchiPlotBands,
-              label: '프리미엄 배경',
+              label: '김치 프리미엄 배경',
               color: Colors.blue,
               onChanged:
                   (val) => setState(() => showKimchiPlotBands = val ?? true),
