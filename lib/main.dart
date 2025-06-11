@@ -634,7 +634,7 @@ class _MyHomePageState extends State<MyHomePage> {
             rangePadding: ChartRangePadding.additionalEnd,
             initialZoomFactor: 0.9,
             initialZoomPosition: 0.8,
-            plotBands: kimchiPlotBands, // PlotBand 표시/숨김 분기
+            plotBands: kimchiPlotBands,
           ),
           primaryYAxis: NumericAxis(
             rangePadding: ChartRangePadding.auto,
@@ -644,16 +644,20 @@ class _MyHomePageState extends State<MyHomePage> {
             maximum: getUsdtMax(usdtChartData),
           ),
           axes: <ChartAxis>[
-            NumericAxis(
-              name: 'kimchiAxis',
-              opposedPosition: true,
-              labelFormat: '{value}%',
-              numberFormat: NumberFormat("##0.0"),
-              majorTickLines: const MajorTickLines(size: 2, color: Colors.red),
-              rangePadding: ChartRangePadding.round,
-              minimum: kimchiMin - 0.5,
-              maximum: kimchiMax + 0.5,
-            ),
+            if (showKimchiPremium)
+              NumericAxis(
+                name: 'kimchiAxis',
+                opposedPosition: true,
+                labelFormat: '{value}%',
+                numberFormat: NumberFormat("##0.0"),
+                majorTickLines: const MajorTickLines(
+                  size: 2,
+                  color: Colors.red,
+                ),
+                rangePadding: ChartRangePadding.round,
+                minimum: kimchiMin - 0.5,
+                maximum: kimchiMax + 0.5,
+              ),
           ],
           zoomPanBehavior: _zoomPanBehavior,
           tooltipBehavior: TooltipBehavior(enable: true),
