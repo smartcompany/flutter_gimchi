@@ -121,8 +121,8 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _strategyUnlocked = false; // 광고 시청 여부
   RewardedAd? _rewardedAd;
 
-  double? kimchiMin;
-  double? kimchiMax;
+  double kimchiMin = 0;
+  double kimchiMax = 0;
 
   DateTimeAxis primaryXAxis = DateTimeAxis(
     edgeLabelPlacement: EdgeLabelPlacement.shift,
@@ -136,6 +136,9 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _loading = true;
   String? _loadError;
   ScrollController _scrollController = ScrollController();
+
+  // PlotBand 표시 여부 상태 추가
+  bool showKimchiPlotBands = true;
 
   @override
   void initState() {
@@ -254,6 +257,13 @@ class _MyHomePageState extends State<MyHomePage> {
         kimchiPremium = results[2] as List<ChartData>;
         strategyList = results[3] as List;
         latestStrategy = strategyList[0] as Map<String, dynamic>?;
+
+        kimchiMin = kimchiPremium
+            .map((e) => e.value)
+            .reduce((a, b) => a < b ? a : b);
+        kimchiMax = kimchiPremium
+            .map((e) => e.value)
+            .reduce((a, b) => a > b ? a : b);
 
         // usdtChartData 등 기존 파싱 로직은 필요시 추가
         if (usdtMap.isNotEmpty) {
@@ -597,8 +607,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // 3. 차트 카드
   Widget _buildChartCard(double chartHeight) {
-    // 김치 프리미엄이 2% 이상인 구간의 PlotBand 리스트 생성
-    List<PlotBand> kimchiPlotBands = getKimchiPlotBands();
+    // PlotBand 표시 여부에 따라 리스트 생성 또는 빈 리스트
+    List<PlotBand> kimchiPlotBands =
+        showKimchiPlotBands ? getKimchiPlotBands() : [];
 
     return Material(
       elevation: 2,
@@ -623,7 +634,7 @@ class _MyHomePageState extends State<MyHomePage> {
             rangePadding: ChartRangePadding.additionalEnd,
             initialZoomFactor: 0.9,
             initialZoomPosition: 0.8,
-            plotBands: kimchiPlotBands, // 여기서 PlotBand 적용!
+            plotBands: kimchiPlotBands, // PlotBand 표시/숨김 분기
           ),
           primaryYAxis: NumericAxis(
             rangePadding: ChartRangePadding.auto,
@@ -640,8 +651,8 @@ class _MyHomePageState extends State<MyHomePage> {
               numberFormat: NumberFormat("##0.0"),
               majorTickLines: const MajorTickLines(size: 2, color: Colors.red),
               rangePadding: ChartRangePadding.round,
-              minimum: kimchiMin,
-              maximum: kimchiMax,
+              minimum: kimchiMin - 0.5,
+              maximum: kimchiMax + 0.5,
             ),
           ],
           zoomPanBehavior: _zoomPanBehavior,
@@ -729,30 +740,33 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<PlotBand> getKimchiPlotBands() {
     List<PlotBand> kimchiPlotBands = [];
-    if (showKimchiPremium && kimchiPremium.isNotEmpty) {
-      DateTime bandStart = kimchiPremium.first.time;
-      for (int i = 1; i < kimchiPremium.length; i++) {
-        final data = kimchiPremium[i - 1];
+    DateTime bandStart = kimchiPremium.first.time;
 
-        // 색상 계산: 낮을수록 파랑, 높을수록 빨강 (0~5% 기준)
-        double t = (((data.value ?? 0) + 3) / 8).clamp(0.0, 1.0);
-        Color bandColor = Color.lerp(
-          Colors.blue,
-          Colors.red,
-          t,
-        )!.withOpacity(0.18);
+    double maxGimchRange = kimchiMax - kimchiMin;
 
-        kimchiPlotBands.add(
-          PlotBand(
-            isVisible: true,
-            start: bandStart, // DateTime
-            end: data.time, // DateTime
-            color: bandColor,
+    Color? previousColor;
+    for (int i = 0; i < kimchiPremium.length; i++) {
+      final data = kimchiPremium[i];
+
+      // 색상 계산: 낮을수록 파랑, 높을수록 빨강 (0~5% 기준)
+      double t = ((data.value - kimchiMin) / maxGimchRange).clamp(0.0, 1.0);
+      Color bandColor = Color.lerp(Colors.blue, Colors.red, t)!;
+
+      kimchiPlotBands.add(
+        PlotBand(
+          isVisible: true,
+          start: bandStart, // DateTime
+          end: data.time, // DateTime
+          gradient: LinearGradient(
+            colors: [previousColor ?? bandColor, bandColor],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-        );
+        ),
+      );
 
-        bandStart = data.time; // 다음 시작점 업데이트
-      }
+      bandStart = data.time; // 다음 시작점 업데이트
+      previousColor = bandColor; // 이전 색상 업데이트
     }
     return kimchiPlotBands;
   }
@@ -786,7 +800,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             CheckBoxItem(
               value: showAITrading,
-              label: 'AI 매수/매도', // 라벨을 더 짧게!
+              label: 'AI 매수/매도',
               color: Colors.deepPurple,
               onChanged: (val) {
                 setState(() {
@@ -802,6 +816,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   }
                 });
               },
+            ),
+            // === 프리미엄 배경 PlotBand 표시/숨김 체크박스 추가 ===
+            CheckBoxItem(
+              value: showKimchiPlotBands,
+              label: '프리미엄 배경',
+              color: Colors.blue,
+              onChanged:
+                  (val) => setState(() => showKimchiPlotBands = val ?? true),
             ),
           ],
         ),
