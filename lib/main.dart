@@ -597,6 +597,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // 3. 차트 카드
   Widget _buildChartCard(double chartHeight) {
+    // 김치 프리미엄이 2% 이상인 구간의 PlotBand 리스트 생성
+    List<PlotBand> kimchiPlotBands = getKimchiPlotBands();
+
     return Material(
       elevation: 2,
       borderRadius: BorderRadius.circular(16),
@@ -613,7 +616,15 @@ class _MyHomePageState extends State<MyHomePage> {
             position: LegendPosition.bottom,
           ),
           margin: const EdgeInsets.all(10),
-          primaryXAxis: primaryXAxis,
+          primaryXAxis: DateTimeAxis(
+            edgeLabelPlacement: EdgeLabelPlacement.shift,
+            intervalType: DateTimeIntervalType.days,
+            dateFormat: DateFormat.yMd(),
+            rangePadding: ChartRangePadding.additionalEnd,
+            initialZoomFactor: 0.9,
+            initialZoomPosition: 0.8,
+            plotBands: kimchiPlotBands, // 여기서 PlotBand 적용!
+          ),
           primaryYAxis: NumericAxis(
             rangePadding: ChartRangePadding.auto,
             labelFormat: '{value}',
@@ -714,6 +725,36 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  List<PlotBand> getKimchiPlotBands() {
+    List<PlotBand> kimchiPlotBands = [];
+    if (showKimchiPremium && kimchiPremium.isNotEmpty) {
+      DateTime bandStart = kimchiPremium.first.time;
+      for (int i = 1; i < kimchiPremium.length; i++) {
+        final data = kimchiPremium[i - 1];
+
+        // 색상 계산: 낮을수록 파랑, 높을수록 빨강 (0~5% 기준)
+        double t = (((data.value ?? 0) + 3) / 8).clamp(0.0, 1.0);
+        Color bandColor = Color.lerp(
+          Colors.blue,
+          Colors.red,
+          t,
+        )!.withOpacity(0.18);
+
+        kimchiPlotBands.add(
+          PlotBand(
+            isVisible: true,
+            start: bandStart, // DateTime
+            end: data.time, // DateTime
+            color: bandColor,
+          ),
+        );
+
+        bandStart = data.time; // 다음 시작점 업데이트
+      }
+    }
+    return kimchiPlotBands;
   }
 
   // 4. 체크박스 카드
