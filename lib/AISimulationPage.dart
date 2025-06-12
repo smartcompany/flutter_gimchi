@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:usdt_signal/api_service.dart';
@@ -267,20 +268,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
     String buyDate = "";
     double? buyPrice;
     double? sellPrice;
-
-    ApiService apiService = ApiService();
-
-    final usdExchangeRates = await apiService.fetchExchangeRateData();
-    final beginDate =
-        (await apiService.fetchStrategy())?.last?['analysis_date'];
-
     // 날짜 오름차순 정렬
     final sortedDates = usdtMap.keys.toList()..sort();
-    if (beginDate != null) {
-      // 시작 날짜 이후의 데이터만 필터링
-      sortedDates.removeWhere((date) => date.compareTo(beginDate) < 0);
-    }
-
     final usdExchangeRatesMap = {
       for (var rate in usdExchangeRates)
         DateFormat('yyyy-MM-dd').format(rate.time): rate.value,
@@ -673,6 +662,48 @@ class _AISimulationPageState extends State<AISimulationPage> {
                         fontWeight: FontWeight.bold,
                         color: Colors.deepPurple,
                       ),
+                    ),
+                  ],
+                ),
+                // === 추정 연 수익률 ===
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '추정 연 수익률',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Builder(
+                      builder: (context) {
+                        if (results.isEmpty) return const Text('-');
+                        final firstDate = results.first.buyDate;
+                        final lastDate = results.last.analysisDate;
+                        final start = DateTime.tryParse(firstDate);
+                        final end = DateTime.tryParse(lastDate);
+                        if (start == null || end == null)
+                          return const Text('-');
+                        final days = end.difference(start).inDays;
+                        if (days < 1) return const Text('-');
+                        final years = days / 365.0;
+                        final totalReturn = results.last.finalKRW / 1000000;
+                        // 연복리 수익률 공식: (최종/초기)^(1/years) - 1
+                        final annualYield =
+                            (years > 0)
+                                ? (pow(totalReturn, 1 / years) - 1) * 100
+                                : 0.0;
+                        return Text(
+                          '${annualYield.isNaN || annualYield.isInfinite ? 0 : annualYield.toStringAsFixed(2)}%',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepPurple,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
