@@ -114,6 +114,8 @@ class _MyHomePageState extends State<MyHomePage> {
   bool showExchangeRate = true; // 환율 표시 여부 추가
   String? strategyText;
   Map<String, dynamic>? latestStrategy;
+  ChartData? latestGimchiStrategy;
+  ChartData? latestExchangeRate;
   List<USDTChartData> usdtChartData = [];
   Map<String, dynamic> usdtMap = {};
   List<SimulationResult> aiTradeResults = [];
@@ -256,7 +258,10 @@ class _MyHomePageState extends State<MyHomePage> {
         usdtMap = results[1] as Map<String, dynamic>;
         kimchiPremium = results[2] as List<ChartData>;
         strategyList = results[3] as List;
-        latestStrategy = strategyList[0] as Map<String, dynamic>?;
+
+        latestGimchiStrategy = kimchiPremium.first as ChartData?;
+        latestExchangeRate = exchangeRates.first as ChartData?;
+        latestStrategy = strategyList.first as Map<String, dynamic>?;
 
         kimchiMin = kimchiPremium
             .map((e) => e.value)
@@ -1233,14 +1238,228 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildGimchiStrategyTab() {
-    return Center(
-      child: Text(
-        '여기에 김프 매매 전략 UI를 추가하세요.',
-        style: TextStyle(
-          fontSize: 16,
-          color: Colors.grey[600],
-          fontWeight: FontWeight.w500,
-        ),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 상단 타이틀과 시뮬레이션 버튼
+          Row(
+            children: [
+              const Text(
+                '김프 매매 전략',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const Spacer(),
+              OutlinedButton(
+                onPressed: () {
+                  Navigator.of(
+                    _scrollController.position.context.storageContext,
+                  ).push(
+                    MaterialPageRoute(
+                      builder:
+                          (_) => AISimulationPage(
+                            simulationType: SimulationType.kimchi,
+                          ),
+                    ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.deepPurple,
+                  side: const BorderSide(color: Colors.deepPurple),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  textStyle: const TextStyle(fontSize: 15),
+                ),
+                child: const Text('김프 매매 전략 시뮬레이션'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // 전략 테이블 (더미 데이터 또는 gimchi strategy 값 사용)
+          Table(
+            border: TableBorder.all(color: Colors.grey.shade300),
+            columnWidths: const {
+              0: IntrinsicColumnWidth(),
+              1: FlexColumnWidth(),
+            },
+            children: [
+              TableRow(
+                children: [
+                  StrategyCell('추천 매수 가격', isHeader: true),
+                  // 환율 대비 1% 의 가격 표시
+                  StrategyCell(
+                    ((latestExchangeRate?.value ?? 0) * 1.01).toStringAsFixed(
+                      1,
+                    ),
+                  ),
+                ],
+              ),
+              TableRow(
+                children: [
+                  StrategyCell('추천 매도 가격', isHeader: true),
+                  // 환율 대비 3% 의 가격 표시
+                  StrategyCell(
+                    ((latestExchangeRate?.value ?? 0) * 1.03).toStringAsFixed(
+                      1,
+                    ),
+                  ),
+                ],
+              ),
+              TableRow(
+                children: [
+                  StrategyCell('전략 요약', isHeader: true),
+                  StrategyCell('김치 프리미엄이 1% 이하일 때 매수, 3% 이상일 때 매도'),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // 히스토리 버튼
+          Align(
+            alignment: Alignment.centerRight,
+            child: OutlinedButton(
+              onPressed: () async {
+                // 김프 전략 히스토리 불러오기 (예시)
+                final List<dynamic> history = kimchiPremium;
+
+                if (mounted) {
+                  showDialog(
+                    context: _scrollController.position.context.storageContext,
+                    builder: (context) {
+                      return Dialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        backgroundColor: Colors.white,
+                        child: Container(
+                          constraints: const BoxConstraints(
+                            maxHeight: 500,
+                            maxWidth: 380,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 20,
+                            horizontal: 18,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text(
+                                    '김프 프리미엄 히스토리',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.close,
+                                      color: Colors.deepPurple,
+                                    ),
+                                    onPressed:
+                                        () => Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              ),
+                              const Divider(height: 18, thickness: 1),
+                              Expanded(
+                                child: Scrollbar(
+                                  thumbVisibility: true,
+                                  child: ListView.separated(
+                                    itemCount: history.length,
+                                    separatorBuilder:
+                                        (_, __) => const Divider(height: 18),
+                                    itemBuilder: (context, idx) {
+                                      final strat = history[idx] as ChartData;
+                                      return Card(
+                                        elevation: 1,
+                                        color: Colors.grey[50],
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 12,
+                                            horizontal: 14,
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  const Icon(
+                                                    Icons.calendar_today,
+                                                    size: 16,
+                                                    color: Colors.deepPurple,
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Text(
+                                                    (strat.time != null
+                                                        ? DateFormat(
+                                                          'yyyy-MM-dd',
+                                                        ).format(strat.time)
+                                                        : '-'),
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 15,
+                                                      color: Colors.deepPurple,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                strat.value.toString() ?? '-',
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  color: Colors.black87,
+                                                  height: 1.4,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.deepPurple,
+                side: const BorderSide(color: Colors.deepPurple),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                textStyle: const TextStyle(fontSize: 15),
+              ),
+              child: const Text('히스토리'),
+            ),
+          ),
+        ],
       ),
     );
   }

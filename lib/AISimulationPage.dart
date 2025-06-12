@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:usdt_signal/api_service.dart';
 
 const int days = 200;
 const String upbitUsdtUrl =
@@ -23,12 +23,12 @@ class AISimulationPage extends StatefulWidget {
   }
 
   static List<SimulationResult> gimchiSimulateResults(
-    Map gimchiMap,
+    List<ChartData> usdExchangeRates,
     Map usdtMap,
   ) {
     return _AISimulationPageState.gimchiSimulateResults(
-      gimchiMap.cast<String, dynamic>(),
-      usdtMap.cast<String, dynamic>(),
+      usdExchangeRates,
+      usdtMap,
     );
   }
 
@@ -46,6 +46,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
   final NumberFormat krwFormat = NumberFormat("#,##0.#", "ko_KR");
   double totalProfitRate = 0; // 총 수익률 변수 추가
 
+  ApiService apiService = ApiService();
+
   @override
   void initState() {
     super.initState();
@@ -59,33 +61,20 @@ class _AISimulationPageState extends State<AISimulationPage> {
     });
 
     try {
-      final usdtRes = await http.get(Uri.parse(upbitUsdtUrl));
-      final usdtMap = json.decode(utf8.decode(usdtRes.bodyBytes));
-      if (usdtMap is! Map) throw Exception('USDT 데이터가 맵이 아닙니다.');
+      final usdtMap = await apiService.fetchUSDTData();
 
       if (widget.simulationType == SimulationType.ai) {
-        final strategyRes = await http.get(Uri.parse(strategyUrl));
-        final strategyList = json.decode(utf8.decode(strategyRes.bodyBytes));
-        if (strategyList is! List) throw Exception('전략 데이터가 배열이 아닙니다.');
-
-        final simResults = simulateResults(strategyList, usdtMap);
+        final strategyList = await apiService.fetchStrategy();
+        final simResults = simulateResults(strategyList ?? [], usdtMap);
 
         setState(() {
-          strategies = List<Map<String, dynamic>>.from(strategyList);
+          strategies = List<Map<String, dynamic>>.from(strategyList ?? []);
           results = simResults;
           loading = false;
         });
       } else if (widget.simulationType == SimulationType.kimchi) {
-        // 김치 프리미엄 데이터 불러오기 (예시: API 또는 전달받은 Map)
-        // 아래는 예시로 kimchiMap을 usdtMap에서 추출한다고 가정
-        final kimchiMap = <String, dynamic>{};
-        for (final entry in usdtMap.entries) {
-          kimchiMap[entry.key] = entry.value['kimchi_premium'];
-        }
-        final simResults = gimchiSimulateResults(
-          kimchiMap.cast<String, dynamic>(),
-          usdtMap.cast<String, dynamic>(),
-        );
+        final usdExchangeRates = await apiService.fetchExchangeRateData();
+        final simResults = gimchiSimulateResults(usdExchangeRates, usdtMap);
 
         setState(() {
           strategies = null;
@@ -262,6 +251,105 @@ class _AISimulationPageState extends State<AISimulationPage> {
       ),
     );
     return totalKRW;
+  }
+
+  static List<SimulationResult> gimchiSimulateResults(
+    List<ChartData> usdExchangeRates,
+    Map usdtMap,
+  ) {
+    List<SimulationResult> simResults = [];
+    double initialKRW = 1000000;
+    double totalKRW = initialKRW;
+    SimulationResult? unselledResult;
+
+    String sellDate = "";
+    String buyDate = "";
+    double? buyPrice;
+    double? sellPrice;
+
+    // 날짜 오름차순 정렬
+    final sortedDates = usdtMap.keys.toList()..sort();
+    final usdExchangeRatesMap = {
+      for (var rate in usdExchangeRates)
+        DateFormat('yyyy-MM-dd').format(rate.time): rate.value,
+    };
+
+    for (final date in sortedDates) {
+      final usdtDay = usdtMap[date];
+      final usdExchangeRate = usdExchangeRatesMap[date] ?? 0.0;
+      final usdtLow = _toDouble(usdtDay['low']) ?? 0.0;
+      final usdtHigh = _toDouble(usdtDay['high']) ?? 0.0;
+      final lowTargetPrice = usdExchangeRate * 1.01;
+      final highTargetPrice = usdExchangeRate * 1.03;
+
+      // 매수 조건: 1% 미만, 아직 매수 안한 상태
+      if (buyPrice == null) {
+        // 매도 대기 상태가 아니어야 매수
+        if (sellPrice == null) {
+          if (lowTargetPrice > usdtLow) {
+            buyPrice = lowTargetPrice;
+            buyDate = date;
+          }
+        }
+      }
+
+      if (buyPrice == null) continue;
+
+      // 매도 조건: 3% 초과, 이미 매수한 상태
+      if (highTargetPrice < usdtHigh) {
+        sellDate = date;
+        sellPrice = highTargetPrice;
+
+        // 수익 계산
+        final usdtAmount = totalKRW / buyPrice;
+        final finalKRW = usdtAmount * sellPrice;
+        final profit = finalKRW - totalKRW;
+        final profitRate = profit / totalKRW * 100;
+
+        simResults.add(
+          SimulationResult(
+            analysisDate: date,
+            buyDate: buyDate,
+            buyPrice: buyPrice,
+            sellDate: sellDate,
+            sellPrice: sellPrice,
+            profit: profit,
+            profitRate: profitRate,
+            finalKRW: finalKRW,
+            finalUSDT: null,
+          ),
+        );
+
+        // 다음 거래를 위해 초기화 (복리)
+        totalKRW = finalKRW;
+        buyDate = "";
+        buyPrice = null;
+        sellPrice = null;
+        unselledResult = null;
+      } else {
+        final usdtPrice = _toDouble(usdtMap[date]?['close']);
+        final usdtCount = totalKRW / buyPrice;
+        final finalKRW = usdtCount * (usdtPrice ?? 0);
+
+        unselledResult = SimulationResult(
+          analysisDate: date,
+          buyDate: buyDate!,
+          buyPrice: buyPrice,
+          sellDate: null,
+          sellPrice: null,
+          profit: 0,
+          profitRate: 0,
+          finalKRW: finalKRW,
+          finalUSDT: usdtCount,
+        );
+      }
+    }
+
+    if (unselledResult != null) {
+      simResults.add(unselledResult);
+    }
+
+    return simResults;
   }
 
   static double? _toDouble(dynamic v) {
@@ -554,99 +642,6 @@ class _AISimulationPageState extends State<AISimulationPage> {
   }
 
   /// 김치 프리미엄 시뮬레이션 함수
-  /// kimchiMap: { 'yyyy-MM-dd': double(프리미엄%) }
-  static List<SimulationResult> gimchiSimulateResults(
-    Map<String, dynamic> kimchiMap,
-    Map<String, dynamic> usdtMap,
-  ) {
-    // 날짜 오름차순 정렬
-    final sortedDates = kimchiMap.keys.toList()..sort();
-
-    List<SimulationResult> simResults = [];
-    double initialKRW = 1000000;
-    double totalKRW = initialKRW;
-    double? buyPrice;
-    String? buyDate;
-    double? kimchiAtBuy;
-
-    for (final date in sortedDates) {
-      final kimchi = _toDouble(kimchiMap[date]);
-      final usdtDay = usdtMap[date];
-
-      if (kimchi == null || usdtDay == null) continue;
-
-      // 매수 조건: 1% 미만, 아직 매수 안한 상태
-      if (buyDate == null && kimchi < 1.0) {
-        final low = _toDouble(usdtDay['low']);
-        if (low != null) {
-          buyPrice = low;
-          buyDate = date;
-          kimchiAtBuy = kimchi;
-        }
-        continue;
-      }
-
-      // 매도 조건: 3% 초과, 이미 매수한 상태
-      if (buyDate != null && kimchi > 3.0) {
-        final high = _toDouble(usdtDay['high']);
-        if (high != null && buyPrice != null) {
-          final sellPrice = high;
-          final sellDate = date;
-
-          // 수익 계산
-          final usdtAmount = totalKRW / buyPrice;
-          final finalKRW = usdtAmount * sellPrice;
-          final profit = finalKRW - totalKRW;
-          final profitRate = profit / totalKRW * 100;
-
-          simResults.add(
-            SimulationResult(
-              analysisDate: date,
-              buyDate: buyDate,
-              buyPrice: buyPrice,
-              sellDate: sellDate,
-              sellPrice: sellPrice,
-              profit: profit,
-              profitRate: profitRate,
-              finalKRW: finalKRW,
-              finalUSDT: null,
-            ),
-          );
-
-          // 다음 거래를 위해 초기화 (복리)
-          totalKRW = finalKRW;
-          buyDate = null;
-          buyPrice = null;
-          kimchiAtBuy = null;
-        }
-      }
-    }
-
-    // 마지막에 매도 못한 경우(보유중) 처리
-    if (buyDate != null && buyPrice != null) {
-      final lastDate = sortedDates.last;
-      final usdtDay = usdtMap[lastDate];
-      final close = _toDouble(usdtDay?['close']);
-      final usdtAmount = totalKRW / buyPrice;
-      final finalKRW = close != null ? usdtAmount * close : totalKRW;
-
-      simResults.add(
-        SimulationResult(
-          analysisDate: lastDate,
-          buyDate: buyDate,
-          buyPrice: buyPrice,
-          sellDate: null,
-          sellPrice: null,
-          profit: 0,
-          profitRate: 0,
-          finalKRW: finalKRW,
-          finalUSDT: usdtAmount,
-        ),
-      );
-    }
-
-    return simResults;
-  }
 }
 
 class SimulationResult {
