@@ -628,6 +628,34 @@ class _AISimulationPageState extends State<AISimulationPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
+                      '매매 기간',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Builder(
+                      builder: (context) {
+                        if (results.isEmpty) return const Text('-');
+                        final start = results.first.buyDate;
+                        final end = results.last.analysisDate;
+                        return Text(
+                          '$start ~ $end',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepPurple,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
                       '누적 최종 원화',
                       style: TextStyle(
                         fontSize: 16,
