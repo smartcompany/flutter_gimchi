@@ -22,13 +22,11 @@ class AISimulationPage extends StatefulWidget {
     return _AISimulationPageState.simulateResults(strategyList, usdtMap);
   }
 
-  static List<SimulationResult> gimchiSimulateResults(
-    String? beginDate,
+  static Future<List<SimulationResult>> gimchiSimulateResults(
     List<ChartData> usdExchangeRates,
     Map usdtMap,
   ) {
     return _AISimulationPageState.gimchiSimulateResults(
-      beginDate,
       usdExchangeRates,
       usdtMap,
     );
@@ -76,11 +74,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
         });
       } else if (widget.simulationType == SimulationType.kimchi) {
         final usdExchangeRates = await apiService.fetchExchangeRateData();
-        final beginDate =
-            (await apiService.fetchStrategy())?.last?['analysis_date'];
-
-        final simResults = gimchiSimulateResults(
-          beginDate,
+        final simResults = await gimchiSimulateResults(
           usdExchangeRates,
           usdtMap,
         );
@@ -260,11 +254,10 @@ class _AISimulationPageState extends State<AISimulationPage> {
     return totalKRW;
   }
 
-  static List<SimulationResult> gimchiSimulateResults(
-    String? beginDate,
+  static Future<List<SimulationResult>> gimchiSimulateResults(
     List<ChartData> usdExchangeRates,
     Map usdtMap,
-  ) {
+  ) async {
     List<SimulationResult> simResults = [];
     double initialKRW = 1000000;
     double totalKRW = initialKRW;
@@ -274,6 +267,12 @@ class _AISimulationPageState extends State<AISimulationPage> {
     String buyDate = "";
     double? buyPrice;
     double? sellPrice;
+
+    ApiService apiService = ApiService();
+
+    final usdExchangeRates = await apiService.fetchExchangeRateData();
+    final beginDate =
+        (await apiService.fetchStrategy())?.last?['analysis_date'];
 
     // 날짜 오름차순 정렬
     final sortedDates = usdtMap.keys.toList()..sort();
@@ -299,9 +298,13 @@ class _AISimulationPageState extends State<AISimulationPage> {
       if (buyPrice == null) {
         // 매도 대기 상태가 아니어야 매수
         if (sellPrice == null) {
-          if (lowTargetPrice > usdtLow) {
+          if (lowTargetPrice >= usdtLow && lowTargetPrice <= usdtHigh) {
             buyPrice = lowTargetPrice;
             buyDate = date;
+
+            print(
+              'Buy condition met: buyDate=$buyDate, buyPrice=$buyPrice, lowTargetPrice=$lowTargetPrice, usdtLow=$usdtLow',
+            );
           }
         }
       }
@@ -311,9 +314,14 @@ class _AISimulationPageState extends State<AISimulationPage> {
       bool canSell = isSellCondition(usdtMap, date, buyDate);
 
       // 매도 조건: 3% 초과, 이미 매수한 상태
-      if (canSell && highTargetPrice < usdtHigh) {
+      if (canSell &&
+          highTargetPrice <= usdtHigh &&
+          highTargetPrice >= usdtLow) {
         sellDate = date;
         sellPrice = highTargetPrice;
+        print(
+          'Sell condition met: sellDate=$sellDate, buyDate=$buyDate, buyPrice=$buyPrice, sellPrice=$sellPrice',
+        );
 
         // 수익 계산
         final usdtAmount = totalKRW / buyPrice;

@@ -874,28 +874,30 @@ class _MyHomePageState extends State<MyHomePage> {
               value: showGimchiTrading,
               label: '김프 매수/매도',
               color: Colors.teal,
-              onChanged: (val) {
+              onChanged: (val) async {
                 setState(() {
                   showGimchiTrading = val ?? false;
-                  if (showGimchiTrading) {
+                });
+                if (showGimchiTrading) {
+                  setState(() {
                     showAITrading = false; // 김프 매매가 켜지면 AI 매매는 꺼짐
                     showKimchiPremium = false;
                     showExchangeRate = false; // 김프 매매가 켜지면 환율은 꺼짐
+                  });
 
-                    final beginData =
-                        strategyList.last as Map<String, dynamic>?;
-                    final beginDate = beginData?['analysis_date'] as String?;
-
-                    aiTradeResults = AISimulationPage.gimchiSimulateResults(
-                      beginDate,
-                      exchangeRates,
-                      usdtMap,
-                    );
-                    _autoZoomToAITrades();
-                  } else {
+                  final results = await AISimulationPage.gimchiSimulateResults(
+                    exchangeRates,
+                    usdtMap,
+                  );
+                  setState(() {
+                    aiTradeResults = results;
+                  });
+                  _autoZoomToAITrades();
+                } else {
+                  setState(() {
                     aiTradeResults = [];
-                  }
-                });
+                  });
+                }
               },
             ),
             // === 프리미엄 배경 PlotBand 표시/숨김 체크박스 + 도움말 버튼 추가 ===
