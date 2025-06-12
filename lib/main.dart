@@ -857,6 +857,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   if (showAITrading) {
                     showGimchiTrading = false; // AI 매매가 켜지면 김프 매매는 꺼짐
                     showKimchiPremium = false; // AI 매매가 켜지면 김치 프리미엄은 꺼짐
+                    showExchangeRate = false; // AI 매매가 켜지면 환율은 꺼짐
 
                     aiTradeResults = AISimulationPage.simulateResults(
                       strategyList,
@@ -879,8 +880,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   if (showGimchiTrading) {
                     showAITrading = false; // 김프 매매가 켜지면 AI 매매는 꺼짐
                     showKimchiPremium = false;
+                    showExchangeRate = false; // 김프 매매가 켜지면 환율은 꺼짐
+
+                    final beginData =
+                        strategyList.last as Map<String, dynamic>?;
+                    final beginDate = beginData?['analysis_date'] as String?;
 
                     aiTradeResults = AISimulationPage.gimchiSimulateResults(
+                      beginDate,
                       exchangeRates,
                       usdtMap,
                     );
@@ -902,9 +909,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     value: showKimchiPlotBands,
                     label: '김치 프리미엄 배경',
                     color: Colors.blue,
-                    onChanged:
-                        (val) =>
-                            setState(() => showKimchiPlotBands = val ?? true),
+                    onChanged: (val) {
+                      setState(() {
+                        showKimchiPlotBands = val ?? true;
+                        if (showKimchiPlotBands) {
+                          showKimchiPremium = false; // 배경이 켜지면 김치 프리미엄도 켜짐
+                        }
+                      });
+                    },
                   ),
                   IconButton(
                     icon: const Icon(

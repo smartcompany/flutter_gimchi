@@ -23,10 +23,12 @@ class AISimulationPage extends StatefulWidget {
   }
 
   static List<SimulationResult> gimchiSimulateResults(
+    String? beginDate,
     List<ChartData> usdExchangeRates,
     Map usdtMap,
   ) {
     return _AISimulationPageState.gimchiSimulateResults(
+      beginDate,
       usdExchangeRates,
       usdtMap,
     );
@@ -74,7 +76,14 @@ class _AISimulationPageState extends State<AISimulationPage> {
         });
       } else if (widget.simulationType == SimulationType.kimchi) {
         final usdExchangeRates = await apiService.fetchExchangeRateData();
-        final simResults = gimchiSimulateResults(usdExchangeRates, usdtMap);
+        final beginDate =
+            (await apiService.fetchStrategy())?.last?['analysis_date'];
+
+        final simResults = gimchiSimulateResults(
+          beginDate,
+          usdExchangeRates,
+          usdtMap,
+        );
 
         setState(() {
           strategies = null;
@@ -252,6 +261,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
   }
 
   static List<SimulationResult> gimchiSimulateResults(
+    String? beginDate,
     List<ChartData> usdExchangeRates,
     Map usdtMap,
   ) {
@@ -267,6 +277,11 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
     // 날짜 오름차순 정렬
     final sortedDates = usdtMap.keys.toList()..sort();
+    if (beginDate != null) {
+      // 시작 날짜 이후의 데이터만 필터링
+      sortedDates.removeWhere((date) => date.compareTo(beginDate) < 0);
+    }
+
     final usdExchangeRatesMap = {
       for (var rate in usdExchangeRates)
         DateFormat('yyyy-MM-dd').format(rate.time): rate.value,
