@@ -916,285 +916,372 @@ class _MyHomePageState extends State<MyHomePage> {
       return adUnlockButton; // 광고 시청 버튼이 있다면 바로 반환
     }
 
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: Colors.white,
-      margin: const EdgeInsets.only(bottom: 24),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 상단 타이틀과 시뮬레이션 버튼
-            Row(
-              children: [
-                const Text(
-                  '매매 전략',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const Spacer(),
-                OutlinedButton(
-                  onPressed:
-                      latestStrategy == null
-                          ? null
-                          : () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => AISimulationPage(),
+    return DefaultTabController(
+      length: 2,
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        color: Colors.white,
+        margin: const EdgeInsets.only(bottom: 24),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TabBar(
+                labelColor: Colors.deepPurple,
+                unselectedLabelColor: Colors.black54,
+                indicatorColor: Colors.deepPurple,
+                tabs: const [Tab(text: 'AI 매매 전략'), Tab(text: '김프 매매 전략')],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 380, // 기존 전략 카드 높이에 맞게 조정
+                child: TabBarView(
+                  children: [
+                    // --- 기존 AI 매매 전략 UI ---
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 상단 타이틀과 시뮬레이션 버튼
+                        Row(
+                          children: [
+                            const Text(
+                              '매매 전략',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
-                            );
-                          },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.deepPurple,
-                    side: const BorderSide(color: Colors.deepPurple),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    textStyle: const TextStyle(fontSize: 15),
-                  ),
-                  child: const Text('AI 매매 전략 시뮬레이션'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            // 전략 테이블
-            Table(
-              border: TableBorder.all(color: Colors.grey.shade300),
-              columnWidths: const {
-                0: IntrinsicColumnWidth(),
-                1: FlexColumnWidth(),
-              },
-              children: [
-                TableRow(
-                  children: [
-                    StrategyCell('추천 매수 가격', isHeader: true),
-                    StrategyCell('${latestStrategy?['buy_price'] ?? '-'}'),
-                  ],
-                ),
-                TableRow(
-                  children: [
-                    StrategyCell('추천 매도 가격', isHeader: true),
-                    StrategyCell('${latestStrategy?['sell_price'] ?? '-'}'),
-                  ],
-                ),
-                TableRow(
-                  children: [
-                    StrategyCell('예상 기대 수익', isHeader: true),
-                    StrategyCell(
-                      '${latestStrategy?['expected_return'] ?? '-'}',
-                    ),
-                  ],
-                ),
-                TableRow(
-                  children: [
-                    StrategyCell('AI 요약', isHeader: true),
-                    StrategyCell('${latestStrategy?['summary'] ?? '-'}'),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            // 히스토리 버튼
-            Align(
-              alignment: Alignment.centerRight,
-              child: OutlinedButton(
-                onPressed: () async {
-                  final response = await http.get(Uri.parse(strategyUrl));
-                  if (response.statusCode == 200) {
-                    final List<dynamic> history = json.decode(
-                      utf8.decode(response.bodyBytes),
-                    );
-                    if (context.mounted) {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
                             ),
-                            backgroundColor: Colors.white,
-                            child: Container(
-                              constraints: const BoxConstraints(
-                                maxHeight: 500,
-                                maxWidth: 380,
+                            const Spacer(),
+                            OutlinedButton(
+                              onPressed:
+                                  latestStrategy == null
+                                      ? null
+                                      : () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (_) => AISimulationPage(),
+                                          ),
+                                        );
+                                      },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.deepPurple,
+                                side: const BorderSide(
+                                  color: Colors.deepPurple,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                textStyle: const TextStyle(fontSize: 15),
                               ),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 20,
-                                horizontal: 18,
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Text(
-                                        '매매 전략 히스토리',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
+                              child: const Text('AI 매매 전략 시뮬레이션'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        // 전략 테이블
+                        Table(
+                          border: TableBorder.all(color: Colors.grey.shade300),
+                          columnWidths: const {
+                            0: IntrinsicColumnWidth(),
+                            1: FlexColumnWidth(),
+                          },
+                          children: [
+                            TableRow(
+                              children: [
+                                StrategyCell('추천 매수 가격', isHeader: true),
+                                StrategyCell(
+                                  '${latestStrategy?['buy_price'] ?? '-'}',
+                                ),
+                              ],
+                            ),
+                            TableRow(
+                              children: [
+                                StrategyCell('추천 매도 가격', isHeader: true),
+                                StrategyCell(
+                                  '${latestStrategy?['sell_price'] ?? '-'}',
+                                ),
+                              ],
+                            ),
+                            TableRow(
+                              children: [
+                                StrategyCell('예상 기대 수익', isHeader: true),
+                                StrategyCell(
+                                  '${latestStrategy?['expected_return'] ?? '-'}',
+                                ),
+                              ],
+                            ),
+                            TableRow(
+                              children: [
+                                StrategyCell('AI 요약', isHeader: true),
+                                StrategyCell(
+                                  '${latestStrategy?['summary'] ?? '-'}',
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        // 히스토리 버튼
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              final response = await http.get(
+                                Uri.parse(strategyUrl),
+                              );
+                              if (response.statusCode == 200) {
+                                final List<dynamic> history = json.decode(
+                                  utf8.decode(response.bodyBytes),
+                                );
+                                if (context.mounted) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return Dialog(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            18,
+                                          ),
                                         ),
-                                      ),
-                                      const Spacer(),
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.close,
-                                          color: Colors.deepPurple,
-                                        ),
-                                        onPressed:
-                                            () => Navigator.of(context).pop(),
-                                      ),
-                                    ],
-                                  ),
-                                  const Divider(height: 18, thickness: 1),
-                                  Expanded(
-                                    child: Scrollbar(
-                                      thumbVisibility: true,
-                                      child: ListView.separated(
-                                        itemCount: history.length,
-                                        separatorBuilder:
-                                            (_, __) =>
-                                                const Divider(height: 18),
-                                        itemBuilder: (context, idx) {
-                                          final strat = history[idx];
-                                          return Card(
-                                            elevation: 1,
-                                            color: Colors.grey[50],
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 12,
-                                                    horizontal: 14,
-                                                  ),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
+                                        backgroundColor: Colors.white,
+                                        child: Container(
+                                          constraints: const BoxConstraints(
+                                            maxHeight: 500,
+                                            maxWidth: 380,
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 20,
+                                            horizontal: 18,
+                                          ),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
                                                 children: [
-                                                  Row(
-                                                    children: [
-                                                      const Icon(
-                                                        Icons.calendar_today,
-                                                        size: 16,
-                                                        color:
-                                                            Colors.deepPurple,
-                                                      ),
-                                                      const SizedBox(width: 6),
-                                                      Text(
-                                                        strat['analysis_date'] ??
-                                                            '-',
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 15,
-                                                          color:
-                                                              Colors.deepPurple,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 8),
-                                                  HistoryRow(
-                                                    label: '매수',
-                                                    value: strat['buy_price'],
-                                                  ),
-                                                  HistoryRow(
-                                                    label: '매도',
-                                                    value: strat['sell_price'],
-                                                  ),
-                                                  HistoryRow(
-                                                    label: '예상 수익',
-                                                    value:
-                                                        strat['expected_return'],
-                                                  ),
-                                                  const SizedBox(height: 6),
                                                   const Text(
-                                                    '요약',
+                                                    '매매 전략 히스토리',
                                                     style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      fontSize: 14,
+                                                      fontSize: 18,
                                                     ),
                                                   ),
-                                                  Text(
-                                                    strat['summary'] ?? '-',
-                                                    style: const TextStyle(
-                                                      fontSize: 13,
-                                                      color: Colors.black87,
-                                                      height: 1.4,
+                                                  const Spacer(),
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                      Icons.close,
+                                                      color: Colors.deepPurple,
                                                     ),
+                                                    onPressed:
+                                                        () =>
+                                                            Navigator.of(
+                                                              context,
+                                                            ).pop(),
                                                   ),
                                                 ],
                                               ),
+                                              const Divider(
+                                                height: 18,
+                                                thickness: 1,
+                                              ),
+                                              Expanded(
+                                                child: Scrollbar(
+                                                  thumbVisibility: true,
+                                                  child: ListView.separated(
+                                                    itemCount: history.length,
+                                                    separatorBuilder:
+                                                        (_, __) =>
+                                                            const Divider(
+                                                              height: 18,
+                                                            ),
+                                                    itemBuilder: (
+                                                      context,
+                                                      idx,
+                                                    ) {
+                                                      final strat =
+                                                          history[idx];
+                                                      return Card(
+                                                        elevation: 1,
+                                                        color: Colors.grey[50],
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                12,
+                                                              ),
+                                                        ),
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                vertical: 12,
+                                                                horizontal: 14,
+                                                              ),
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Row(
+                                                                children: [
+                                                                  const Icon(
+                                                                    Icons
+                                                                        .calendar_today,
+                                                                    size: 16,
+                                                                    color:
+                                                                        Colors
+                                                                            .deepPurple,
+                                                                  ),
+                                                                  const SizedBox(
+                                                                    width: 6,
+                                                                  ),
+                                                                  Text(
+                                                                    strat['analysis_date'] ??
+                                                                        '-',
+                                                                    style: const TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      fontSize:
+                                                                          15,
+                                                                      color:
+                                                                          Colors
+                                                                              .deepPurple,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 8,
+                                                              ),
+                                                              HistoryRow(
+                                                                label: '매수',
+                                                                value:
+                                                                    strat['buy_price'],
+                                                              ),
+                                                              HistoryRow(
+                                                                label: '매도',
+                                                                value:
+                                                                    strat['sell_price'],
+                                                              ),
+                                                              HistoryRow(
+                                                                label: '예상 수익',
+                                                                value:
+                                                                    strat['expected_return'],
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 6,
+                                                              ),
+                                                              const Text(
+                                                                '요약',
+                                                                style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize: 14,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                strat['summary'] ??
+                                                                    '-',
+                                                                style: const TextStyle(
+                                                                  fontSize: 13,
+                                                                  color:
+                                                                      Colors
+                                                                          .black87,
+                                                                  height: 1.4,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                }
+                              } else {
+                                if (context.mounted) {
+                                  showDialog(
+                                    context: context,
+                                    builder:
+                                        (_) => Dialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
                                             ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    }
-                  } else {
-                    if (context.mounted) {
-                      showDialog(
-                        context: context,
-                        builder:
-                            (_) => Dialog(
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(24),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: const [
+                                                Icon(
+                                                  Icons.error_outline,
+                                                  color: Colors.red,
+                                                  size: 36,
+                                                ),
+                                                SizedBox(height: 12),
+                                                Text(
+                                                  '전략 히스토리 불러오기 실패',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                  );
+                                }
+                              }
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.deepPurple,
+                              side: const BorderSide(color: Colors.deepPurple),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(24),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: const [
-                                    Icon(
-                                      Icons.error_outline,
-                                      color: Colors.red,
-                                      size: 36,
-                                    ),
-                                    SizedBox(height: 12),
-                                    Text(
-                                      '전략 히스토리 불러오기 실패',
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                  ],
-                                ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
                               ),
+                              textStyle: const TextStyle(fontSize: 15),
                             ),
-                      );
-                    }
-                  }
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.deepPurple,
-                  side: const BorderSide(color: Colors.deepPurple),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  textStyle: const TextStyle(fontSize: 15),
+                            child: const Text('히스토리'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    // --- 김프 매매 전략 탭 (더미) ---
+                    Center(
+                      child: Text(
+                        '여기에 김프 매매 전략 UI를 추가하세요.',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: const Text('히스토리'),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
