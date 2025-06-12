@@ -940,17 +940,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: TabBarView(
                   children: [
                     _buildAiStrategyTab(), // --- 기존 AI 매매 전략 UI --- 분리
-                    // --- 김프 매매 전략 탭 (더미) ---
-                    Center(
-                      child: Text(
-                        '여기에 김프 매매 전략 UI를 추가하세요.',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
+                    _buildGimchiStrategyTab(), // --- 김프 매매 전략 탭 --- 분리
                   ],
                 ),
               ),
@@ -984,7 +974,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             _scrollController.position.context.storageContext,
                           ).push(
                             MaterialPageRoute(
-                              builder: (_) => AISimulationPage(),
+                              builder:
+                                  (_) => AISimulationPage(
+                                    simulationType: SimulationType.ai,
+                                  ),
                             ),
                           );
                         },
@@ -1235,6 +1228,19 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildGimchiStrategyTab() {
+    return Center(
+      child: Text(
+        '여기에 김프 매매 전략 UI를 추가하세요.',
+        style: TextStyle(
+          fontSize: 16,
+          color: Colors.grey[600],
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }

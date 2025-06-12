@@ -9,14 +9,27 @@ const String upbitUsdtUrl =
 const String strategyUrl =
     "https://rate-history.vercel.app/api/analyze-strategy";
 
+enum SimulationType { ai, kimchi }
+
 class AISimulationPage extends StatefulWidget {
-  const AISimulationPage({super.key});
+  final SimulationType simulationType;
+  const AISimulationPage({super.key, required this.simulationType});
 
   static List<SimulationResult> simulateResults(
     List strategyList,
     Map usdtMap,
   ) {
     return _AISimulationPageState.simulateResults(strategyList, usdtMap);
+  }
+
+  static List<SimulationResult> gimchiSimulateResults(
+    Map gimchiMap,
+    Map usdtMap,
+  ) {
+    return _AISimulationPageState.gimchiSimulateResults(
+      gimchiMap.cast<String, dynamic>(),
+      usdtMap.cast<String, dynamic>(),
+    );
   }
 
   @override
@@ -46,21 +59,40 @@ class _AISimulationPageState extends State<AISimulationPage> {
     });
 
     try {
-      final strategyRes = await http.get(Uri.parse(strategyUrl));
-      final strategyList = json.decode(utf8.decode(strategyRes.bodyBytes));
-      if (strategyList is! List) throw Exception('전략 데이터가 배열이 아닙니다.');
-
       final usdtRes = await http.get(Uri.parse(upbitUsdtUrl));
       final usdtMap = json.decode(utf8.decode(usdtRes.bodyBytes));
       if (usdtMap is! Map) throw Exception('USDT 데이터가 맵이 아닙니다.');
 
-      final simResults = simulateResults(strategyList, usdtMap);
+      if (widget.simulationType == SimulationType.ai) {
+        final strategyRes = await http.get(Uri.parse(strategyUrl));
+        final strategyList = json.decode(utf8.decode(strategyRes.bodyBytes));
+        if (strategyList is! List) throw Exception('전략 데이터가 배열이 아닙니다.');
 
-      setState(() {
-        strategies = List<Map<String, dynamic>>.from(strategyList);
-        results = simResults;
-        loading = false;
-      });
+        final simResults = simulateResults(strategyList, usdtMap);
+
+        setState(() {
+          strategies = List<Map<String, dynamic>>.from(strategyList);
+          results = simResults;
+          loading = false;
+        });
+      } else if (widget.simulationType == SimulationType.kimchi) {
+        // 김치 프리미엄 데이터 불러오기 (예시: API 또는 전달받은 Map)
+        // 아래는 예시로 kimchiMap을 usdtMap에서 추출한다고 가정
+        final kimchiMap = <String, dynamic>{};
+        for (final entry in usdtMap.entries) {
+          kimchiMap[entry.key] = entry.value['kimchi_premium'];
+        }
+        final simResults = gimchiSimulateResults(
+          kimchiMap.cast<String, dynamic>(),
+          usdtMap.cast<String, dynamic>(),
+        );
+
+        setState(() {
+          strategies = null;
+          results = simResults;
+          loading = false;
+        });
+      }
     } catch (e) {
       print('Error during simulation: $e');
       setState(() {
