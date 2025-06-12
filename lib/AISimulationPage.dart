@@ -49,6 +49,10 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
   ApiService apiService = ApiService();
 
+  // 김치 매매 전략 기준값
+  int kimchiBuyThreshold = 1;
+  int kimchiSellThreshold = 3;
+
   @override
   void initState() {
     super.initState();
@@ -78,6 +82,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
         final simResults = await gimchiSimulateResults(
           usdExchangeRates,
           usdtMap,
+          buyThreshold: kimchiBuyThreshold,
+          sellThreshold: kimchiSellThreshold,
         );
 
         setState(() {
@@ -257,8 +263,10 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
   static Future<List<SimulationResult>> gimchiSimulateResults(
     List<ChartData> usdExchangeRates,
-    Map usdtMap,
-  ) async {
+    Map usdtMap, {
+    int buyThreshold = 1,
+    int sellThreshold = 3,
+  }) async {
     List<SimulationResult> simResults = [];
     double initialKRW = 1000000;
     double totalKRW = initialKRW;
@@ -280,10 +288,10 @@ class _AISimulationPageState extends State<AISimulationPage> {
       final usdExchangeRate = usdExchangeRatesMap[date] ?? 0.0;
       final usdtLow = _toDouble(usdtDay['low']) ?? 0.0;
       final usdtHigh = _toDouble(usdtDay['high']) ?? 0.0;
-      final lowTargetPrice = usdExchangeRate * 1.01;
-      final highTargetPrice = usdExchangeRate * 1.03;
+      final lowTargetPrice = usdExchangeRate * (1 + buyThreshold / 100);
+      final highTargetPrice = usdExchangeRate * (1 + sellThreshold / 100);
 
-      // 매수 조건: 1% 미만, 아직 매수 안한 상태
+      // 매수 조건: 프리미엄 buyThreshold% 미만, 아직 매수 안한 상태
       if (buyPrice == null) {
         // 매도 대기 상태가 아니어야 매수
         if (sellPrice == null) {
@@ -302,7 +310,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
       bool canSell = isSellCondition(usdtMap, date, buyDate);
 
-      // 매도 조건: 3% 초과, 이미 매수한 상태
+      // 매도 조건: 프리미엄 sellThreshold% 초과, 이미 매수한 상태
       if (canSell &&
           highTargetPrice <= usdtHigh &&
           highTargetPrice >= usdtLow) {
@@ -482,6 +490,91 @@ class _AISimulationPageState extends State<AISimulationPage> {
         elevation: 0,
         centerTitle: true,
         foregroundColor: Colors.black87,
+        actions: widget.simulationType == SimulationType.kimchi
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.settings, color: Colors.deepPurple),
+                  tooltip: '전략 변경',
+                  onPressed: () async {
+                    final result = await showDialog<Map<String, int>>(
+                      context: context,
+                      builder: (context) {
+                        int buy = kimchiBuyThreshold;
+                        int sell = kimchiSellThreshold;
+                        return AlertDialog(
+                          title: const Text('김프 전략 변경'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text('매수 기준(%)'),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: TextFormField(
+                                      initialValue: buy.toString(),
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        isDense: true,
+                                      ),
+                                      onChanged: (v) {
+                                        final n = int.tryParse(v);
+                                        if (n != null && n >= -10 && n <= 10) buy = n;
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  const Text('매도 기준(%)'),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: TextFormField(
+                                      initialValue: sell.toString(),
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        isDense: true,
+                                      ),
+                                      onChanged: (v) {
+                                        final n = int.tryParse(v);
+                                        if (n != null && n >= -10 && n <= 10) sell = n;
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('취소'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop({'buy': buy, 'sell': sell});
+                              },
+                              child: const Text('확인'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                    if (result != null) {
+                      setState(() {
+                        kimchiBuyThreshold = result['buy']!;
+                        kimchiSellThreshold = result['sell']!;
+                        runSimulation(); // 기준 변경 후 시뮬레이션 재실행
+                      });
+                    }
+                  },
+                ),
+              ]
+            : null,
       ),
       body: SafeArea(
         child:
