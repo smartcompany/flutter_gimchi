@@ -749,9 +749,8 @@ class _MyHomePageState extends State<MyHomePage> {
             if ((showAITrading || showGimchiTrading) &&
                 aiTradeResults.isNotEmpty) ...[
               ScatterSeries<dynamic, DateTime>(
-                name: 'AI 매수',
-                dataSource:
-                    aiTradeResults.where((r) => r.buyDate != null).toList(),
+                name: showAITrading ? 'AI 매수' : '김프 매수',
+                dataSource: aiTradeResults.toList(),
                 xValueMapper: (r, _) => DateTime.parse(r.buyDate),
                 yValueMapper: (r, _) => r.buyPrice,
                 markerSettings: const MarkerSettings(
@@ -763,7 +762,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               ScatterSeries<dynamic, DateTime>(
-                name: 'AI 매도',
+                name: showAITrading ? 'AI 매도' : '김프 매도',
                 dataSource:
                     aiTradeResults.where((r) => r.sellDate != null).toList(),
                 xValueMapper: (r, _) => DateTime.parse(r.sellDate!),
