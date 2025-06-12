@@ -1012,7 +1012,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             children: [
               const Text(
-                '매매 전략',
+                '전략',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
@@ -1253,7 +1253,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             children: [
               const Text(
-                '김프 매매 전략',
+                '전략',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
@@ -1282,7 +1282,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   textStyle: const TextStyle(fontSize: 15),
                 ),
-                child: const Text('김프 매매 전략 시뮬레이션'),
+                child: const Text('김프 매매 시뮬레이션'),
               ),
             ],
           ),

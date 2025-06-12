@@ -485,8 +485,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
       appBar: AppBar(
         title: Text(
           widget.simulationType == SimulationType.kimchi
-              ? '김치 프리미엄 시뮬레이션'
-              : 'AI 매매 전략 시뮬레이션',
+              ? '김프 매매 시뮬레이션'
+              : 'AI 매매 시뮬레이션',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
@@ -519,8 +519,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
                           children: [
                             Text(
                               SimulationType.ai == widget.simulationType
-                                  ? 'AI 시뮬레이션 (100 만원 기준)'
-                                  : '김치 프리미엄 시뮬레이션 (100 만원 기준)',
+                                  ? 'AI 매매 시뮬레이션 (100 만원 기준)'
+                                  : '김프 매매 시뮬레이션 (100 만원 기준)',
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
