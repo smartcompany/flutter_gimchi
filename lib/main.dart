@@ -892,41 +892,53 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             // === 프리미엄 배경 PlotBand 표시/숨김 체크박스 + 도움말 버튼 추가 ===
-            CheckBoxItem(
-              value: showKimchiPlotBands,
-              label: '김치 프리미엄 배경',
-              color: Colors.blue,
-              onChanged:
-                  (val) => setState(() => showKimchiPlotBands = val ?? true),
-            ),
-            IconButton(
-              icon: const Icon(
-                Icons.help_outline,
-                color: Colors.blue,
-                size: 20,
+            SizedBox(
+              height: 36, // 다른 CheckBoxItem 높이와 맞추기 (필요시 조정)
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CheckBoxItem(
+                    value: showKimchiPlotBands,
+                    label: '김치 프리미엄 배경',
+                    color: Colors.blue,
+                    onChanged:
+                        (val) =>
+                            setState(() => showKimchiPlotBands = val ?? true),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.help_outline,
+                      color: Colors.blue,
+                      size: 20,
+                    ),
+                    tooltip: '김치 프리미엄 배경 설명',
+                    padding: const EdgeInsets.all(0), // 아이콘 버튼 여백 최소화
+                    constraints: const BoxConstraints(), // 아이콘 버튼 크기 최소화
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder:
+                            (_) => AlertDialog(
+                              title: const Text('김치 프리미엄 배경이란?'),
+                              content: const Text(
+                                '차트의 배경색은 김치 프리미엄 값에 따라 달라집니다. '
+                                '프리미엄이 높을수록 빨간색, 낮을수록 파란색에 가깝게 표시되어 '
+                                '김치 프리미엄에 따른 매수 매도 시점을 시각적으로 파악할 수 있습니다. '
+                                '이 기능은 김치 프리미엄의 변동성을 한눈에 파악하는 데 도움을 줍니다.',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('확인'),
+                                ),
+                              ],
+                            ),
+                      );
+                    },
+                  ),
+                ],
               ),
-              tooltip: '김치 프리미엄 배경 설명',
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder:
-                      (_) => AlertDialog(
-                        title: const Text('김치 프리미엄 배경이란?'),
-                        content: const Text(
-                          '차트의 배경색은 김치 프리미엄 값에 따라 달라집니다. '
-                          '프리미엄이 높을수록 빨간색, 낮을수록 파란색에 가깝게 표시되어 '
-                          '김치 프리미엄에 따른 매수 매도 시점을 시각적으로 파악할 수 있습니다. '
-                          '이 기능은 김치 프리미엄의 변동성을 한눈에 파악하는 데 도움을 줍니다.',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('확인'),
-                          ),
-                        ],
-                      ),
-                );
-              },
             ),
           ],
         ),
