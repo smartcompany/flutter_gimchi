@@ -166,9 +166,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
       }
 
       final high = _toDouble(usdtMap[date]?['high']) ?? 0;
-      final open = _toDouble(usdtMap[date]?['open']) ?? 0;
-      final close = _toDouble(usdtMap[date]?['close']) ?? 0;
-      final canSell = (buyDate == date) ? (open < close) : true;
+      final canSell = isSellCondition(usdtMap, date, buyDate!);
 
       if (canSell && high >= sellStrategyPrice) {
         sellDate = date;
@@ -295,8 +293,10 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
       if (buyPrice == null) continue;
 
+      bool canSell = isSellCondition(usdtMap, date, buyDate);
+
       // 매도 조건: 3% 초과, 이미 매수한 상태
-      if (highTargetPrice < usdtHigh) {
+      if (canSell && highTargetPrice < usdtHigh) {
         sellDate = date;
         sellPrice = highTargetPrice;
 
@@ -350,6 +350,18 @@ class _AISimulationPageState extends State<AISimulationPage> {
     }
 
     return simResults;
+  }
+
+  static bool isSellCondition(
+    Map<dynamic, dynamic> usdtMap,
+    date,
+    String buyDate,
+  ) {
+    final open = _toDouble(usdtMap[date]?['open']) ?? 0;
+    final close = _toDouble(usdtMap[date]?['close']) ?? 0;
+    final canSell = (buyDate == date) ? (open < close) : true;
+
+    return canSell;
   }
 
   static double? _toDouble(dynamic v) {

@@ -111,6 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double plotOffsetEnd = 0;
   bool showKimchiPremium = true; // 김치 프리미엄 표시 여부
   bool showAITrading = false; // AI trading 표시 여부 추가
+  bool showGimchiTrading = false; // 김프 거래 표시 여부 추가
   bool showExchangeRate = true; // 환율 표시 여부 추가
   String? strategyText;
   Map<String, dynamic>? latestStrategy;
@@ -389,9 +390,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _autoZoomToAITrades() {
-    if (showAITrading &&
-        aiTradeResults.isNotEmpty &&
-        usdtChartData.isNotEmpty) {
+    bool show = showAITrading || showGimchiTrading;
+    if (show && aiTradeResults.isNotEmpty && usdtChartData.isNotEmpty) {
       // AI 매수/매도 날짜 리스트
       final allDates = [
         ...aiTradeResults
@@ -702,7 +702,7 @@ class _MyHomePageState extends State<MyHomePage> {
           zoomPanBehavior: _zoomPanBehavior,
           tooltipBehavior: TooltipBehavior(enable: true),
           series: <CartesianSeries>[
-            if (!showAITrading)
+            if (!(showAITrading || showGimchiTrading))
               // 일반 라인 차트 (USDT)
               LineSeries<USDTChartData, DateTime>(
                 name: 'USDT',
@@ -746,7 +746,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 yAxisName: 'kimchiAxis',
                 animationDuration: 0,
               ),
-            if (showAITrading && aiTradeResults.isNotEmpty) ...[
+            if ((showAITrading || showGimchiTrading) &&
+                aiTradeResults.isNotEmpty) ...[
               ScatterSeries<dynamic, DateTime>(
                 name: 'AI 매수',
                 dataSource:
@@ -854,6 +855,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   showAITrading = val ?? false;
                   if (showAITrading) {
+                    showGimchiTrading = false; // AI 매매가 켜지면 김프 매매는 꺼짐
+                    showKimchiPremium = false; // AI 매매가 켜지면 김치 프리미엄은 꺼짐
+
                     aiTradeResults = AISimulationPage.simulateResults(
                       strategyList,
                       usdtMap,
@@ -865,48 +869,64 @@ class _MyHomePageState extends State<MyHomePage> {
                 });
               },
             ),
-            // === 프리미엄 배경 PlotBand 표시/숨김 체크박스 + 도움말 버튼 추가 ===
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CheckBoxItem(
-                  value: showKimchiPlotBands,
-                  label: '김치 프리미엄 배경',
-                  color: Colors.blue,
-                  onChanged:
-                      (val) =>
-                          setState(() => showKimchiPlotBands = val ?? true),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.help_outline,
-                    color: Colors.blue,
-                    size: 20,
-                  ),
-                  tooltip: '김치 프리미엄 배경 설명',
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder:
-                          (_) => AlertDialog(
-                            title: const Text('김치 프리미엄 배경이란?'),
-                            content: const Text(
-                              '차트의 배경색은 김치 프리미엄 값에 따라 달라집니다. '
-                              '프리미엄이 높을수록 빨간색, 낮을수록 파란색에 가깝게 표시되어 '
-                              '김치 프리미엄에 따른 매수 매도 시점을 시각적으로 파악할 수 있습니다. '
-                              '이 기능은 김치 프리미엄의 변동성을 한눈에 파악하는 데 도움을 줍니다.',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('확인'),
-                              ),
-                            ],
-                          ),
+            CheckBoxItem(
+              value: showGimchiTrading,
+              label: '김프 매수/매도',
+              color: Colors.teal,
+              onChanged: (val) {
+                setState(() {
+                  showGimchiTrading = val ?? false;
+                  if (showGimchiTrading) {
+                    showAITrading = false; // 김프 매매가 켜지면 AI 매매는 꺼짐
+                    showKimchiPremium = false;
+
+                    aiTradeResults = AISimulationPage.gimchiSimulateResults(
+                      exchangeRates,
+                      usdtMap,
                     );
-                  },
-                ),
-              ],
+                    _autoZoomToAITrades();
+                  } else {
+                    aiTradeResults = [];
+                  }
+                });
+              },
+            ),
+            // === 프리미엄 배경 PlotBand 표시/숨김 체크박스 + 도움말 버튼 추가 ===
+            CheckBoxItem(
+              value: showKimchiPlotBands,
+              label: '김치 프리미엄 배경',
+              color: Colors.blue,
+              onChanged:
+                  (val) => setState(() => showKimchiPlotBands = val ?? true),
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.help_outline,
+                color: Colors.blue,
+                size: 20,
+              ),
+              tooltip: '김치 프리미엄 배경 설명',
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder:
+                      (_) => AlertDialog(
+                        title: const Text('김치 프리미엄 배경이란?'),
+                        content: const Text(
+                          '차트의 배경색은 김치 프리미엄 값에 따라 달라집니다. '
+                          '프리미엄이 높을수록 빨간색, 낮을수록 파란색에 가깝게 표시되어 '
+                          '김치 프리미엄에 따른 매수 매도 시점을 시각적으로 파악할 수 있습니다. '
+                          '이 기능은 김치 프리미엄의 변동성을 한눈에 파악하는 데 도움을 줍니다.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('확인'),
+                          ),
+                        ],
+                      ),
+                );
+              },
             ),
           ],
         ),
