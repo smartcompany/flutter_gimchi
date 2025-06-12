@@ -421,7 +421,11 @@ class _AISimulationPageState extends State<AISimulationPage> {
                     style: const TextStyle(color: Colors.black87, fontSize: 14),
                   ),
                 ] else ...[
-                  const Text('해당 날짜에 대한 전략이 없습니다.'),
+                  Text(
+                    widget.simulationType == SimulationType.kimchi
+                        ? '김치 프리미엄이 1% 이하일 때 매수, 3% 이상일 때 매도 전략입니다.'
+                        : '해당 날짜에 대한 전략이 없습니다.',
+                  ),
                 ],
               ],
             ),
@@ -444,8 +448,10 @@ class _AISimulationPageState extends State<AISimulationPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5FA),
       appBar: AppBar(
-        title: const Text(
-          'AI 매매 전략 시뮬레이션',
+        title: Text(
+          widget.simulationType == SimulationType.kimchi
+              ? '김치 프리미엄 시뮬레이션'
+              : 'AI 매매 전략 시뮬레이션',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
@@ -476,9 +482,11 @@ class _AISimulationPageState extends State<AISimulationPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'AI 시뮬레이션 (100 만원 기준)',
-                              style: TextStyle(
+                            Text(
+                              SimulationType.ai == widget.simulationType
+                                  ? 'AI 시뮬레이션 (100 만원 기준)'
+                                  : '김치 프리미엄 시뮬레이션 (100 만원 기준)',
+                              style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
