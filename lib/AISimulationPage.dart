@@ -520,6 +520,101 @@ class _AISimulationPageState extends State<AISimulationPage> {
       ),
     );
   }
+
+  /// 김치 프리미엄 시뮬레이션 함수
+  /// kimchiMap: { 'yyyy-MM-dd': double(프리미엄%) }
+  static List<SimulationResult> gimchiSimulateResults(
+    Map<String, dynamic> kimchiMap,
+    Map<String, dynamic> usdtMap,
+  ) {
+    // 날짜 오름차순 정렬
+    final sortedDates = kimchiMap.keys.toList()..sort();
+
+    List<SimulationResult> simResults = [];
+    double initialKRW = 1000000;
+    double totalKRW = initialKRW;
+    double? buyPrice;
+    String? buyDate;
+    double? kimchiAtBuy;
+
+    for (final date in sortedDates) {
+      final kimchi = _toDouble(kimchiMap[date]);
+      final usdtDay = usdtMap[date];
+
+      if (kimchi == null || usdtDay == null) continue;
+
+      // 매수 조건: 1% 미만, 아직 매수 안한 상태
+      if (buyDate == null && kimchi < 1.0) {
+        final low = _toDouble(usdtDay['low']);
+        if (low != null) {
+          buyPrice = low;
+          buyDate = date;
+          kimchiAtBuy = kimchi;
+        }
+        continue;
+      }
+
+      // 매도 조건: 3% 초과, 이미 매수한 상태
+      if (buyDate != null && kimchi > 3.0) {
+        final high = _toDouble(usdtDay['high']);
+        if (high != null && buyPrice != null) {
+          final sellPrice = high;
+          final sellDate = date;
+
+          // 수익 계산
+          final usdtAmount = totalKRW / buyPrice;
+          final finalKRW = usdtAmount * sellPrice;
+          final profit = finalKRW - totalKRW;
+          final profitRate = profit / totalKRW * 100;
+
+          simResults.add(
+            SimulationResult(
+              analysisDate: date,
+              buyDate: buyDate,
+              buyPrice: buyPrice,
+              sellDate: sellDate,
+              sellPrice: sellPrice,
+              profit: profit,
+              profitRate: profitRate,
+              finalKRW: finalKRW,
+              finalUSDT: null,
+            ),
+          );
+
+          // 다음 거래를 위해 초기화 (복리)
+          totalKRW = finalKRW;
+          buyDate = null;
+          buyPrice = null;
+          kimchiAtBuy = null;
+        }
+      }
+    }
+
+    // 마지막에 매도 못한 경우(보유중) 처리
+    if (buyDate != null && buyPrice != null) {
+      final lastDate = sortedDates.last;
+      final usdtDay = usdtMap[lastDate];
+      final close = _toDouble(usdtDay?['close']);
+      final usdtAmount = totalKRW / buyPrice;
+      final finalKRW = close != null ? usdtAmount * close : totalKRW;
+
+      simResults.add(
+        SimulationResult(
+          analysisDate: lastDate,
+          buyDate: buyDate,
+          buyPrice: buyPrice,
+          sellDate: null,
+          sellPrice: null,
+          profit: 0,
+          profitRate: 0,
+          finalKRW: finalKRW,
+          finalUSDT: usdtAmount,
+        ),
+      );
+    }
+
+    return simResults;
+  }
 }
 
 class SimulationResult {
