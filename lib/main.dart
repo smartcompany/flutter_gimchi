@@ -261,7 +261,7 @@ class _MyHomePageState extends State<MyHomePage> {
         strategyList = results[3] as List;
 
         latestGimchiStrategy = kimchiPremium.first as ChartData?;
-        latestExchangeRate = exchangeRates.first as ChartData?;
+        latestExchangeRate = exchangeRates.last as ChartData?;
         latestStrategy = strategyList.first as Map<String, dynamic>?;
 
         kimchiMin = kimchiPremium
@@ -1297,22 +1297,27 @@ class _MyHomePageState extends State<MyHomePage> {
               TableRow(
                 children: [
                   StrategyCell('추천 매수 가격', isHeader: true),
-                  // 환율 대비 1% 의 가격 표시
+                  // 환율 대비 매수 기준(%) 적용
                   StrategyCell(
-                    ((latestExchangeRate?.value ?? 0) * 1.01).toStringAsFixed(
-                      1,
-                    ),
+                    latestExchangeRate != null
+                        ? (latestExchangeRate!.value *
+                                (1 + AISimulationPage.kimchiBuyThreshold / 100))
+                            .toStringAsFixed(1)
+                        : '-',
                   ),
                 ],
               ),
               TableRow(
                 children: [
                   StrategyCell('추천 매도 가격', isHeader: true),
-                  // 환율 대비 3% 의 가격 표시
+                  // 환율 대비 매도 기준(%) 적용
                   StrategyCell(
-                    ((latestExchangeRate?.value ?? 0) * 1.03).toStringAsFixed(
-                      1,
-                    ),
+                    latestExchangeRate != null
+                        ? (latestExchangeRate!.value *
+                                (1 +
+                                    AISimulationPage.kimchiSellThreshold / 100))
+                            .toStringAsFixed(1)
+                        : '-',
                   ),
                 ],
               ),

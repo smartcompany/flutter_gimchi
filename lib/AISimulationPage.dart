@@ -16,6 +16,10 @@ class AISimulationPage extends StatefulWidget {
   final SimulationType simulationType;
   const AISimulationPage({super.key, required this.simulationType});
 
+  // 외부에서 참조 가능한 static 변수로 변경
+  static int kimchiBuyThreshold = 1;
+  static int kimchiSellThreshold = 3;
+
   static List<SimulationResult> simulateResults(
     List strategyList,
     Map usdtMap,
@@ -49,10 +53,6 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
   ApiService apiService = ApiService();
 
-  // 김치 매매 전략 기준값
-  int kimchiBuyThreshold = 1;
-  int kimchiSellThreshold = 3;
-
   @override
   void initState() {
     super.initState();
@@ -82,8 +82,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
         final simResults = await gimchiSimulateResults(
           usdExchangeRates,
           usdtMap,
-          buyThreshold: kimchiBuyThreshold,
-          sellThreshold: kimchiSellThreshold,
+          buyThreshold: AISimulationPage.kimchiBuyThreshold,
+          sellThreshold: AISimulationPage.kimchiSellThreshold,
         );
 
         setState(() {
@@ -490,91 +490,97 @@ class _AISimulationPageState extends State<AISimulationPage> {
         elevation: 0,
         centerTitle: true,
         foregroundColor: Colors.black87,
-        actions: widget.simulationType == SimulationType.kimchi
-            ? [
-                IconButton(
-                  icon: const Icon(Icons.settings, color: Colors.deepPurple),
-                  tooltip: '전략 변경',
-                  onPressed: () async {
-                    final result = await showDialog<Map<String, int>>(
-                      context: context,
-                      builder: (context) {
-                        int buy = kimchiBuyThreshold;
-                        int sell = kimchiSellThreshold;
-                        return AlertDialog(
-                          title: const Text('김프 전략 변경'),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Row(
-                                children: [
-                                  const Text('매수 기준(%)'),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: TextFormField(
-                                      initialValue: buy.toString(),
-                                      keyboardType: TextInputType.number,
-                                      decoration: const InputDecoration(
-                                        border: OutlineInputBorder(),
-                                        isDense: true,
+        actions:
+            widget.simulationType == SimulationType.kimchi
+                ? [
+                  IconButton(
+                    icon: const Icon(Icons.settings, color: Colors.deepPurple),
+                    tooltip: '전략 변경',
+                    onPressed: () async {
+                      final result = await showDialog<Map<String, int>>(
+                        context: context,
+                        builder: (context) {
+                          int buy = AISimulationPage.kimchiBuyThreshold;
+                          int sell = AISimulationPage.kimchiSellThreshold;
+                          return AlertDialog(
+                            title: const Text('김프 전략 변경'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text('매수 기준(%)'),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: TextFormField(
+                                        initialValue: buy.toString(),
+                                        keyboardType: TextInputType.number,
+                                        decoration: const InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          isDense: true,
+                                        ),
+                                        onChanged: (v) {
+                                          final n = int.tryParse(v);
+                                          if (n != null && n >= -10 && n <= 10)
+                                            buy = n;
+                                        },
                                       ),
-                                      onChanged: (v) {
-                                        final n = int.tryParse(v);
-                                        if (n != null && n >= -10 && n <= 10) buy = n;
-                                      },
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    const Text('매도 기준(%)'),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: TextFormField(
+                                        initialValue: sell.toString(),
+                                        keyboardType: TextInputType.number,
+                                        decoration: const InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          isDense: true,
+                                        ),
+                                        onChanged: (v) {
+                                          final n = int.tryParse(v);
+                                          if (n != null && n >= -10 && n <= 10)
+                                            sell = n;
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('취소'),
                               ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  const Text('매도 기준(%)'),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: TextFormField(
-                                      initialValue: sell.toString(),
-                                      keyboardType: TextInputType.number,
-                                      decoration: const InputDecoration(
-                                        border: OutlineInputBorder(),
-                                        isDense: true,
-                                      ),
-                                      onChanged: (v) {
-                                        final n = int.tryParse(v);
-                                        if (n != null && n >= -10 && n <= 10) sell = n;
-                                      },
-                                    ),
-                                  ),
-                                ],
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(
+                                    context,
+                                  ).pop({'buy': buy, 'sell': sell});
+                                },
+                                child: const Text('확인'),
                               ),
                             ],
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: const Text('취소'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).pop({'buy': buy, 'sell': sell});
-                              },
-                              child: const Text('확인'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                    if (result != null) {
-                      setState(() {
-                        kimchiBuyThreshold = result['buy']!;
-                        kimchiSellThreshold = result['sell']!;
-                        runSimulation(); // 기준 변경 후 시뮬레이션 재실행
-                      });
-                    }
-                  },
-                ),
-              ]
-            : null,
+                          );
+                        },
+                      );
+                      if (result != null) {
+                        setState(() {
+                          AISimulationPage.kimchiBuyThreshold = result['buy']!;
+                          AISimulationPage.kimchiSellThreshold =
+                              result['sell']!;
+                          runSimulation(); // 기준 변경 후 시뮬레이션 재실행
+                        });
+                      }
+                    },
+                  ),
+                ]
+                : null,
       ),
       body: SafeArea(
         child:
