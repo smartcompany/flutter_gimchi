@@ -473,15 +473,6 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
   @override
   Widget build(BuildContext context) {
-    final buttonStyle = OutlinedButton.styleFrom(
-      foregroundColor: Colors.deepPurple,
-      side: const BorderSide(color: Colors.deepPurple),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      minimumSize: const Size(0, 16),
-      textStyle: const TextStyle(fontSize: 14),
-    );
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5FA),
       appBar: AppBar(
@@ -644,22 +635,16 @@ class _AISimulationPageState extends State<AISimulationPage> {
                                           fontSize: 15,
                                         ),
                                       ),
-                                      const SizedBox(height: 6),
+                                      const SizedBox(height: 2), // ← 간격 줄이기
                                       Row(
                                         children: [
                                           Text(
                                             '매수: ${krwFormat.format(r.buyPrice)}원',
                                           ),
                                           const SizedBox(width: 8),
-                                          OutlinedButton(
-                                            onPressed: () {
-                                              _showStrategyDialog(
-                                                context,
-                                                r.buyDate,
-                                              );
-                                            },
-                                            style: buttonStyle,
-                                            child: const Text('전략 보기'),
+                                          setupStretegyButton(
+                                            context,
+                                            r.buyDate,
                                           ),
                                         ],
                                       ),
@@ -670,20 +655,13 @@ class _AISimulationPageState extends State<AISimulationPage> {
                                               '매도: ${krwFormat.format(r.sellPrice!)}원',
                                             ),
                                             const SizedBox(width: 8),
-                                            OutlinedButton(
-                                              onPressed: () {
-                                                _showStrategyDialog(
-                                                  context,
-                                                  r.sellDate!,
-                                                );
-                                              },
-                                              style: buttonStyle,
-                                              child: const Text('전략 보기'),
+                                            setupStretegyButton(
+                                              context,
+                                              r.sellDate!,
                                             ),
                                           ],
                                         ),
-                                        // 수익률 계산
-                                        const SizedBox(height: 6),
+                                        const SizedBox(height: 2), // ← 간격 줄이기
                                         Text(
                                           '수익: ${krwFormat.format(r.profit.round())}원 (${r.profitRate.toStringAsFixed(2)})%',
                                           style: const TextStyle(
@@ -865,6 +843,25 @@ class _AISimulationPageState extends State<AISimulationPage> {
           ),
         ),
       ),
+    );
+  }
+
+  OutlinedButton setupStretegyButton(BuildContext context, String date) {
+    // 버튼 스타일에서 padding, minimumSize 조정
+    final buttonStyle = OutlinedButton.styleFrom(
+      foregroundColor: Colors.deepPurple,
+      side: const BorderSide(color: Colors.deepPurple),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), // ← 더 얇게
+      textStyle: const TextStyle(fontSize: 14),
+    );
+
+    return OutlinedButton(
+      onPressed: () {
+        _showStrategyDialog(context, date);
+      },
+      style: buttonStyle,
+      child: const Text('전략 보기'),
     );
   }
 
