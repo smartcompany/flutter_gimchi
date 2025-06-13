@@ -323,6 +323,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
         final finalKRW = usdtAmount * sellPrice;
         final profit = finalKRW - totalKRW;
         final profitRate = profit / totalKRW * 100;
+        final kimchiValue =
+            (sellPrice - usdExchangeRate) / usdExchangeRate * 100; // 김프 계산
 
         simResults.add(
           SimulationResult(
@@ -335,6 +337,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
             profitRate: profitRate,
             finalKRW: finalKRW,
             finalUSDT: null,
+            kimchiPremium: kimchiValue, // ← 해당 날짜의 김프 값
           ),
         );
 
@@ -348,6 +351,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
         final usdtPrice = _toDouble(usdtMap[date]?['close']);
         final usdtCount = totalKRW / buyPrice;
         final finalKRW = usdtCount * (usdtPrice ?? 0);
+        final kimchiValue =
+            (buyPrice - usdExchangeRate) / usdExchangeRate * 100;
 
         unselledResult = SimulationResult(
           analysisDate: date,
@@ -359,6 +364,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
           profitRate: 0,
           finalKRW: finalKRW,
           finalUSDT: usdtCount,
+          kimchiPremium: kimchiValue,
         );
       }
     }
@@ -850,12 +856,13 @@ class SimulationResult {
   final String analysisDate;
   final String buyDate;
   final double buyPrice;
-  final String? sellDate; // 매도하지 못한 경우 null
-  final double? sellPrice; // 매도하지 못한 경우 null
+  final String? sellDate;
+  final double? sellPrice;
   final double profit;
   final double profitRate;
   final double finalKRW;
-  final double? finalUSDT; // USDT 보유량 추가
+  final double? finalUSDT;
+  final double? kimchiPremium; // ← 김프 값 추가
 
   SimulationResult({
     required this.analysisDate,
@@ -867,6 +874,7 @@ class SimulationResult {
     required this.profitRate,
     required this.finalKRW,
     this.finalUSDT,
+    this.kimchiPremium, // ← 생성자에 추가
   });
 }
 

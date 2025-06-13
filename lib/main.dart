@@ -184,7 +184,9 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     // 앱이 푸시 클릭으로 실행된 경우 알림 팝업
-    FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+    FirebaseMessaging.instance.getInitialMessage().then((
+      RemoteMessage? message,
+    ) {
       if (message != null) {
         showPushAlert(message);
       }
@@ -667,6 +669,24 @@ class _MyHomePageState extends State<MyHomePage> {
           borderRadius: BorderRadius.circular(16),
         ),
         child: SfCartesianChart(
+          onTooltipRender: (TooltipArgs args) {
+            final clickedPoint =
+                args.dataPoints?[(args.pointIndex ?? 0) as int];
+
+            // Date로 부터 환율 정보를 얻는다.
+            final exchangeRate = getExchangeRate(clickedPoint.x);
+            // Date로 부터 USDT 정보를 얻는다.
+            final usdtValue = getUsdtValue(clickedPoint.x);
+            // 김치 프리미엄 계산은 USDT 값과 환율을 이용
+            final kimchiPremiumValue =
+                ((usdtValue - exchangeRate) / exchangeRate * 100);
+
+            // 툴팁 텍스트를 기존 텍스트에 김치 프리미엄 값을 추가
+            args.text =
+                '${args.text}\n'
+                'Gimchi: ${kimchiPremiumValue.toStringAsFixed(2)}%';
+          },
+
           legend: const Legend(
             isVisible: true,
             position: LegendPosition.bottom,
@@ -785,6 +805,31 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  // 환율 데이터를 날짜로 조회하는 함수 추가
+  double getExchangeRate(DateTime date) {
+    // 날짜가 같은 환율 데이터 찾기 (날짜만 비교)
+    for (final rate in exchangeRates) {
+      if (rate.time.year == date.year &&
+          rate.time.month == date.month &&
+          rate.time.day == date.day) {
+        return rate.value;
+      }
+    }
+    return 0.0;
+  }
+
+  // USDT 데이터를 날짜로 조회하는 함수 추가
+  double getUsdtValue(DateTime date) {
+    for (final usdt in usdtChartData) {
+      if (usdt.time.year == date.year &&
+          usdt.time.month == date.month &&
+          usdt.time.day == date.day) {
+        return usdt.close;
+      }
+    }
+    return 0.0;
   }
 
   List<PlotBand> getKimchiPlotBands() {
