@@ -183,15 +183,20 @@ class _MyHomePageState extends State<MyHomePage> {
       await _saveFcmTokenToServer(token, userId);
     }
 
-    // 포그라운드 메시지 수신
+    // 앱이 푸시 클릭으로 실행된 경우 알림 팝업
+    FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+      if (message != null) {
+        showPushAlert(message);
+      }
+    });
+
+    // 포그라운드
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('푸시 수신 포그라운드: ${message.notification?.title}');
       showPushAlert(message);
     });
 
+    // 백그라운드에서 푸시 클릭
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('푸시 수신 백그라운드: ${message.notification?.title}');
-      // 푸시 알림을 다이얼로그로 표시
       showPushAlert(message);
     });
   }

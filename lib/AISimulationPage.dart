@@ -155,16 +155,18 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
       final double? buyStrategyPrice = _toDouble(strategy?['buy_price']);
       final double? sellStrategyPrice = _toDouble(strategy?['sell_price']);
+      final lowPrice = _toDouble(usdtMap[date]?['low']) ?? 0;
+      final highPrice = _toDouble(usdtMap[date]?['high']) ?? 0;
 
       if (buyStrategyPrice == null || sellStrategyPrice == null) {
         continue;
       }
 
       if (buyDate == null && sellDate == null) {
-        final low = _toDouble(usdtMap[date]?['low']);
-        if (low != null && low <= buyStrategyPrice) {
+        if (lowPrice <= buyStrategyPrice) {
           buyDate = date;
-          buyPrice = buyStrategyPrice;
+          // 매수 예상가가 고가 보다 낮은 경우는 고가로 매수가 현실적
+          buyPrice = min(buyStrategyPrice, highPrice);
         }
         if (buyDate == null) continue;
       }
@@ -174,7 +176,9 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
       if (canSell && high >= sellStrategyPrice) {
         sellDate = date;
-        final sellPrice = sellStrategyPrice;
+
+        // 매도 예상가가 저가 보다 높은 경우는 저가로 매도가 현실적
+        final sellPrice = max(sellStrategyPrice, lowPrice);
 
         totalKRW = addResultCard(
           sellDate,
@@ -282,19 +286,20 @@ class _AISimulationPageState extends State<AISimulationPage> {
       final usdExchangeRate = usdExchangeRatesMap[date] ?? 0.0;
       final usdtLow = _toDouble(usdtDay['low']) ?? 0.0;
       final usdtHigh = _toDouble(usdtDay['high']) ?? 0.0;
-      final lowTargetPrice = usdExchangeRate * (1 + buyThreshold / 100);
-      final highTargetPrice = usdExchangeRate * (1 + sellThreshold / 100);
+      final buyTargetPrice = usdExchangeRate * (1 + buyThreshold / 100);
+      final sellTargetPrice = usdExchangeRate * (1 + sellThreshold / 100);
 
       // 매수 조건: 프리미엄 buyThreshold% 미만, 아직 매수 안한 상태
       if (buyPrice == null) {
         // 매도 대기 상태가 아니어야 매수
         if (sellPrice == null) {
-          if (lowTargetPrice >= usdtLow && lowTargetPrice <= usdtHigh) {
-            buyPrice = lowTargetPrice;
+          if (buyTargetPrice >= usdtLow) {
+            // 100원에 매수 하려고 했는데 고가가 90원이라면 그냥 90원에 매수 하겠지
+            buyPrice = min(buyTargetPrice, usdtHigh);
             buyDate = date;
 
             print(
-              'Buy condition met: buyDate=$buyDate, buyPrice=$buyPrice, lowTargetPrice=$lowTargetPrice, usdtLow=$usdtLow',
+              'Buy condition met: buyDate=$buyDate, buyPrice=$buyPrice, buyTargetPrice=$buyTargetPrice, usdtLow=$usdtLow',
             );
           }
         }
@@ -305,11 +310,10 @@ class _AISimulationPageState extends State<AISimulationPage> {
       bool canSell = isSellCondition(usdtMap, date, buyDate);
 
       // 매도 조건: 프리미엄 sellThreshold% 초과, 이미 매수한 상태
-      if (canSell &&
-          highTargetPrice <= usdtHigh &&
-          highTargetPrice >= usdtLow) {
+      if (canSell && sellTargetPrice <= usdtHigh) {
         sellDate = date;
-        sellPrice = highTargetPrice;
+        // 매도 가격이 100원인데 저가가 110원 이면 그냥 110원에 매도 그래서 둘중 높은값
+        sellPrice = max(sellTargetPrice, usdtLow);
         print(
           'Sell condition met: sellDate=$sellDate, buyDate=$buyDate, buyPrice=$buyPrice, sellPrice=$sellPrice',
         );
@@ -726,6 +730,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
+                      textAlign: TextAlign.left, // 왼쪽 정렬
                     ),
                     const SizedBox(height: 2),
                     Builder(
@@ -740,6 +745,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
                             fontWeight: FontWeight.bold,
                             color: Colors.deepPurple,
                           ),
+                          textAlign: TextAlign.left, // 왼쪽 정렬
                         );
                       },
                     ),
