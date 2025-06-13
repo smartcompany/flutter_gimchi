@@ -1417,7 +1417,10 @@ class _MyHomePageState extends State<MyHomePage> {
               TableRow(
                 children: [
                   StrategyCell('전략 요약', isHeader: true),
-                  StrategyCell('김치 프리미엄이 1% 이하일 때 매수, 3% 이상일 때 매도'),
+                  StrategyCell(
+                    '김치 프리미엄이 ${AISimulationPage.kimchiBuyThreshold}% 이하일 때 매수, '
+                    '${AISimulationPage.kimchiSellThreshold}% 이상일 때 매도'
+                  ),
                 ],
               ),
             ],
@@ -1456,7 +1459,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               Row(
                                 children: [
                                   const Text(
-                                    '김프 프리미엄 히스토리',
+                                    '김치 프리미엄 히스토리',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,
