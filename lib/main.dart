@@ -678,8 +678,21 @@ class _MyHomePageState extends State<MyHomePage> {
             // Date로 부터 USDT 정보를 얻는다.
             final usdtValue = getUsdtValue(clickedPoint.x);
             // 김치 프리미엄 계산은 USDT 값과 환율을 이용
-            final kimchiPremiumValue =
-                ((usdtValue - exchangeRate) / exchangeRate * 100);
+            double kimchiPremiumValue;
+
+            // AI 매도, 김프 매도 일 경우 김치 프리미엄은 simulationResult의 usdExchageRateAtSell을 사용 계산
+            if (args.header == 'AI 매도' || args.header == '김프 매도') {
+              final simulationResult = getSimulationResult(clickedPoint.x);
+              kimchiPremiumValue =
+                  simulationResult?.gimchiPremiumAtSell() ?? 0.0;
+            } else if (args.header == 'AI 매수' || args.header == '김프 매수') {
+              final simulationResult = getSimulationResult(clickedPoint.x);
+              kimchiPremiumValue =
+                  simulationResult?.gimchiPremiumAtBuy() ?? 0.0;
+            } else {
+              kimchiPremiumValue =
+                  ((usdtValue - exchangeRate) / exchangeRate * 100);
+            }
 
             // 툴팁 텍스트를 기존 텍스트에 김치 프리미엄 값을 추가
             args.text =
@@ -820,6 +833,29 @@ class _MyHomePageState extends State<MyHomePage> {
     return 0.0;
   }
 
+  // 시뮬레이션 결과를 날짜로 조회하는 함수 추가
+  SimulationResult? getSimulationResult(DateTime date) {
+    for (final result in aiTradeResults) {
+      if (result.buyDate != null) {
+        final buyDate = DateTime.parse(result.buyDate);
+        if (buyDate.year == date.year &&
+            buyDate.month == date.month &&
+            buyDate.day == date.day) {
+          return result;
+        }
+      }
+      if (result.sellDate != null) {
+        final sellDate = DateTime.parse(result.sellDate!);
+        if (sellDate.year == date.year &&
+            sellDate.month == date.month &&
+            sellDate.day == date.day) {
+          return result;
+        }
+      }
+    }
+    return null;
+  }
+
   // USDT 데이터를 날짜로 조회하는 함수 추가
   double getUsdtValue(DateTime date) {
     for (final usdt in usdtChartData) {
@@ -909,6 +945,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     showExchangeRate = false; // AI 매매가 켜지면 환율은 꺼짐
 
                     aiTradeResults = AISimulationPage.simulateResults(
+                      exchangeRates,
                       strategyList,
                       usdtMap,
                     );
@@ -1077,6 +1114,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               builder:
                                   (_) => AISimulationPage(
                                     simulationType: SimulationType.ai,
+                                    usdtMap: usdtMap,
+                                    strategyList: strategyList,
+                                    usdExchangeRates: exchangeRates,
                                   ),
                             ),
                           );
@@ -1315,6 +1355,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       builder:
                           (_) => AISimulationPage(
                             simulationType: SimulationType.kimchi,
+                            usdtMap: usdtMap,
+                            strategyList: strategyList,
+                            usdExchangeRates: exchangeRates,
                           ),
                     ),
                   );

@@ -8,20 +8,35 @@ enum SimulationType { ai, kimchi }
 
 class AISimulationPage extends StatefulWidget {
   final SimulationType simulationType;
-  const AISimulationPage({super.key, required this.simulationType});
+  final Map usdtMap;
+  final List? strategyList;
+  final List<ChartData> usdExchangeRates;
+
+  const AISimulationPage({
+    super.key,
+    required this.simulationType,
+    required this.usdtMap,
+    required this.strategyList,
+    required this.usdExchangeRates,
+  });
 
   // 외부에서 참조 가능한 static 변수로 변경
-  static int kimchiBuyThreshold = 1;
-  static int kimchiSellThreshold = 3;
+  static double kimchiBuyThreshold = 1;
+  static double kimchiSellThreshold = 3;
 
   static List<SimulationResult> simulateResults(
+    List<ChartData> usdExchangeRates,
     List strategyList,
     Map usdtMap,
   ) {
-    return _AISimulationPageState.simulateResults(strategyList, usdtMap);
+    return _AISimulationPageState.simulateResults(
+      strategyList,
+      usdtMap,
+      usdExchangeRates,
+    );
   }
 
-  static Future<List<SimulationResult>> gimchiSimulateResults(
+  static List<SimulationResult> gimchiSimulateResults(
     List<ChartData> usdExchangeRates,
     Map usdtMap,
   ) {
@@ -45,8 +60,6 @@ class _AISimulationPageState extends State<AISimulationPage> {
   final NumberFormat krwFormat = NumberFormat("#,##0.#", "ko_KR");
   double totalProfitRate = 0; // 총 수익률 변수 추가
 
-  ApiService apiService = ApiService();
-
   @override
   void initState() {
     super.initState();
@@ -60,25 +73,25 @@ class _AISimulationPageState extends State<AISimulationPage> {
     });
 
     try {
-      final usdtMap = await apiService.fetchUSDTData();
+      // apiService 대신 생성자에서 받은 데이터 사용
+      final usdtMap = widget.usdtMap;
+      final usdExchangeRates = widget.usdExchangeRates;
 
       if (widget.simulationType == SimulationType.ai) {
-        final strategyList = await apiService.fetchStrategy();
-        final simResults = simulateResults(strategyList ?? [], usdtMap);
+        final strategyList = widget.strategyList ?? [];
+        final simResults = simulateResults(
+          strategyList,
+          usdtMap,
+          usdExchangeRates,
+        );
 
         setState(() {
-          strategies = List<Map<String, dynamic>>.from(strategyList ?? []);
+          strategies = List<Map<String, dynamic>>.from(strategyList);
           results = simResults;
           loading = false;
         });
       } else if (widget.simulationType == SimulationType.kimchi) {
-        final usdExchangeRates = await apiService.fetchExchangeRateData();
-        final simResults = await gimchiSimulateResults(
-          usdExchangeRates,
-          usdtMap,
-          buyThreshold: AISimulationPage.kimchiBuyThreshold,
-          sellThreshold: AISimulationPage.kimchiSellThreshold,
-        );
+        final simResults = gimchiSimulateResults(usdExchangeRates, usdtMap);
 
         setState(() {
           strategies = null;
@@ -114,6 +127,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
   static List<SimulationResult> simulateResults(
     List strategyList,
     Map usdtMap,
+    List<ChartData> usdExchangeRates, // ← 추가
   ) {
     // 날짜 오름차순 정렬
     strategyList.sort((a, b) {
@@ -126,6 +140,12 @@ class _AISimulationPageState extends State<AISimulationPage> {
     final Map<String, Map<String, dynamic>> strategyMap = {
       for (var strat in strategyList)
         if (strat['analysis_date'] != null) strat['analysis_date']: strat,
+    };
+
+    // 2. usdExchangeRateMap 생성
+    final usdExchangeRateMap = {
+      for (var rate in usdExchangeRates)
+        DateFormat('yyyy-MM-dd').format(rate.time): rate.value,
     };
 
     List<SimulationResult> simResults = [];
@@ -188,6 +208,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
           totalKRW,
           simResults,
           buyDate,
+          usdExchangeRateMap, // ← 추가
         );
 
         buyDate = null;
@@ -208,6 +229,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
           profitRate: 0,
           finalKRW: finalKRW,
           finalUSDT: usdtCount,
+          usdExchangeRateAtBuy: usdExchangeRateMap[buyDate], // ← 추가
+          usdExchangeRateAtSell: null, // 매도 시점은 아직 없음
         );
       }
     }
@@ -227,6 +250,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
     double totalKRW,
     List<SimulationResult> simResults,
     String? buyDate,
+    Map<String, double> usdExchangeRateMap, // ← 추가
   ) {
     print('Sell condition met: sellDate=$sellDate anaysisDate=$date');
 
@@ -254,17 +278,17 @@ class _AISimulationPageState extends State<AISimulationPage> {
         profitRate: profitRate ?? 0,
         finalKRW: finalKRW ?? 0,
         finalUSDT: null,
+        usdExchangeRateAtBuy: usdExchangeRateMap[buyDate], // ← 추가
+        usdExchangeRateAtSell: usdExchangeRateMap[sellDate], // ← 추가
       ),
     );
     return totalKRW;
   }
 
-  static Future<List<SimulationResult>> gimchiSimulateResults(
+  static List<SimulationResult> gimchiSimulateResults(
     List<ChartData> usdExchangeRates,
-    Map usdtMap, {
-    int buyThreshold = 1,
-    int sellThreshold = 3,
-  }) async {
+    Map usdtMap,
+  ) {
     List<SimulationResult> simResults = [];
     double initialKRW = 1000000;
     double totalKRW = initialKRW;
@@ -286,8 +310,10 @@ class _AISimulationPageState extends State<AISimulationPage> {
       final usdExchangeRate = usdExchangeRatesMap[date] ?? 0.0;
       final usdtLow = _toDouble(usdtDay['low']) ?? 0.0;
       final usdtHigh = _toDouble(usdtDay['high']) ?? 0.0;
-      final buyTargetPrice = usdExchangeRate * (1 + buyThreshold / 100);
-      final sellTargetPrice = usdExchangeRate * (1 + sellThreshold / 100);
+      final buyTargetPrice =
+          usdExchangeRate * (1 + AISimulationPage.kimchiBuyThreshold / 100);
+      final sellTargetPrice =
+          usdExchangeRate * (1 + AISimulationPage.kimchiSellThreshold / 100);
 
       // 매수 조건: 프리미엄 buyThreshold% 미만, 아직 매수 안한 상태
       if (buyPrice == null) {
@@ -323,8 +349,6 @@ class _AISimulationPageState extends State<AISimulationPage> {
         final finalKRW = usdtAmount * sellPrice;
         final profit = finalKRW - totalKRW;
         final profitRate = profit / totalKRW * 100;
-        final kimchiValue =
-            (sellPrice - usdExchangeRate) / usdExchangeRate * 100; // 김프 계산
 
         simResults.add(
           SimulationResult(
@@ -337,7 +361,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
             profitRate: profitRate,
             finalKRW: finalKRW,
             finalUSDT: null,
-            kimchiPremium: kimchiValue, // ← 해당 날짜의 김프 값
+            usdExchangeRateAtBuy: usdExchangeRatesMap[buyDate], // ← 추가
+            usdExchangeRateAtSell: usdExchangeRatesMap[sellDate], // ← 추가
           ),
         );
 
@@ -351,8 +376,6 @@ class _AISimulationPageState extends State<AISimulationPage> {
         final usdtPrice = _toDouble(usdtMap[date]?['close']);
         final usdtCount = totalKRW / buyPrice;
         final finalKRW = usdtCount * (usdtPrice ?? 0);
-        final kimchiValue =
-            (buyPrice - usdExchangeRate) / usdExchangeRate * 100;
 
         unselledResult = SimulationResult(
           analysisDate: date,
@@ -364,7 +387,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
           profitRate: 0,
           finalKRW: finalKRW,
           finalUSDT: usdtCount,
-          kimchiPremium: kimchiValue,
+          usdExchangeRateAtBuy: usdExchangeRatesMap[buyDate], // ← 추가
+          usdExchangeRateAtSell: null, // ← 추가
         );
       }
     }
@@ -459,7 +483,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
                 ] else ...[
                   Text(
                     widget.simulationType == SimulationType.kimchi
-                        ? '김치 프리미엄이 1% 이하일 때 매수, 3% 이상일 때 매도 전략입니다.'
+                        ? '김치 프리미엄이 ${AISimulationPage.kimchiBuyThreshold}% 이하일 때 매수, ${AISimulationPage.kimchiSellThreshold}% 이상일 때 매도 전략입니다.'
                         : '해당 날짜에 대한 전략이 없습니다.',
                   ),
                 ],
@@ -493,11 +517,13 @@ class _AISimulationPageState extends State<AISimulationPage> {
                     icon: const Icon(Icons.settings, color: Colors.deepPurple),
                     tooltip: '전략 변경',
                     onPressed: () async {
-                      final result = await showDialog<Map<String, int>>(
+                      final result = await showDialog<Map<String, double>>(
                         context: context,
                         builder: (context) {
-                          int buy = AISimulationPage.kimchiBuyThreshold;
-                          int sell = AISimulationPage.kimchiSellThreshold;
+                          double buy =
+                              AISimulationPage.kimchiBuyThreshold.toDouble();
+                          double sell =
+                              AISimulationPage.kimchiSellThreshold.toDouble();
                           return AlertDialog(
                             title: const Text('김프 전략 변경'),
                             content: Column(
@@ -510,13 +536,17 @@ class _AISimulationPageState extends State<AISimulationPage> {
                                     Expanded(
                                       child: TextFormField(
                                         initialValue: buy.toString(),
-                                        keyboardType: TextInputType.number,
+                                        keyboardType:
+                                            const TextInputType.numberWithOptions(
+                                              decimal: true,
+                                              signed: true,
+                                            ),
                                         decoration: const InputDecoration(
                                           border: OutlineInputBorder(),
                                           isDense: true,
                                         ),
                                         onChanged: (v) {
-                                          final n = int.tryParse(v);
+                                          final n = double.tryParse(v);
                                           if (n != null && n >= -10 && n <= 10)
                                             buy = n;
                                         },
@@ -532,13 +562,17 @@ class _AISimulationPageState extends State<AISimulationPage> {
                                     Expanded(
                                       child: TextFormField(
                                         initialValue: sell.toString(),
-                                        keyboardType: TextInputType.number,
+                                        keyboardType:
+                                            const TextInputType.numberWithOptions(
+                                              decimal: true,
+                                              signed: true,
+                                            ),
                                         decoration: const InputDecoration(
                                           border: OutlineInputBorder(),
                                           isDense: true,
                                         ),
                                         onChanged: (v) {
-                                          final n = int.tryParse(v);
+                                          final n = double.tryParse(v);
                                           if (n != null && n >= -10 && n <= 10)
                                             sell = n;
                                         },
@@ -878,7 +912,8 @@ class SimulationResult {
   final double profitRate;
   final double finalKRW;
   final double? finalUSDT;
-  final double? kimchiPremium; // ← 김프 값 추가
+  final double? usdExchangeRateAtBuy; // ← 추가
+  final double? usdExchangeRateAtSell; // ← 추가
 
   SimulationResult({
     required this.analysisDate,
@@ -890,8 +925,29 @@ class SimulationResult {
     required this.profitRate,
     required this.finalKRW,
     this.finalUSDT,
-    this.kimchiPremium, // ← 생성자에 추가
+    this.usdExchangeRateAtBuy, // ← 추가
+    this.usdExchangeRateAtSell, // ← 추가
   });
+
+  // 매도시 김치 프리미엄 계산 함수
+  double gimchiPremiumAtSell() {
+    if (usdExchangeRateAtSell == null || sellPrice == null) {
+      return 0.0; // 매도 가격이 없으면 프리미엄 계산 불가
+    }
+
+    return ((sellPrice! - usdExchangeRateAtSell!) /
+        usdExchangeRateAtSell! *
+        100);
+  }
+
+  // 매수시 김치 프리미엄 계산 함수
+  double gimchiPremiumAtBuy() {
+    if (usdExchangeRateAtBuy == null) {
+      return 0.0; // 매수 가격이 없으면 프리미엄 계산 불가
+    }
+
+    return ((buyPrice - usdExchangeRateAtBuy!) / usdExchangeRateAtBuy! * 100);
+  }
 }
 
 class _StrategyDialogRow extends StatelessWidget {
