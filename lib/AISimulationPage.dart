@@ -4,12 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:usdt_signal/api_service.dart';
 
-const int days = 200;
-const String upbitUsdtUrl =
-    "https://rate-history.vercel.app/api/usdt-history?days=$days";
-const String strategyUrl =
-    "https://rate-history.vercel.app/api/analyze-strategy";
-
 enum SimulationType { ai, kimchi }
 
 class AISimulationPage extends StatefulWidget {
