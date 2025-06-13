@@ -477,7 +477,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
       foregroundColor: Colors.deepPurple,
       side: const BorderSide(color: Colors.deepPurple),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      minimumSize: const Size(0, 16),
       textStyle: const TextStyle(fontSize: 14),
     );
 
@@ -681,6 +682,14 @@ class _AISimulationPageState extends State<AISimulationPage> {
                                             ),
                                           ],
                                         ),
+                                        // 수익률 계산
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          '수익: ${krwFormat.format(r.profit.round())}원 (${r.profitRate.toStringAsFixed(2)})%',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
                                         Text(
                                           '최종 원화: ${krwFormat.format(r.finalKRW.round())}원',
                                           style: const TextStyle(
@@ -727,7 +736,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Column(
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
@@ -736,27 +745,37 @@ class _AISimulationPageState extends State<AISimulationPage> {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
-                      textAlign: TextAlign.left, // 왼쪽 정렬
+                      textAlign: TextAlign.left,
                     ),
-                    const SizedBox(height: 2),
+                  ],
+                ),
+                const SizedBox(width: 12),
+                // 시작일과 종료일 표시
+                Row(
+                  children: [
                     Builder(
                       builder: (context) {
-                        if (results.isEmpty) return const Text('-');
-                        final start = results.first.buyDate;
-                        final end = results.last.analysisDate;
+                        final text =
+                            results.isEmpty
+                                ? '-'
+                                : '${results.first.analysisDate} ~ ${results.last.analysisDate}';
+
                         return Text(
-                          '$start ~ $end',
+                          text,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.deepPurple,
                           ),
-                          textAlign: TextAlign.left, // 왼쪽 정렬
+                          softWrap: true,
+                          maxLines: 2,
+                          overflow: TextOverflow.visible,
                         );
                       },
                     ),
                   ],
                 ),
+                const SizedBox(height: 8),
                 const SizedBox(height: 4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
