@@ -717,8 +717,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       '매매 기간',
@@ -727,6 +727,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Builder(
                       builder: (context) {
                         if (results.isEmpty) return const Text('-');
