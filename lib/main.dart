@@ -971,8 +971,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     showExchangeRate = false; // 김프 매매가 켜지면 환율은 꺼짐
                   });
 
-                  final results = await AISimulationPage.gimchiSimulateResults(
+                  final results = AISimulationPage.gimchiSimulateResults(
                     exchangeRates,
+                    strategyList,
                     usdtMap,
                   );
                   setState(() {
@@ -1419,7 +1420,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   StrategyCell('전략 요약', isHeader: true),
                   StrategyCell(
                     '김치 프리미엄이 ${AISimulationPage.kimchiBuyThreshold}% 이하일 때 매수, '
-                    '${AISimulationPage.kimchiSellThreshold}% 이상일 때 매도'
+                    '${AISimulationPage.kimchiSellThreshold}% 이상일 때 매도',
                   ),
                 ],
               ),
@@ -1459,7 +1460,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               Row(
                                 children: [
                                   const Text(
-                                    '김치 프리미엄 히스토리',
+                                    '김프 히스토리',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,

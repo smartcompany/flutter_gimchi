@@ -9,7 +9,7 @@ enum SimulationType { ai, kimchi }
 class AISimulationPage extends StatefulWidget {
   final SimulationType simulationType;
   final Map usdtMap;
-  final List? strategyList;
+  final List strategyList;
   final List<ChartData> usdExchangeRates;
 
   const AISimulationPage({
@@ -23,6 +23,7 @@ class AISimulationPage extends StatefulWidget {
   // 외부에서 참조 가능한 static 변수로 변경
   static double kimchiBuyThreshold = 1;
   static double kimchiSellThreshold = 3;
+  static bool matchSameDatesAsAI = false;
 
   static List<SimulationResult> simulateResults(
     List<ChartData> usdExchangeRates,
@@ -30,18 +31,20 @@ class AISimulationPage extends StatefulWidget {
     Map usdtMap,
   ) {
     return _AISimulationPageState.simulateResults(
+      usdExchangeRates,
       strategyList,
       usdtMap,
-      usdExchangeRates,
     );
   }
 
   static List<SimulationResult> gimchiSimulateResults(
     List<ChartData> usdExchangeRates,
+    List strategyList,
     Map usdtMap,
   ) {
     return _AISimulationPageState.gimchiSimulateResults(
       usdExchangeRates,
+      strategyList,
       usdtMap,
     );
   }
@@ -76,13 +79,13 @@ class _AISimulationPageState extends State<AISimulationPage> {
       // apiService 대신 생성자에서 받은 데이터 사용
       final usdtMap = widget.usdtMap;
       final usdExchangeRates = widget.usdExchangeRates;
+      final strategyList = widget.strategyList;
 
       if (widget.simulationType == SimulationType.ai) {
-        final strategyList = widget.strategyList ?? [];
         final simResults = simulateResults(
+          usdExchangeRates,
           strategyList,
           usdtMap,
-          usdExchangeRates,
         );
 
         setState(() {
@@ -91,10 +94,14 @@ class _AISimulationPageState extends State<AISimulationPage> {
           loading = false;
         });
       } else if (widget.simulationType == SimulationType.kimchi) {
-        final simResults = gimchiSimulateResults(usdExchangeRates, usdtMap);
+        final simResults = gimchiSimulateResults(
+          usdExchangeRates,
+          strategyList,
+          usdtMap,
+        );
 
         setState(() {
-          strategies = null;
+          strategies = List<Map<String, dynamic>>.from(strategyList);
           results = simResults;
           loading = false;
         });
@@ -125,9 +132,9 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
   // simResults 생성 로직을 별도 함수로 분리
   static List<SimulationResult> simulateResults(
+    List<ChartData> usdExchangeRates, // ← 추가
     List strategyList,
     Map usdtMap,
-    List<ChartData> usdExchangeRates, // ← 추가
   ) {
     // 날짜 오름차순 정렬
     strategyList.sort((a, b) {
@@ -287,6 +294,7 @@ class _AISimulationPageState extends State<AISimulationPage> {
 
   static List<SimulationResult> gimchiSimulateResults(
     List<ChartData> usdExchangeRates,
+    List strategyList,
     Map usdtMap,
   ) {
     List<SimulationResult> simResults = [];
@@ -298,8 +306,27 @@ class _AISimulationPageState extends State<AISimulationPage> {
     String buyDate = "";
     double? buyPrice;
     double? sellPrice;
+
     // 날짜 오름차순 정렬
     final sortedDates = usdtMap.keys.toList()..sort();
+
+    // 날짜 오름차순 정렬
+    strategyList.sort((a, b) {
+      final dateA = a['analysis_date'];
+      final dateB = b['analysis_date'];
+      if (dateA == null || dateB == null) return 0;
+      return dateA.compareTo(dateB);
+    });
+
+    if (AISimulationPage.matchSameDatesAsAI) {
+      final strategyFirstDate = strategyList.first['analysis_date'];
+      if (strategyFirstDate != null) {
+        sortedDates.removeWhere(
+          (date) => date.compareTo(strategyFirstDate) < 0,
+        );
+      }
+    }
+
     final usdExchangeRatesMap = {
       for (var rate in usdExchangeRates)
         DateFormat('yyyy-MM-dd').format(rate.time): rate.value,
@@ -517,93 +544,131 @@ class _AISimulationPageState extends State<AISimulationPage> {
                     icon: const Icon(Icons.settings, color: Colors.deepPurple),
                     tooltip: '전략 변경',
                     onPressed: () async {
-                      final result = await showDialog<Map<String, double>>(
+                      final result = await showDialog<Map<String, Object>>(
                         context: context,
                         builder: (context) {
                           double buy =
                               AISimulationPage.kimchiBuyThreshold.toDouble();
                           double sell =
                               AISimulationPage.kimchiSellThreshold.toDouble();
-                          return AlertDialog(
-                            title: const Text('김프 전략 변경'),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Row(
+                          bool sameAsAI =
+                              AISimulationPage
+                                  .matchSameDatesAsAI; // ← 기존 설정값 반영
+
+                          return StatefulBuilder(
+                            builder: (context, setState) {
+                              return AlertDialog(
+                                title: const Text('김프 전략 변경'),
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Text('매수 기준(%)'),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: TextFormField(
-                                        initialValue: buy.toString(),
-                                        keyboardType:
-                                            const TextInputType.numberWithOptions(
-                                              decimal: true,
-                                              signed: true,
+                                    Row(
+                                      children: [
+                                        const Text('매수 기준(%)'),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: TextFormField(
+                                            initialValue: buy.toString(),
+                                            keyboardType:
+                                                const TextInputType.numberWithOptions(
+                                                  decimal: true,
+                                                  signed: true,
+                                                ),
+                                            decoration: const InputDecoration(
+                                              border: OutlineInputBorder(),
+                                              isDense: true,
                                             ),
-                                        decoration: const InputDecoration(
-                                          border: OutlineInputBorder(),
-                                          isDense: true,
+                                            onChanged: (v) {
+                                              final n = double.tryParse(v);
+                                              if (n != null &&
+                                                  n >= -10 &&
+                                                  n <= 10) {
+                                                setState(() {
+                                                  buy = n;
+                                                });
+                                              }
+                                            },
+                                          ),
                                         ),
-                                        onChanged: (v) {
-                                          final n = double.tryParse(v);
-                                          if (n != null && n >= -10 && n <= 10)
-                                            buy = n;
-                                        },
-                                      ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      children: [
+                                        const Text('매도 기준(%)'),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: TextFormField(
+                                            initialValue: sell.toString(),
+                                            keyboardType:
+                                                const TextInputType.numberWithOptions(
+                                                  decimal: true,
+                                                  signed: true,
+                                                ),
+                                            decoration: const InputDecoration(
+                                              border: OutlineInputBorder(),
+                                              isDense: true,
+                                            ),
+                                            onChanged: (v) {
+                                              final n = double.tryParse(v);
+                                              if (n != null &&
+                                                  n >= -10 &&
+                                                  n <= 10) {
+                                                setState(() {
+                                                  sell = n;
+                                                });
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Row(
+                                      children: [
+                                        Checkbox(
+                                          value: sameAsAI,
+                                          onChanged: (val) {
+                                            setState(() {
+                                              sameAsAI = val ?? false;
+                                            });
+                                          },
+                                        ),
+                                        const Text('AI와 동일 일정 적용'),
+                                      ],
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 16),
-                                Row(
-                                  children: [
-                                    const Text('매도 기준(%)'),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: TextFormField(
-                                        initialValue: sell.toString(),
-                                        keyboardType:
-                                            const TextInputType.numberWithOptions(
-                                              decimal: true,
-                                              signed: true,
-                                            ),
-                                        decoration: const InputDecoration(
-                                          border: OutlineInputBorder(),
-                                          isDense: true,
-                                        ),
-                                        onChanged: (v) {
-                                          final n = double.tryParse(v);
-                                          if (n != null && n >= -10 && n <= 10)
-                                            sell = n;
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('취소'),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.of(
-                                    context,
-                                  ).pop({'buy': buy, 'sell': sell});
-                                },
-                                child: const Text('확인'),
-                              ),
-                            ],
+                                actions: [
+                                  TextButton(
+                                    onPressed:
+                                        () => Navigator.of(context).pop(),
+                                    child: const Text('취소'),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop({
+                                        'buy': buy,
+                                        'sell': sell,
+                                        'sameAsAI': sameAsAI,
+                                      });
+                                    },
+                                    child: const Text('확인'),
+                                  ),
+                                ],
+                              );
+                            },
                           );
                         },
                       );
                       if (result != null) {
                         setState(() {
-                          AISimulationPage.kimchiBuyThreshold = result['buy']!;
+                          AISimulationPage.kimchiBuyThreshold =
+                              result['buy'] as double;
                           AISimulationPage.kimchiSellThreshold =
-                              result['sell']!;
+                              result['sell'] as double;
+                          AISimulationPage.matchSameDatesAsAI =
+                              result['sameAsAI'] as bool;
                           runSimulation(); // 기준 변경 후 시뮬레이션 재실행
                         });
                       }
@@ -767,10 +832,12 @@ class _AISimulationPageState extends State<AISimulationPage> {
                   children: [
                     Builder(
                       builder: (context) {
+                        // 시작일은 첫 번째 결과의 buyDate, 종료일은 마지막 결과에서 sellDate 가 있으면 그 값, 없으면 buyDate
+                        if (results.isEmpty) return const Text('-');
+                        final startDate = results.first.buyDate;
+                        final endDate = results.last.analysisDate;
                         final text =
-                            results.isEmpty
-                                ? '-'
-                                : '${results.first.analysisDate} ~ ${results.last.analysisDate}';
+                            results.isEmpty ? '-' : '${startDate} ~ ${endDate}';
 
                         return Text(
                           text,
