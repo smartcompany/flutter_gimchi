@@ -143,6 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // PlotBand 표시 여부 상태 추가
   bool showKimchiPlotBands = false;
+  int _selectedStrategyTabIndex = 0; // 0: AI 매매 전략, 1: 김프 매매 전략
 
   @override
   void initState() {
@@ -548,6 +549,8 @@ class _MyHomePageState extends State<MyHomePage> {
     ChartData? todayKimchi =
         kimchiPremium.isNotEmpty ? kimchiPremium.last : null;
 
+    final String todayComment = '⚠️ 최근 하락세, 현재 매수 유리 구간입니다';
+
     final double chartHeight = MediaQuery.of(context).size.height * 0.3;
     final singleChildScrollView = SingleChildScrollView(
       controller: _scrollController,
@@ -555,12 +558,14 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
         child: Column(
           children: [
+            // 👇 여기 추가!
+            _buildTodayComment(todayUsdt),
             _buildTodayInfoCard(todayUsdt, todayRate, todayKimchi),
             const SizedBox(height: 4),
             _buildChartCard(chartHeight),
             const SizedBox(height: 8),
             _buildStrategySection(),
-            if (kDebugMode) // 디버그 모드일 때만 표시
+            if (kDebugMode)
               TextButton(
                 onPressed: () => throw Exception(),
                 child: const Text("Throw Test Exception"),
@@ -583,6 +588,54 @@ class _MyHomePageState extends State<MyHomePage> {
         foregroundColor: Colors.black87,
       ),
       body: SafeArea(child: singleChildScrollView),
+    );
+  }
+
+  Widget _buildTodayComment(USDTChartData? todayUsdt) {
+    final usdtPrice = todayUsdt?.close ?? 0.0;
+
+    // AI 매매 전략 탭
+    double buyPrice = 0.0;
+    double sellPrice = 0.0;
+    String comment = '';
+    double exchangeRateValue = latestExchangeRate?.value ?? 0.0;
+
+    if (_selectedStrategyTabIndex == 0) {
+      buyPrice = latestStrategy?['buyPrice'] ?? 0.0;
+      sellPrice = latestStrategy?['sellPrice'] ?? 0.0;
+    } else {
+      buyPrice =
+          (exchangeRateValue * (1 + AISimulationPage.kimchiBuyThreshold / 100));
+      sellPrice =
+          (exchangeRateValue *
+              (1 + AISimulationPage.kimchiSellThreshold / 100));
+    }
+
+    // 오늘 날짜에 대한 코멘트 생성
+    if (usdtPrice <= buyPrice) {
+      comment = '⚠️ 현재 매수 유리 구간입니다';
+    } else if (usdtPrice > sellPrice) {
+      comment = '⚠️ 현재 매도 유리 구간입니다';
+    } else {
+      comment = '⚠️ 현재 관망 구간입니다';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              comment,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -948,6 +1001,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return DefaultTabController(
       length: 2,
+      initialIndex: _selectedStrategyTabIndex, // 초기 선택 탭 적용
       child: Card(
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -962,16 +1016,18 @@ class _MyHomePageState extends State<MyHomePage> {
                 labelColor: Colors.deepPurple,
                 unselectedLabelColor: Colors.black54,
                 indicatorColor: Colors.deepPurple,
+                onTap: (idx) {
+                  setState(() {
+                    _selectedStrategyTabIndex = idx;
+                  });
+                },
                 tabs: const [Tab(text: 'AI 매매 전략'), Tab(text: '김프 매매 전략')],
               ),
               const SizedBox(height: 12),
               SizedBox(
                 height: 300,
                 child: TabBarView(
-                  children: [
-                    _buildAiStrategyTab(), // --- 기존 AI 매매 전략 UI --- 분리
-                    _buildGimchiStrategyTab(), // --- 김프 매매 전략 탭 --- 분리
-                  ],
+                  children: [_buildAiStrategyTab(), _buildGimchiStrategyTab()],
                 ),
               ),
             ],
@@ -996,7 +1052,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return makeStrategyTab(
       SimulationType.ai,
-      'AI 전략 요약',
+      '전략 보기',
       buyPrice,
       sellPrice,
       profitRateStr,
@@ -1044,14 +1100,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   '매수: $buyPriceStr',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontSize: 16,
                   ),
                 ),
                 Text(
                   '매도: $sellPriceStr',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontSize: 16,
                   ),
                 ),
               ],
@@ -1088,8 +1144,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         borderRadius: BorderRadius.circular(24),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 10,
+                        horizontal: 8,
+                        vertical: 8,
                       ),
                     ),
                     onPressed: () {
@@ -1196,11 +1252,11 @@ class _MyHomePageState extends State<MyHomePage> {
     final strategy =
         '김치 프리미엄이 ${AISimulationPage.kimchiBuyThreshold}% 이하일 때 매수, '
         '${AISimulationPage.kimchiSellThreshold}% 이상일 때 매도';
-    final profitRateStr = '+${profitRate.toStringAsFixed(2)}%';
+    final profitRateStr = '+${profitRate.toStringAsFixed(1)}%';
 
     return makeStrategyTab(
       SimulationType.kimchi,
-      '김프 전략 요약',
+      '전략 보기',
       buyPrice,
       sellPrice,
       profitRateStr,

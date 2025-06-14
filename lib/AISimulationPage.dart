@@ -529,8 +529,8 @@ class _AISimulationPageState extends State<AISimulationPage> {
       appBar: AppBar(
         title: Text(
           widget.simulationType == SimulationType.kimchi
-              ? '김프 매매 시뮬레이션'
-              : 'AI 매매 시뮬레이션',
+              ? '김프 기준 매매'
+              : 'AI 전략 매매',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
