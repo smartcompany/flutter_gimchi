@@ -57,7 +57,11 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
 
   @override
   Widget build(BuildContext context) {
-    final double chartHeight = MediaQuery.of(context).size.height * 0.6;
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+    final double chartHeight = isLandscape
+        ? mediaQuery.size.height * 0.8 // 가로모드: 화면 높이의 80%
+        : mediaQuery.size.height * 0.6; // 세로모드: 기존 60%
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5FA),
@@ -72,7 +76,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         foregroundColor: Colors.black87,
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
           child: Column(
             children: [

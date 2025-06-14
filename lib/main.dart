@@ -549,14 +549,18 @@ class _MyHomePageState extends State<MyHomePage> {
     ChartData? todayKimchi =
         kimchiPremium.isNotEmpty ? kimchiPremium.last : null;
 
-    final double chartHeight = MediaQuery.of(context).size.height * 0.3;
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+    final double chartHeight = isLandscape
+        ? mediaQuery.size.height * 0.6 // 가로모드: 60%
+        : mediaQuery.size.height * 0.3; // 세로모드: 기존 30%
+
     final singleChildScrollView = SingleChildScrollView(
       controller: _scrollController,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
         child: Column(
           children: [
-            // 👇 여기 추가!
             _buildTodayComment(todayUsdt),
             _buildTodayInfoCard(todayUsdt, todayRate, todayKimchi),
             const SizedBox(height: 4),
