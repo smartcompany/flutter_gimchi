@@ -128,6 +128,8 @@ class _MyHomePageState extends State<MyHomePage> {
   double kimchiMin = 0;
   double kimchiMax = 0;
 
+  ChartOnlyPageModel? chartOnlyPageModel;
+
   DateTimeAxis primaryXAxis = DateTimeAxis(
     edgeLabelPlacement: EdgeLabelPlacement.shift,
     intervalType: DateTimeIntervalType.days,
@@ -295,6 +297,18 @@ class _MyHomePageState extends State<MyHomePage> {
           rate.sort((a, b) => a.time.compareTo(b.time));
           usdtChartData = rate;
         }
+
+        chartOnlyPageModel = ChartOnlyPageModel(
+          exchangeRates: exchangeRates,
+          kimchiPremium: kimchiPremium,
+          strategyList: strategyList,
+          usdtMap: usdtMap,
+          usdtChartData: usdtChartData,
+          aiTradeResults: aiTradeResults,
+          kimchiMin: kimchiMin,
+          kimchiMax: kimchiMax,
+        );
+
         _loading = false;
         _loadError = null;
       });
@@ -551,9 +565,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
-    final double chartHeight = isLandscape
-        ? mediaQuery.size.height * 0.6 // 가로모드: 60%
-        : mediaQuery.size.height * 0.3; // 세로모드: 기존 30%
+    final double chartHeight =
+        isLandscape
+            ? mediaQuery.size.height *
+                0.6 // 가로모드: 60%
+            : mediaQuery.size.height * 0.3; // 세로모드: 기존 30%
 
     final singleChildScrollView = SingleChildScrollView(
       controller: _scrollController,
@@ -885,20 +901,12 @@ class _MyHomePageState extends State<MyHomePage> {
               icon: const Icon(Icons.open_in_full, color: Colors.deepPurple),
               tooltip: '차트 확대',
               onPressed: () {
+                // ChartOnlyPage로 전달
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder:
-                        (_) => ChartOnlyPage(
-                          exchangeRates: exchangeRates,
-                          kimchiPremium: kimchiPremium,
-                          usdtChartData: usdtChartData,
-                          aiTradeResults: aiTradeResults,
-                          kimchiMin: kimchiMin,
-                          kimchiMax: kimchiMax,
-                          usdtMap: usdtMap,
-                          strategyList: strategyList,
-                        ),
-                    fullscreenDialog: true, // ← 이 옵션이 present 스타일!
+                        (_) => ChartOnlyPage.fromModel(chartOnlyPageModel!),
+                    fullscreenDialog: true,
                   ),
                 );
               },
@@ -1228,6 +1236,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     usdtMap: usdtMap,
                                     strategyList: strategyList,
                                     usdExchangeRates: exchangeRates,
+                                    chartOnlyPageModel: chartOnlyPageModel,
                                   ),
                               fullscreenDialog: true,
                             ),

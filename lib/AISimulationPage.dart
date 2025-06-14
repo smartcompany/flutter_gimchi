@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:usdt_signal/ChartOnlyPage.dart'; // ChartOnlyPageModel import 추가
 import 'package:usdt_signal/api_service.dart';
 
 enum SimulationType { ai, kimchi }
@@ -12,12 +13,16 @@ class AISimulationPage extends StatefulWidget {
   final List strategyList;
   final List<ChartData> usdExchangeRates;
 
+  // ChartOnlyPageModel을 직접 받는 생성자 추가
+  final ChartOnlyPageModel? chartOnlyPageModel;
+
   const AISimulationPage({
     super.key,
     required this.simulationType,
     required this.usdtMap,
     required this.strategyList,
     required this.usdExchangeRates,
+    this.chartOnlyPageModel,
   });
 
   // 외부에서 참조 가능한 static 변수로 변경
@@ -80,10 +85,12 @@ class _AISimulationPageState extends State<AISimulationPage>
     _bottomBarOffset = Tween<Offset>(
       begin: const Offset(0, 1.0), // 아래에서 시작
       end: Offset.zero, // 제자리
-    ).animate(CurvedAnimation(
-      parent: _bottomBarController,
-      curve: Curves.easeOutBack, // 중력 느낌의 곡선
-    ));
+    ).animate(
+      CurvedAnimation(
+        parent: _bottomBarController,
+        curve: Curves.easeOutBack, // 중력 느낌의 곡선
+      ),
+    );
 
     // 페이지가 열릴 때 애니메이션 실행
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -844,7 +851,8 @@ class _AISimulationPageState extends State<AISimulationPage>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.center, // ← 여기서 center로 맞춰줌
                     children: [
                       const Text(
                         '매매 기간',
@@ -853,6 +861,51 @@ class _AISimulationPageState extends State<AISimulationPage>
                           fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.left,
+                      ),
+                      const Spacer(),
+                      // 차트로 보기 버튼 추가
+                      OutlinedButton.icon(
+                        icon: const Icon(
+                          Icons.show_chart,
+                          color: Colors.deepPurple,
+                        ),
+                        label: const Text(
+                          '차트로 보기',
+                          style: TextStyle(
+                            color: Colors.deepPurple,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.deepPurple),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          minimumSize: const Size(0, 36), // ← 버튼 높이 고정
+                          tapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap, // ← 여백 최소화
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => ChartOnlyPage.fromModel(
+                                    widget.chartOnlyPageModel!,
+                                    initialShowAITrading:
+                                        widget.simulationType ==
+                                        SimulationType.ai,
+                                    initialShowGimchiTrading:
+                                        widget.simulationType ==
+                                        SimulationType.kimchi,
+                                  ),
+                              fullscreenDialog: true,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -867,7 +920,9 @@ class _AISimulationPageState extends State<AISimulationPage>
                           final startDate = results.first.buyDate;
                           final endDate = results.last.analysisDate;
                           final text =
-                              results.isEmpty ? '-' : '${startDate} ~ ${endDate}';
+                              results.isEmpty
+                                  ? '-'
+                                  : '${startDate} ~ ${endDate}';
 
                           return Text(
                             text,

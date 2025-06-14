@@ -15,6 +15,11 @@ class ChartOnlyPage extends StatefulWidget {
   final double kimchiMin;
   final double kimchiMax;
 
+  // AI/김프 매매 체크박스 초기값을 받을 수 있도록 파라미터 추가
+  final bool initialShowAITrading;
+  final bool initialShowGimchiTrading;
+
+  // 기존 생성자
   const ChartOnlyPage({
     super.key,
     required this.exchangeRates,
@@ -25,7 +30,25 @@ class ChartOnlyPage extends StatefulWidget {
     required this.kimchiMin,
     required this.kimchiMax,
     required this.strategyList,
+    this.initialShowAITrading = false,
+    this.initialShowGimchiTrading = false,
   });
+
+  // 모델을 받는 생성자도 초기값 전달 가능하게 수정
+  ChartOnlyPage.fromModel(
+    ChartOnlyPageModel model, {
+    Key? key,
+    this.initialShowAITrading = false,
+    this.initialShowGimchiTrading = false,
+  }) : exchangeRates = model.exchangeRates,
+       kimchiPremium = model.kimchiPremium,
+       strategyList = model.strategyList,
+       usdtMap = model.usdtMap,
+       usdtChartData = model.usdtChartData,
+       aiTradeResults = model.aiTradeResults,
+       kimchiMin = model.kimchiMin,
+       kimchiMax = model.kimchiMax,
+       super(key: key);
 
   @override
   State<ChartOnlyPage> createState() => _ChartOnlyPageState();
@@ -56,12 +79,49 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
   );
 
   @override
+  void initState() {
+    super.initState();
+    // 초기 체크박스 상태를 위젯 파라미터로부터 세팅
+    showAITrading = widget.initialShowAITrading;
+    showGimchiTrading = widget.initialShowGimchiTrading;
+
+    // 체크박스에 따라 필요한 동작 자동 실행
+    if (showAITrading) {
+      showGimchiTrading = false;
+      showKimchiPremium = false;
+      showExchangeRate = false;
+      aiTradeResults = AISimulationPage.simulateResults(
+        widget.exchangeRates,
+        widget.strategyList,
+        widget.usdtMap,
+      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _autoZoomToAITrades();
+      });
+    } else if (showGimchiTrading) {
+      showAITrading = false;
+      showKimchiPremium = false;
+      showExchangeRate = false;
+      aiTradeResults = AISimulationPage.gimchiSimulateResults(
+        widget.exchangeRates,
+        widget.strategyList,
+        widget.usdtMap,
+      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _autoZoomToAITrades();
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
-    final double chartHeight = isLandscape
-        ? mediaQuery.size.height * 0.8 // 가로모드: 화면 높이의 80%
-        : mediaQuery.size.height * 0.6; // 세로모드: 기존 60%
+    final double chartHeight =
+        isLandscape
+            ? mediaQuery.size.height *
+                0.8 // 가로모드: 화면 높이의 80%
+            : mediaQuery.size.height * 0.6; // 세로모드: 기존 60%
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5FA),
@@ -595,4 +655,26 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
     }
     return kimchiPlotBands;
   }
+}
+
+class ChartOnlyPageModel {
+  final List<ChartData> exchangeRates;
+  final List<ChartData> kimchiPremium;
+  final List strategyList;
+  final Map<String, dynamic> usdtMap;
+  final List<USDTChartData> usdtChartData;
+  final List aiTradeResults;
+  final double kimchiMin;
+  final double kimchiMax;
+
+  ChartOnlyPageModel({
+    required this.exchangeRates,
+    required this.kimchiPremium,
+    required this.strategyList,
+    required this.usdtMap,
+    required this.usdtChartData,
+    required this.aiTradeResults,
+    required this.kimchiMin,
+    required this.kimchiMax,
+  });
 }
