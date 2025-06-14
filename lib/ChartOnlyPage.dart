@@ -63,7 +63,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
       backgroundColor: const Color(0xFFF8F5FA),
       appBar: AppBar(
         title: const Text(
-          "USDT Signal (차트만)",
+          "차트 추세 분석",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
