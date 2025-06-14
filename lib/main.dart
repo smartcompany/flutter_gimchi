@@ -120,7 +120,6 @@ class _MyHomePageState extends State<MyHomePage> {
   ChartData? latestExchangeRate;
   List<USDTChartData> usdtChartData = [];
   Map<String, dynamic> usdtMap = {};
-  List<SimulationResult> aiTradeResults = [];
   List strategyList = [];
   bool _strategyUnlocked = false; // 광고 시청 여부
   RewardedAd? _rewardedAd;
@@ -304,7 +303,6 @@ class _MyHomePageState extends State<MyHomePage> {
           strategyList: strategyList,
           usdtMap: usdtMap,
           usdtChartData: usdtChartData,
-          aiTradeResults: aiTradeResults,
           kimchiMin: kimchiMin,
           kimchiMax: kimchiMax,
         );
@@ -410,57 +408,6 @@ class _MyHomePageState extends State<MyHomePage> {
     if (data.isEmpty) return null;
     final max = data.map((e) => e.high).reduce((a, b) => a > b ? a : b);
     return max * 1.02;
-  }
-
-  void _autoZoomToAITrades() {
-    bool show = showAITrading || showGimchiTrading;
-    if (show && aiTradeResults.isNotEmpty && usdtChartData.isNotEmpty) {
-      // AI 매수/매도 날짜 리스트
-      final allDates = [
-        ...aiTradeResults
-            .where((r) => r.buyDate != null)
-            .map((r) => DateTime.parse(r.buyDate)),
-        ...aiTradeResults
-            .where((r) => r.sellDate != null)
-            .map((r) => DateTime.parse(r.sellDate!)),
-      ];
-      if (allDates.isNotEmpty) {
-        allDates.sort();
-        DateTime aiStart = allDates.first;
-        DateTime aiEnd = allDates.last;
-
-        // 여유를 위해 좌우로 2~3일 추가
-        aiStart = aiStart.subtract(const Duration(days: 2));
-        aiEnd = aiEnd.add(const Duration(days: 2));
-
-        // 전체 차트 날짜 범위
-        final chartStart = usdtChartData.first.time;
-        final chartEnd = usdtChartData.last.time;
-        final totalSpan =
-            chartEnd.difference(chartStart).inMilliseconds.toDouble();
-        final aiSpan = aiEnd.difference(aiStart).inMilliseconds.toDouble();
-
-        // AI 매매 구간이 전체의 150%만 보이도록 줌 (여유 있게)
-        final zoomFactor = (aiSpan / totalSpan) * 2; // 더 크게 줌인
-        final zoomPosition = (aiStart
-                    .difference(chartStart)
-                    .inMilliseconds
-                    .toDouble() /
-                totalSpan)
-            .clamp(0.0, 1.0);
-
-        print('zoomFactor: $zoomFactor');
-        print('zoomPosition: $zoomPosition');
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _zoomPanBehavior.zoomToSingleAxis(
-            primaryXAxis,
-            zoomPosition,
-            zoomFactor.clamp(0.01, 1.0), // 최소 5%까지 줌인 허용
-          );
-        });
-      }
-    }
   }
 
   // 조건 체크 함수
@@ -725,21 +672,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 // Date로 부터 USDT 정보를 얻는다.
                 final usdtValue = getUsdtValue(clickedPoint.x);
                 // 김치 프리미엄 계산은 USDT 값과 환율을 이용
-                double kimchiPremiumValue;
-
-                // AI 매도, 김프 매도 일 경우 김치 프리미엄은 simulationResult의 usdExchageRateAtSell을 사용 계산
-                if (args.header == 'AI 매도' || args.header == '김프 매도') {
-                  final simulationResult = getSimulationResult(clickedPoint.x);
-                  kimchiPremiumValue =
-                      simulationResult?.gimchiPremiumAtSell() ?? 0.0;
-                } else if (args.header == 'AI 매수' || args.header == '김프 매수') {
-                  final simulationResult = getSimulationResult(clickedPoint.x);
-                  kimchiPremiumValue =
-                      simulationResult?.gimchiPremiumAtBuy() ?? 0.0;
-                } else {
-                  kimchiPremiumValue =
-                      ((usdtValue - exchangeRate) / exchangeRate * 100);
-                }
+                double kimchiPremiumValue =
+                    ((usdtValue - exchangeRate) / exchangeRate * 100);
 
                 // 툴팁 텍스트를 기존 텍스트에 김치 프리미엄 값을 추가
                 args.text =
@@ -831,38 +765,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     yAxisName: 'kimchiAxis',
                     animationDuration: 0,
                   ),
-                if ((showAITrading || showGimchiTrading) &&
-                    aiTradeResults.isNotEmpty) ...[
-                  ScatterSeries<dynamic, DateTime>(
-                    name: showAITrading ? 'AI 매수' : '김프 매수',
-                    dataSource: aiTradeResults.toList(),
-                    xValueMapper: (r, _) => DateTime.parse(r.buyDate),
-                    yValueMapper: (r, _) => r.buyPrice,
-                    markerSettings: const MarkerSettings(
-                      isVisible: true,
-                      shape: DataMarkerType.triangle,
-                      color: Colors.red,
-                      width: 12,
-                      height: 12,
-                    ),
-                  ),
-                  ScatterSeries<dynamic, DateTime>(
-                    name: showAITrading ? 'AI 매도' : '김프 매도',
-                    dataSource:
-                        aiTradeResults
-                            .where((r) => r.sellDate != null)
-                            .toList(),
-                    xValueMapper: (r, _) => DateTime.parse(r.sellDate!),
-                    yValueMapper: (r, _) => r.sellPrice!,
-                    markerSettings: const MarkerSettings(
-                      isVisible: true,
-                      shape: DataMarkerType.invertedTriangle,
-                      color: Colors.blue,
-                      width: 12,
-                      height: 12,
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -928,29 +830,6 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
     return 0.0;
-  }
-
-  // 시뮬레이션 결과를 날짜로 조회하는 함수 추가
-  SimulationResult? getSimulationResult(DateTime date) {
-    for (final result in aiTradeResults) {
-      if (result.buyDate != null) {
-        final buyDate = DateTime.parse(result.buyDate);
-        if (buyDate.year == date.year &&
-            buyDate.month == date.month &&
-            buyDate.day == date.day) {
-          return result;
-        }
-      }
-      if (result.sellDate != null) {
-        final sellDate = DateTime.parse(result.sellDate!);
-        if (sellDate.year == date.year &&
-            sellDate.month == date.month &&
-            sellDate.day == date.day) {
-          return result;
-        }
-      }
-    }
-    return null;
   }
 
   // USDT 데이터를 날짜로 조회하는 함수 추가

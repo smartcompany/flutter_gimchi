@@ -11,7 +11,6 @@ class ChartOnlyPage extends StatefulWidget {
   final List strategyList;
   final Map<String, dynamic> usdtMap; // USDT 데이터 맵
   final List<USDTChartData> usdtChartData;
-  final List aiTradeResults;
   final double kimchiMin;
   final double kimchiMax;
 
@@ -26,7 +25,6 @@ class ChartOnlyPage extends StatefulWidget {
     required this.kimchiPremium,
     required this.usdtMap,
     required this.usdtChartData,
-    required this.aiTradeResults,
     required this.kimchiMin,
     required this.kimchiMax,
     required this.strategyList,
@@ -45,7 +43,6 @@ class ChartOnlyPage extends StatefulWidget {
        strategyList = model.strategyList,
        usdtMap = model.usdtMap,
        usdtChartData = model.usdtChartData,
-       aiTradeResults = model.aiTradeResults,
        kimchiMin = model.kimchiMin,
        kimchiMax = model.kimchiMax,
        super(key: key);
@@ -663,7 +660,6 @@ class ChartOnlyPageModel {
   final List strategyList;
   final Map<String, dynamic> usdtMap;
   final List<USDTChartData> usdtChartData;
-  final List aiTradeResults;
   final double kimchiMin;
   final double kimchiMax;
 
@@ -673,7 +669,6 @@ class ChartOnlyPageModel {
     required this.strategyList,
     required this.usdtMap,
     required this.usdtChartData,
-    required this.aiTradeResults,
     required this.kimchiMin,
     required this.kimchiMax,
   });
