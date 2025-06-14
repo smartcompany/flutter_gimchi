@@ -1027,7 +1027,11 @@ class _MyHomePageState extends State<MyHomePage> {
               SizedBox(
                 height: 300,
                 child: TabBarView(
-                  children: [_buildAiStrategyTab(), _buildGimchiStrategyTab()],
+                  physics: const NeverScrollableScrollPhysics(), // ← 이 줄 추가!
+                  children: [
+                    _buildAiStrategyTab(),
+                    _buildGimchiStrategyTab(),
+                  ],
                 ),
               ),
             ],
