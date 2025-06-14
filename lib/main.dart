@@ -832,16 +832,17 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => ChartOnlyPage(
-                      exchangeRates: exchangeRates,
-                      kimchiPremium: kimchiPremium,
-                      usdtChartData: usdtChartData,
-                      aiTradeResults: aiTradeResults,
-                      kimchiMin: kimchiMin,
-                      kimchiMax: kimchiMax,
-                      usdtMap: usdtMap,
-                      strategyList: strategyList,
-                    ),
+                    builder:
+                        (_) => ChartOnlyPage(
+                          exchangeRates: exchangeRates,
+                          kimchiPremium: kimchiPremium,
+                          usdtChartData: usdtChartData,
+                          aiTradeResults: aiTradeResults,
+                          kimchiMin: kimchiMin,
+                          kimchiMax: kimchiMax,
+                          usdtMap: usdtMap,
+                          strategyList: strategyList,
+                        ),
                     fullscreenDialog: true, // ← 이 옵션이 present 스타일!
                   ),
                 );
@@ -982,26 +983,147 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // --- 기존 AI 매매 전략 UI --- 분리된 메소드
   Widget _buildAiStrategyTab() {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 상단 타이틀과 시뮬레이션 버튼
-          Row(
-            children: [
-              const Text(
-                '전략',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const Spacer(),
-              OutlinedButton(
+    final buyPrice = latestStrategy?['buy_price'];
+    final sellPrice = latestStrategy?['sell_price'];
+    final profitRate = latestStrategy?['expected_return'];
+    final strategy = latestStrategy?['summary'];
+    final profitRateStr =
+        profitRate != null
+            ? (profitRate >= 0
+                ? '+${profitRate.toStringAsFixed(2)}%'
+                : '${profitRate.toStringAsFixed(2)}%')
+            : '-';
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: Colors.white,
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 18),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '매수: ${buyPrice ?? '-'}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                Text(
+                  '매도: ${sellPrice ?? '-'}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '수익률: $profitRateStr',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                // 라운드 버튼으로 요약
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.lightbulb, color: Colors.deepPurple),
+                    label: const Text(
+                      'AI 전략 요약',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.deepPurple,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple.shade50, // 연보라색 배경
+                      foregroundColor: Colors.deepPurple,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    ),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder:
+                            (context) => AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              title: Row(
+                                children: const [
+                                  Icon(Icons.lightbulb, color: Colors.orange),
+                                  SizedBox(width: 8),
+                                  Text('AI 전략 요약'),
+                                ],
+                              ),
+                              content: SingleChildScrollView(
+                                child: Text(
+                                  strategy != null &&
+                                          strategy is String &&
+                                          strategy.isNotEmpty
+                                      ? strategy
+                                      : '전략 요약 정보가 없습니다.',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('닫기'),
+                                ),
+                              ],
+                            ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.bar_chart, color: Colors.deepPurple),
+                label: const Text(
+                  '시뮬레이션 해보기',
+                  style: TextStyle(
+                    color: Colors.deepPurple,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.deepPurple),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  foregroundColor: Colors.deepPurple,
+                ),
                 onPressed:
                     latestStrategy == null
                         ? null
                         : () {
-                          Navigator.of(
-                            _scrollController.position.context.storageContext,
-                          ).push(
+                          Navigator.of(context).push(
                             MaterialPageRoute(
                               builder:
                                   (_) => AISimulationPage(
@@ -1013,214 +1135,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           );
                         },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.deepPurple,
-                  side: const BorderSide(color: Colors.deepPurple),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  textStyle: const TextStyle(fontSize: 15),
-                ),
-                child: const Text('AI 매매 전략 시뮬레이션'),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // 전략 테이블
-          Table(
-            border: TableBorder.all(color: Colors.grey.shade300),
-            columnWidths: const {
-              0: IntrinsicColumnWidth(),
-              1: FlexColumnWidth(),
-            },
-            children: [
-              TableRow(
-                children: [
-                  StrategyCell('추천 매수 가격', isHeader: true),
-                  StrategyCell('${latestStrategy?['buy_price'] ?? '-'}'),
-                ],
-              ),
-              TableRow(
-                children: [
-                  StrategyCell('추천 매도 가격', isHeader: true),
-                  StrategyCell('${latestStrategy?['sell_price'] ?? '-'}'),
-                ],
-              ),
-              TableRow(
-                children: [
-                  StrategyCell('예상 기대 수익', isHeader: true),
-                  StrategyCell('${latestStrategy?['expected_return'] ?? '-'}'),
-                ],
-              ),
-              TableRow(
-                children: [
-                  StrategyCell('AI 요약', isHeader: true),
-                  StrategyCell('${latestStrategy?['summary'] ?? '-'}'),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // 히스토리 버튼
-          Align(
-            alignment: Alignment.centerRight,
-            child: OutlinedButton(
-              onPressed: () async {
-                final List<dynamic> history = strategyList;
-                if (mounted) {
-                  showDialog(
-                    context: _scrollController.position.context.storageContext,
-                    builder: (context) {
-                      return Dialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        backgroundColor: Colors.white,
-                        child: Container(
-                          constraints: const BoxConstraints(
-                            maxHeight: 500,
-                            maxWidth: 380,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 20,
-                            horizontal: 18,
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Text(
-                                    '매매 전략 히스토리',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.close,
-                                      color: Colors.deepPurple,
-                                    ),
-                                    onPressed:
-                                        () => Navigator.of(context).pop(),
-                                  ),
-                                ],
-                              ),
-                              const Divider(height: 18, thickness: 1),
-                              Expanded(
-                                child: Scrollbar(
-                                  thumbVisibility: true,
-                                  child: ListView.separated(
-                                    itemCount: history.length,
-                                    separatorBuilder:
-                                        (_, __) => const Divider(height: 18),
-                                    itemBuilder: (context, idx) {
-                                      final strat = history[idx];
-                                      return Card(
-                                        elevation: 1,
-                                        color: Colors.grey[50],
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 12,
-                                            horizontal: 14,
-                                          ),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  const Icon(
-                                                    Icons.calendar_today,
-                                                    size: 16,
-                                                    color: Colors.deepPurple,
-                                                  ),
-                                                  const SizedBox(width: 6),
-                                                  Text(
-                                                    strat['analysis_date'] ??
-                                                        '-',
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 15,
-                                                      color: Colors.deepPurple,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 8),
-                                              HistoryRow(
-                                                label: '매수',
-                                                value: strat['buy_price'],
-                                              ),
-                                              HistoryRow(
-                                                label: '매도',
-                                                value: strat['sell_price'],
-                                              ),
-                                              HistoryRow(
-                                                label: '예상 수익',
-                                                value: strat['expected_return'],
-                                              ),
-                                              const SizedBox(height: 6),
-                                              const Text(
-                                                '요약',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              Text(
-                                                strat['summary'] ?? '-',
-                                                style: const TextStyle(
-                                                  fontSize: 13,
-                                                  color: Colors.black87,
-                                                  height: 1.4,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                }
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.deepPurple,
-                side: const BorderSide(color: Colors.deepPurple),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                textStyle: const TextStyle(fontSize: 15),
-              ),
-              child: const Text('히스토리'),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
