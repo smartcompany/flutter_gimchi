@@ -549,8 +549,6 @@ class _MyHomePageState extends State<MyHomePage> {
     ChartData? todayKimchi =
         kimchiPremium.isNotEmpty ? kimchiPremium.last : null;
 
-    final String todayComment = '⚠️ 최근 하락세, 현재 매수 유리 구간입니다';
-
     final double chartHeight = MediaQuery.of(context).size.height * 0.3;
     final singleChildScrollView = SingleChildScrollView(
       controller: _scrollController,
@@ -601,8 +599,8 @@ class _MyHomePageState extends State<MyHomePage> {
     double exchangeRateValue = latestExchangeRate?.value ?? 0.0;
 
     if (_selectedStrategyTabIndex == 0) {
-      buyPrice = latestStrategy?['buyPrice'] ?? 0.0;
-      sellPrice = latestStrategy?['sellPrice'] ?? 0.0;
+      buyPrice = latestStrategy?['buy_price'] ?? 0;
+      sellPrice = latestStrategy?['sell_price'] ?? 0;
     } else {
       buyPrice =
           (exchangeRateValue * (1 + AISimulationPage.kimchiBuyThreshold / 100));
@@ -1028,10 +1026,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 height: 300,
                 child: TabBarView(
                   physics: const NeverScrollableScrollPhysics(), // ← 이 줄 추가!
-                  children: [
-                    _buildAiStrategyTab(),
-                    _buildGimchiStrategyTab(),
-                  ],
+                  children: [_buildAiStrategyTab(), _buildGimchiStrategyTab()],
                 ),
               ),
             ],

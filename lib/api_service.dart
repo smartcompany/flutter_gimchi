@@ -77,7 +77,17 @@ class ApiService {
     if (response.statusCode == 200) {
       final strategyText = utf8.decode(response.bodyBytes);
       try {
-        return json.decode(strategyText);
+        final rawList = json.decode(strategyText);
+        // 모든 숫자 필드를 double로 변환
+        final converted =
+            (rawList as List).map((item) {
+              final map = Map<String, dynamic>.from(item);
+              map.updateAll(
+                (key, value) => value is int ? value.toDouble() : value,
+              );
+              return map;
+            }).toList();
+        return converted;
       } catch (e) {
         print('전략 파싱 에러: $e');
       }
