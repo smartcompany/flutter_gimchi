@@ -952,7 +952,7 @@ class _MyHomePageState extends State<MyHomePage> {
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         color: Colors.white,
-        margin: const EdgeInsets.only(bottom: 24),
+        margin: const EdgeInsets.only(bottom: 10),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 16),
           child: Column(
@@ -966,7 +966,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 450, // 기존 전략 카드 높이에 맞게 조정
+                height: 300,
                 child: TabBarView(
                   children: [
                     _buildAiStrategyTab(), // --- 기존 AI 매매 전략 UI --- 분리
@@ -1013,12 +1013,18 @@ class _MyHomePageState extends State<MyHomePage> {
     strategy,
   ) {
     // 소숫점 첫째자리까지로 변환
-    String buyPriceStr = buyPrice != null
-        ? (buyPrice is num ? buyPrice.toStringAsFixed(1) : buyPrice.toString())
-        : '-';
-    String sellPriceStr = sellPrice != null
-        ? (sellPrice is num ? sellPrice.toStringAsFixed(1) : sellPrice.toString())
-        : '-';
+    String buyPriceStr =
+        buyPrice != null
+            ? (buyPrice is num
+                ? buyPrice.toStringAsFixed(1)
+                : buyPrice.toString())
+            : '-';
+    String sellPriceStr =
+        sellPrice != null
+            ? (sellPrice is num
+                ? sellPrice.toStringAsFixed(1)
+                : sellPrice.toString())
+            : '-';
 
     return Card(
       elevation: 2,
@@ -1164,6 +1170,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     strategyList: strategyList,
                                     usdExchangeRates: exchangeRates,
                                   ),
+                              fullscreenDialog: true,
                             ),
                           );
                         },
