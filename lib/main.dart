@@ -994,6 +994,32 @@ class _MyHomePageState extends State<MyHomePage> {
                 : '${profitRate.toStringAsFixed(2)}%')
             : '-';
 
+    return makeStrategyTab(
+      SimulationType.ai,
+      'AI 전략 요약',
+      buyPrice,
+      sellPrice,
+      profitRateStr,
+      strategy,
+    );
+  }
+
+  Card makeStrategyTab(
+    SimulationType type,
+    String title,
+    buyPrice,
+    sellPrice,
+    String profitRateStr,
+    strategy,
+  ) {
+    // 소숫점 첫째자리까지로 변환
+    String buyPriceStr = buyPrice != null
+        ? (buyPrice is num ? buyPrice.toStringAsFixed(1) : buyPrice.toString())
+        : '-';
+    String sellPriceStr = sellPrice != null
+        ? (sellPrice is num ? sellPrice.toStringAsFixed(1) : sellPrice.toString())
+        : '-';
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -1009,14 +1035,14 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '매수: ${buyPrice ?? '-'}',
+                  '매수: $buyPriceStr',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                   ),
                 ),
                 Text(
-                  '매도: ${sellPrice ?? '-'}',
+                  '매도: $sellPriceStr',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -1040,8 +1066,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   alignment: Alignment.centerLeft,
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.lightbulb, color: Colors.deepPurple),
-                    label: const Text(
-                      'AI 전략 요약',
+                    label: Text(
+                      title,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -1055,7 +1081,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 10,
+                      ),
                     ),
                     onPressed: () {
                       showDialog(
@@ -1066,10 +1095,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                 borderRadius: BorderRadius.circular(18),
                               ),
                               title: Row(
-                                children: const [
-                                  Icon(Icons.lightbulb, color: Colors.orange),
-                                  SizedBox(width: 8),
-                                  Text('AI 전략 요약'),
+                                children: [
+                                  const Icon(
+                                    Icons.lightbulb,
+                                    color: Colors.orange,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(title),
                                 ],
                               ),
                               content: SingleChildScrollView(
@@ -1127,7 +1159,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             MaterialPageRoute(
                               builder:
                                   (_) => AISimulationPage(
-                                    simulationType: SimulationType.ai,
+                                    simulationType: type,
                                     usdtMap: usdtMap,
                                     strategyList: strategyList,
                                     usdExchangeRates: exchangeRates,
@@ -1144,240 +1176,28 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildGimchiStrategyTab() {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 상단 타이틀과 시뮬레이션 버튼
-          Row(
-            children: [
-              const Text(
-                '전략',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const Spacer(),
-              OutlinedButton(
-                onPressed: () {
-                  Navigator.of(
-                    _scrollController.position.context.storageContext,
-                  ).push(
-                    MaterialPageRoute(
-                      builder:
-                          (_) => AISimulationPage(
-                            simulationType: SimulationType.kimchi,
-                            usdtMap: usdtMap,
-                            strategyList: strategyList,
-                            usdExchangeRates: exchangeRates,
-                          ),
-                    ),
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.deepPurple,
-                  side: const BorderSide(color: Colors.deepPurple),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  textStyle: const TextStyle(fontSize: 15),
-                ),
-                child: const Text('김프 매매 시뮬레이션'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // 전략 테이블 (더미 데이터 또는 gimchi strategy 값 사용)
-          Table(
-            border: TableBorder.all(color: Colors.grey.shade300),
-            columnWidths: const {
-              0: IntrinsicColumnWidth(),
-              1: FlexColumnWidth(),
-            },
-            children: [
-              TableRow(
-                children: [
-                  StrategyCell('추천 매수 가격', isHeader: true),
-                  // 환율 대비 매수 기준(%) 적용
-                  StrategyCell(
-                    latestExchangeRate != null
-                        ? (latestExchangeRate!.value *
-                                (1 + AISimulationPage.kimchiBuyThreshold / 100))
-                            .toStringAsFixed(1)
-                        : '-',
-                  ),
-                ],
-              ),
-              TableRow(
-                children: [
-                  StrategyCell('추천 매도 가격', isHeader: true),
-                  // 환율 대비 매도 기준(%) 적용
-                  StrategyCell(
-                    latestExchangeRate != null
-                        ? (latestExchangeRate!.value *
-                                (1 +
-                                    AISimulationPage.kimchiSellThreshold / 100))
-                            .toStringAsFixed(1)
-                        : '-',
-                  ),
-                ],
-              ),
-              TableRow(
-                children: [
-                  StrategyCell('전략 요약', isHeader: true),
-                  StrategyCell(
-                    '김치 프리미엄이 ${AISimulationPage.kimchiBuyThreshold}% 이하일 때 매수, '
-                    '${AISimulationPage.kimchiSellThreshold}% 이상일 때 매도',
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // 히스토리 버튼
-          Align(
-            alignment: Alignment.centerRight,
-            child: OutlinedButton(
-              onPressed: () async {
-                // 김프 전략 히스토리 불러오기 (예시)
-                final List<dynamic> history = kimchiPremium;
+    final buyPrice =
+        (latestExchangeRate!.value *
+            (1 + AISimulationPage.kimchiBuyThreshold / 100));
+    final sellPrice =
+        (latestExchangeRate!.value *
+            (1 + AISimulationPage.kimchiSellThreshold / 100));
 
-                if (mounted) {
-                  showDialog(
-                    context: _scrollController.position.context.storageContext,
-                    builder: (context) {
-                      return Dialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        backgroundColor: Colors.white,
-                        child: Container(
-                          constraints: const BoxConstraints(
-                            maxHeight: 500,
-                            maxWidth: 380,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 20,
-                            horizontal: 18,
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Text(
-                                    '김프 히스토리',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.close,
-                                      color: Colors.deepPurple,
-                                    ),
-                                    onPressed:
-                                        () => Navigator.of(context).pop(),
-                                  ),
-                                ],
-                              ),
-                              const Divider(height: 18, thickness: 1),
-                              Expanded(
-                                child: Scrollbar(
-                                  thumbVisibility: true,
-                                  child: ListView.separated(
-                                    itemCount: history.length,
-                                    separatorBuilder:
-                                        (_, __) => const Divider(height: 18),
-                                    itemBuilder: (context, idx) {
-                                      final strat = history[idx] as ChartData;
-                                      return Card(
-                                        elevation: 1,
-                                        color: Colors.grey[50],
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 12,
-                                            horizontal: 14,
-                                          ),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  const Icon(
-                                                    Icons.calendar_today,
-                                                    size: 16,
-                                                    color: Colors.deepPurple,
-                                                  ),
-                                                  const SizedBox(width: 6),
-                                                  Text(
-                                                    (strat.time != null
-                                                        ? DateFormat(
-                                                          'yyyy-MM-dd',
-                                                        ).format(strat.time)
-                                                        : '-'),
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 15,
-                                                      color: Colors.deepPurple,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 6),
-                                              Text(
-                                                strat.value.toString() ?? '-',
-                                                style: const TextStyle(
-                                                  fontSize: 13,
-                                                  color: Colors.black87,
-                                                  height: 1.4,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                }
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.deepPurple,
-                side: const BorderSide(color: Colors.deepPurple),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                textStyle: const TextStyle(fontSize: 15),
-              ),
-              child: const Text('히스토리'),
-            ),
-          ),
-        ],
-      ),
+    final profitRate =
+        AISimulationPage.kimchiSellThreshold -
+        AISimulationPage.kimchiBuyThreshold;
+    final strategy =
+        '김치 프리미엄이 ${AISimulationPage.kimchiBuyThreshold}% 이하일 때 매수, '
+        '${AISimulationPage.kimchiSellThreshold}% 이상일 때 매도';
+    final profitRateStr = '+${profitRate.toStringAsFixed(2)}%';
+
+    return makeStrategyTab(
+      SimulationType.kimchi,
+      '김프 전략 요약',
+      buyPrice,
+      sellPrice,
+      profitRateStr,
+      strategy,
     );
   }
 }
