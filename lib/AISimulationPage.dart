@@ -53,7 +53,8 @@ class AISimulationPage extends StatefulWidget {
   State<AISimulationPage> createState() => _AISimulationPageState();
 }
 
-class _AISimulationPageState extends State<AISimulationPage> {
+class _AISimulationPageState extends State<AISimulationPage>
+    with SingleTickerProviderStateMixin {
   List<Map<String, dynamic>>? strategies;
   List<SimulationResult> results = [];
   bool loading = true;
@@ -63,10 +64,37 @@ class _AISimulationPageState extends State<AISimulationPage> {
   final NumberFormat krwFormat = NumberFormat("#,##0.#", "ko_KR");
   double totalProfitRate = 0; // 총 수익률 변수 추가
 
+  late AnimationController _bottomBarController;
+  late Animation<Offset> _bottomBarOffset;
+
   @override
   void initState() {
     super.initState();
     runSimulation();
+
+    // 애니메이션 컨트롤러 및 애니메이션 초기화
+    _bottomBarController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _bottomBarOffset = Tween<Offset>(
+      begin: const Offset(0, 1.0), // 아래에서 시작
+      end: Offset.zero, // 제자리
+    ).animate(CurvedAnimation(
+      parent: _bottomBarController,
+      curve: Curves.easeOutBack, // 중력 느낌의 곡선
+    ));
+
+    // 페이지가 열릴 때 애니메이션 실행
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _bottomBarController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _bottomBarController.dispose();
+    super.dispose();
   }
 
   Future<void> runSimulation() async {
@@ -801,145 +829,148 @@ class _AISimulationPageState extends State<AISimulationPage> {
                 ),
       ),
       bottomNavigationBar: SafeArea(
-        child: Card(
-          elevation: 2,
-          margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          color: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '매매 기간',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+        child: SlideTransition(
+          position: _bottomBarOffset,
+          child: Card(
+            elevation: 2,
+            margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '매매 기간',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.left,
                       ),
-                      textAlign: TextAlign.left,
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 12),
-                // 시작일과 종료일 표시
-                Row(
-                  children: [
-                    Builder(
-                      builder: (context) {
-                        // 시작일은 첫 번째 결과의 buyDate, 종료일은 마지막 결과에서 sellDate 가 있으면 그 값, 없으면 buyDate
-                        if (results.isEmpty) return const Text('-');
-                        final startDate = results.first.buyDate;
-                        final endDate = results.last.analysisDate;
-                        final text =
-                            results.isEmpty ? '-' : '${startDate} ~ ${endDate}';
+                    ],
+                  ),
+                  const SizedBox(width: 12),
+                  // 시작일과 종료일 표시
+                  Row(
+                    children: [
+                      Builder(
+                        builder: (context) {
+                          // 시작일은 첫 번째 결과의 buyDate, 종료일은 마지막 결과에서 sellDate 가 있으면 그 값, 없으면 buyDate
+                          if (results.isEmpty) return const Text('-');
+                          final startDate = results.first.buyDate;
+                          final endDate = results.last.analysisDate;
+                          final text =
+                              results.isEmpty ? '-' : '${startDate} ~ ${endDate}';
 
-                        return Text(
-                          text,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepPurple,
-                          ),
-                          softWrap: true,
-                          maxLines: 2,
-                          overflow: TextOverflow.visible,
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      '누적 최종 원화',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                          return Text(
+                            text,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.deepPurple,
+                            ),
+                            softWrap: true,
+                            maxLines: 2,
+                            overflow: TextOverflow.visible,
+                          );
+                        },
                       ),
-                    ),
-                    Text(
-                      '${krwFormat.format(results.isNotEmpty ? results.last.finalKRW.round() : 1000000)}원',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '누적 최종 원화',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      '총 수익률',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      Text(
+                        '${krwFormat.format(results.isNotEmpty ? results.last.finalKRW.round() : 1000000)}원',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple,
+                        ),
                       ),
-                    ),
-                    Text(
-                      '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '총 수익률',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                // === 추정 연 수익률 ===
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      '추정 연 수익률',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      Text(
+                        '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple,
+                        ),
                       ),
-                    ),
-                    Builder(
-                      builder: (context) {
-                        if (results.isEmpty) return const Text('-');
-                        final firstDate = results.first.buyDate;
-                        final lastDate = results.last.analysisDate;
-                        final start = DateTime.tryParse(firstDate);
-                        final end = DateTime.tryParse(lastDate);
-                        if (start == null || end == null)
-                          return const Text('-');
-                        final days = end.difference(start).inDays;
-                        if (days < 1) return const Text('-');
-                        final years = days / 365.0;
-                        final totalReturn = results.last.finalKRW / 1000000;
-                        // 연복리 수익률 공식: (최종/초기)^(1/years) - 1
-                        final annualYield =
-                            (years > 0)
-                                ? (pow(totalReturn, 1 / years) - 1) * 100
-                                : 0.0;
-                        return Text(
-                          '${annualYield.isNaN || annualYield.isInfinite ? 0 : annualYield.toStringAsFixed(2)}%',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepPurple,
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                  // === 추정 연 수익률 ===
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '추정 연 수익률',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Builder(
+                        builder: (context) {
+                          if (results.isEmpty) return const Text('-');
+                          final firstDate = results.first.buyDate;
+                          final lastDate = results.last.analysisDate;
+                          final start = DateTime.tryParse(firstDate);
+                          final end = DateTime.tryParse(lastDate);
+                          if (start == null || end == null)
+                            return const Text('-');
+                          final days = end.difference(start).inDays;
+                          if (days < 1) return const Text('-');
+                          final years = days / 365.0;
+                          final totalReturn = results.last.finalKRW / 1000000;
+                          // 연복리 수익률 공식: (최종/초기)^(1/years) - 1
+                          final annualYield =
+                              (years > 0)
+                                  ? (pow(totalReturn, 1 / years) - 1) * 100
+                                  : 0.0;
+                          return Text(
+                            '${annualYield.isNaN || annualYield.isInfinite ? 0 : annualYield.toStringAsFixed(2)}%',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.deepPurple,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
