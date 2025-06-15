@@ -101,7 +101,7 @@ class MyHomePage extends StatefulWidget {
 
 enum TodayCommentAlarmType { off, ai, kimchi }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final ApiService api = ApiService();
   final GlobalKey chartKey = GlobalKey();
   final ZoomPanBehavior _zoomPanBehavior = ZoomPanBehavior(
@@ -156,6 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     if (!kIsWeb) {
       _requestATT(); // ATT 권한 요청 추가
@@ -166,6 +167,12 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     }
     _loadAllApis();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   // ATT 권한 요청 함수 추가
@@ -507,6 +514,31 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
     );
+  }
+
+  // 2. 포그라운드 복귀 시 알림 권한 체크
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      bool hasPermission = await _hasNotificationPermission();
+      if (!hasPermission && _todayCommentAlarmType != TodayCommentAlarmType.off) {
+        setState(() {
+          _todayCommentAlarmType = TodayCommentAlarmType.off;
+        });
+      }
+    }
+  }
+
+  // 3. 권한 체크 함수 (iOS는 FCM, Android는 permission_handler)
+  Future<bool> _hasNotificationPermission() async {
+    if (Platform.isIOS) {
+      final settings = await FirebaseMessaging.instance.getNotificationSettings();
+      return settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional;
+    } else {
+      final status = await Permission.notification.status;
+      return status.isGranted;
+    }
   }
 
   @override
