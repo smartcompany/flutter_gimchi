@@ -16,6 +16,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'api_service.dart';
 import 'utils.dart';
 import 'widgets.dart';
+import 'package:app_tracking_transparency/app_tracking_transparency.dart'; // ATT 패키지 import 추가
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -155,9 +156,20 @@ class _MyHomePageState extends State<MyHomePage> {
         _loadRewardedAd();
       });
 
+      _requestATT(); // ATT 권한 요청 추가
       _initFCM();
     }
     _loadAllApis();
+  }
+
+  // ATT 권한 요청 함수 추가
+  Future<void> _requestATT() async {
+    if (Platform.isIOS) {
+      final status = await AppTrackingTransparency.trackingAuthorizationStatus;
+      if (status == TrackingStatus.notDetermined) {
+        await AppTrackingTransparency.requestTrackingAuthorization();
+      }
+    }
   }
 
   void _initFCM() async {
