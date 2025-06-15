@@ -226,20 +226,33 @@ class _MyHomePageState extends State<MyHomePage> {
     if (message.notification != null && context.mounted) {
       showDialog(
         context: context,
-        builder:
-            (_) => AlertDialog(
-              title: Text(
-                message.notification!.title ?? '알림',
-                style: const TextStyle(fontSize: 16), // 폰트 사이즈만 추가
-              ),
-              content: Text(message.notification!.body ?? ''),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('확인'),
-                ),
-              ],
+        builder: (_) => AlertDialog(
+          title: Text(
+            message.notification!.title ?? '알림',
+            style: const TextStyle(fontSize: 16),
+          ),
+          content: Text(message.notification!.body ?? ''),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _todayCommentAlarmType = TodayCommentAlarmType.off;
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('허용 안함'),
             ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _todayCommentAlarmType = TodayCommentAlarmType.ai;
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('허용'),
+            ),
+          ],
+        ),
       );
     }
   }
