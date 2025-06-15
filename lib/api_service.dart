@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:usdt_signal/utils.dart';
 
 class ChartData {
   final DateTime time;
@@ -28,6 +31,8 @@ class ApiService {
       "https://rate-history.vercel.app/api/analyze-strategy";
   static const String fcmTokenUrl =
       "https://rate-history.vercel.app/api/fcm-token";
+  static const String userDataUrl =
+      "https://rate-history.vercel.app/api/user-data";
 
   // USDT 데이터
   Future<Map<String, dynamic>> fetchUSDTData() async {
@@ -94,6 +99,92 @@ class ApiService {
       return null;
     } else {
       throw Exception("Failed to fetch strategy: ${response.statusCode}");
+    }
+  }
+
+  // FCM 토큰을 서버에 저장하는 함수
+  static Future<void> saveFcmTokenToServer(String token) async {
+    try {
+      final userId = await getOrCreateUserId();
+      final response = await http.post(
+        Uri.parse(ApiService.fcmTokenUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'token': token,
+          'platform': Platform.isIOS ? 'ios' : 'android',
+          'userId': userId,
+        }),
+      );
+      if (response.statusCode == 200) {
+        print('FCM 토큰 서버 저장 성공');
+      } else {
+        print('FCM 토큰 서버 저장 실패: ${response.body}');
+      }
+    } catch (e) {
+      print('FCM 토큰 서버 저장 에러: $e');
+    }
+  }
+
+  static Future<bool> saveAndSyncUserData(
+    Map<UserDataKey, dynamic> newUserData,
+  ) async {
+    final userId = await getOrCreateUserId();
+    final prefs = await SharedPreferences.getInstance();
+    // 기존 데이터 읽기
+    final oldJson = prefs.getString('userData');
+    Map<UserDataKey, dynamic> oldUserData = {};
+    if (oldJson != null) {
+      oldUserData = Map<UserDataKey, dynamic>.from(jsonDecode(oldJson));
+    }
+    // merge
+    final mergedUserData = {...oldUserData, ...newUserData};
+
+    try {
+      final response = await http.post(
+        Uri.parse(ApiService.userDataUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'userId': userId,
+          'userData': {
+            for (var entry in mergedUserData.entries)
+              entry.key.key: entry.value,
+          },
+        }),
+      );
+      if (response.statusCode == 200) {
+        print('사용자 데이터 서버 저장 성공');
+        // 서버 저장 성공 시에만 로컬에도 저장
+        await prefs.setString(
+          'userData',
+          jsonEncode({
+            for (var entry in mergedUserData.entries)
+              entry.key.key: entry.value,
+          }),
+        );
+        return true;
+      } else {
+        print('사용자 데이터 서버 저장 실패: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('사용자 데이터 서버 저장 에러: $e');
+      // 에러 발생 시 로컬에 저장하지 않음
+      return false;
+    }
+  }
+}
+
+enum UserDataKey { pushType, gimchiBuyPercent, gimchiSellPercent }
+
+extension UserDataKeyExt on UserDataKey {
+  String get key {
+    switch (this) {
+      case UserDataKey.pushType:
+        return 'pushType';
+      case UserDataKey.gimchiBuyPercent:
+        return 'gimchiBuyPercent';
+      case UserDataKey.gimchiSellPercent:
+        return 'gimchiSellPercent';
     }
   }
 }

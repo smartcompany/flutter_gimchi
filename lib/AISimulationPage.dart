@@ -586,9 +586,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                               AISimulationPage.kimchiBuyThreshold.toDouble();
                           double sell =
                               AISimulationPage.kimchiSellThreshold.toDouble();
-                          bool sameAsAI =
-                              AISimulationPage
-                                  .matchSameDatesAsAI; // ← 기존 설정값 반영
+                          bool sameAsAI = AISimulationPage.matchSameDatesAsAI;
 
                           return StatefulBuilder(
                             builder: (context, setState) {
@@ -696,16 +694,29 @@ class _AISimulationPageState extends State<AISimulationPage>
                           );
                         },
                       );
+
                       if (result != null) {
-                        setState(() {
-                          AISimulationPage.kimchiBuyThreshold =
-                              result['buy'] as double;
-                          AISimulationPage.kimchiSellThreshold =
-                              result['sell'] as double;
-                          AISimulationPage.matchSameDatesAsAI =
-                              result['sameAsAI'] as bool;
-                          runSimulation(); // 기준 변경 후 시뮬레이션 재실행
+                        final buy = result['buy'] as double;
+                        final sell = result['sell'] as double;
+                        final sameAsAI = result['sameAsAI'] as bool;
+
+                        final isSuccess = await ApiService.saveAndSyncUserData({
+                          UserDataKey.gimchiBuyPercent: buy,
+                          UserDataKey.gimchiSellPercent: sell,
                         });
+
+                        if (isSuccess) {
+                          setState(() {
+                            AISimulationPage.kimchiBuyThreshold = buy;
+                            AISimulationPage.kimchiSellThreshold = sell;
+                            AISimulationPage.matchSameDatesAsAI = sameAsAI;
+                            runSimulation(); // 기준 변경 후 시뮬레이션 재실행
+                          });
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('설정 저장에 실패했습니다.')),
+                          );
+                        }
                       }
                     },
                   ),

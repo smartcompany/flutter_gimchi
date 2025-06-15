@@ -9,7 +9,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart'; // kIsWeb을 사용하기 위해 import
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'OnboardingPage.dart'; // 온보딩 페이지 import
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // 이미 import 되어 있음
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -206,8 +206,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     print('FCM Token: $token');
     // 서버에 토큰을 저장(POST)해야 푸시를 받을 수 있습니다.
     if (token != null) {
-      final userId = await getOrCreateUserId();
-      await _saveFcmTokenToServer(token, userId);
+      await ApiService.saveFcmTokenToServer(token);
     }
 
     // 앱이 푸시 클릭으로 실행된 경우 알림 팝업
@@ -268,28 +267,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               ],
             ),
       );
-    }
-  }
-
-  // FCM 토큰을 서버에 저장하는 함수
-  Future<void> _saveFcmTokenToServer(String token, String userId) async {
-    try {
-      final response = await http.post(
-        Uri.parse(ApiService.fcmTokenUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'token': token,
-          'platform': Platform.isIOS ? 'ios' : 'android',
-          'userId': userId,
-        }),
-      );
-      if (response.statusCode == 200) {
-        print('FCM 토큰 서버 저장 성공');
-      } else {
-        print('FCM 토큰 서버 저장 실패: ${response.body}');
-      }
-    } catch (e) {
-      print('FCM 토큰 서버 저장 에러: $e');
     }
   }
 
@@ -681,7 +658,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             ),
             tooltip: '알림 설정',
             onPressed: () async {
-              // 알림이 꺼져있을 때 알림을 켜려고 할 경우 권한 체크
               final prevType = _todayCommentAlarmType;
               final result = await showDialog<TodayCommentAlarmType>(
                 context: context,
@@ -726,7 +702,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   );
                 },
               );
-              if (result != null) {
+              if (result != null && result != prevType) {
                 // 알림을 켜는 경우 권한 체크
                 if (prevType == TodayCommentAlarmType.off &&
                     (result == TodayCommentAlarmType.ai ||
@@ -762,9 +738,23 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     return;
                   }
                 }
-                setState(() {
-                  _todayCommentAlarmType = result;
+
+                // 알림 타입이 변경될 때 서버에 저장
+                final isSuccess = await ApiService.saveAndSyncUserData({
+                  UserDataKey.pushType:
+                      result.name, // enum의 문자열 값(ai, kimchi, off)
                 });
+
+                if (isSuccess) {
+                  // 상태 업데이트
+                  setState(() {
+                    _todayCommentAlarmType = result;
+                  });
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('알림 설정을 저장하는데 실패했습니다.')),
+                  );
+                }
               }
             },
           ),
