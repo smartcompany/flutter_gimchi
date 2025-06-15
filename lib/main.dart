@@ -17,6 +17,7 @@ import 'api_service.dart';
 import 'utils.dart';
 import 'widgets.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart'; // ATT 패키지 import 추가
+import 'package:permission_handler/permission_handler.dart'; // 상단 import에 추가
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -148,7 +149,9 @@ class _MyHomePageState extends State<MyHomePage> {
   // PlotBand 표시 여부 상태 추가
   bool showKimchiPlotBands = false;
   int _selectedStrategyTabIndex = 0; // 0: AI 매매 전략, 1: 김프 매매 전략
-  TodayCommentAlarmType _todayCommentAlarmType = TodayCommentAlarmType.off; // enum으로 변경
+  TodayCommentAlarmType _todayCommentAlarmType =
+      TodayCommentAlarmType.off; // enum으로 변경
+  bool _waitingForNotificationPermission = false; // 권한 대기 상태 추가
 
   @override
   void initState() {
@@ -226,33 +229,34 @@ class _MyHomePageState extends State<MyHomePage> {
     if (message.notification != null && context.mounted) {
       showDialog(
         context: context,
-        builder: (_) => AlertDialog(
-          title: Text(
-            message.notification!.title ?? '알림',
-            style: const TextStyle(fontSize: 16),
-          ),
-          content: Text(message.notification!.body ?? ''),
-          actions: [
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  _todayCommentAlarmType = TodayCommentAlarmType.off;
-                });
-                Navigator.of(context).pop();
-              },
-              child: const Text('허용 안함'),
+        builder:
+            (_) => AlertDialog(
+              title: Text(
+                message.notification!.title ?? '알림',
+                style: const TextStyle(fontSize: 16),
+              ),
+              content: Text(message.notification!.body ?? ''),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _todayCommentAlarmType = TodayCommentAlarmType.off;
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('허용 안함'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _todayCommentAlarmType = TodayCommentAlarmType.ai;
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('허용'),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  _todayCommentAlarmType = TodayCommentAlarmType.ai;
-                });
-                Navigator.of(context).pop();
-              },
-              child: const Text('허용'),
-            ),
-          ],
-        ),
       );
     }
   }
@@ -633,12 +637,15 @@ class _MyHomePageState extends State<MyHomePage> {
                       _todayCommentAlarmType == TodayCommentAlarmType.kimchi
                   ? Icons.notifications_active
                   : Icons.notifications_off,
-              color: _todayCommentAlarmType == TodayCommentAlarmType.off
-                  ? Colors.grey
-                  : Colors.deepPurple,
+              color:
+                  _todayCommentAlarmType == TodayCommentAlarmType.off
+                      ? Colors.grey
+                      : Colors.deepPurple,
             ),
             tooltip: '알림 설정',
             onPressed: () async {
+              // 알림이 꺼져있을 때 알림을 켜려고 할 경우 권한 체크
+              final prevType = _todayCommentAlarmType;
               final result = await showDialog<TodayCommentAlarmType>(
                 context: context,
                 builder: (context) {
@@ -683,6 +690,39 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
               );
               if (result != null) {
+                // 알림을 켜는 경우 권한 체크
+                if (prevType == TodayCommentAlarmType.off &&
+                    (result == TodayCommentAlarmType.ai ||
+                        result == TodayCommentAlarmType.kimchi)) {
+                  final status = await Permission.notification.status;
+                  if (!status.isGranted) {
+                    final goToSettings = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('알림 권한 필요'),
+                        content: const Text(
+                          '알림을 받으려면 기기 설정에서 알림 권한을 허용해야 합니다.\n설정으로 이동하시겠습니까?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('취소'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text('설정으로 이동'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (goToSettings == true) {
+                      _waitingForNotificationPermission = true;
+                      await openAppSettings();
+                    }
+                    // 권한 허용 전까지는 알림 상태를 변경하지 않음
+                    return;
+                  }
+                }
                 setState(() {
                   _todayCommentAlarmType = result;
                 });
