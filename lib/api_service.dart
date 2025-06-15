@@ -132,10 +132,16 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     // 기존 데이터 읽기
     final oldJson = prefs.getString('userData');
+
     Map<UserDataKey, dynamic> oldUserData = {};
     if (oldJson != null) {
-      oldUserData = Map<UserDataKey, dynamic>.from(jsonDecode(oldJson));
+      final data = Map<String, dynamic>.from(jsonDecode(oldJson));
+      // 키를 UserDataKey로 변환
+      oldUserData = {
+        for (var key in UserDataKey.values) key: data[key.key] ?? null,
+      };
     }
+
     // merge
     final mergedUserData = {...oldUserData, ...newUserData};
 
