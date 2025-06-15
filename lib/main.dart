@@ -151,7 +151,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   int _selectedStrategyTabIndex = 0; // 0: AI 매매 전략, 1: 김프 매매 전략
   TodayCommentAlarmType _todayCommentAlarmType =
       TodayCommentAlarmType.off; // enum으로 변경
-  bool _waitingForNotificationPermission = false; // 권한 대기 상태 추가
 
   @override
   void initState() {
@@ -232,7 +231,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   void showPushAlert(RemoteMessage message) {
-    // 푸시 알림을 다이얼로그로 표시
+    // 앱 내 알림 설정이 off면 푸시 알림을 무시
+    if (_todayCommentAlarmType == TodayCommentAlarmType.off) {
+      return;
+    }
+
     if (message.notification != null && context.mounted) {
       showDialog(
         context: context,
@@ -521,7 +524,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
       bool hasPermission = await _hasNotificationPermission();
-      if (!hasPermission && _todayCommentAlarmType != TodayCommentAlarmType.off) {
+      if (!hasPermission &&
+          _todayCommentAlarmType != TodayCommentAlarmType.off) {
         setState(() {
           _todayCommentAlarmType = TodayCommentAlarmType.off;
         });
@@ -532,7 +536,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   // 3. 권한 체크 함수 (iOS는 FCM, Android는 permission_handler)
   Future<bool> _hasNotificationPermission() async {
     if (Platform.isIOS) {
-      final settings = await FirebaseMessaging.instance.getNotificationSettings();
+      final settings =
+          await FirebaseMessaging.instance.getNotificationSettings();
       return settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional;
     } else {
@@ -730,25 +735,27 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   if (!status.isGranted) {
                     final goToSettings = await showDialog<bool>(
                       context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('알림 권한 필요'),
-                        content: const Text(
-                          '알림을 받으려면 기기 설정에서 알림 권한을 허용해야 합니다.\n설정으로 이동하시겠습니까?',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: const Text('취소'),
+                      builder:
+                          (context) => AlertDialog(
+                            title: const Text('알림 권한 필요'),
+                            content: const Text(
+                              '알림을 받으려면 기기 설정에서 알림 권한을 허용해야 합니다.\n설정으로 이동하시겠습니까?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed:
+                                    () => Navigator.of(context).pop(false),
+                                child: const Text('취소'),
+                              ),
+                              TextButton(
+                                onPressed:
+                                    () => Navigator.of(context).pop(true),
+                                child: const Text('설정으로 이동'),
+                              ),
+                            ],
                           ),
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text('설정으로 이동'),
-                          ),
-                        ],
-                      ),
                     );
                     if (goToSettings == true) {
-                      _waitingForNotificationPermission = true;
                       await openAppSettings();
                     }
                     // 권한 허용 전까지는 알림 상태를 변경하지 않음
