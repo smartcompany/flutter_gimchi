@@ -98,6 +98,8 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+enum TodayCommentAlarmType { off, ai, kimchi }
+
 class _MyHomePageState extends State<MyHomePage> {
   final ApiService api = ApiService();
   final GlobalKey chartKey = GlobalKey();
@@ -146,18 +148,19 @@ class _MyHomePageState extends State<MyHomePage> {
   // PlotBand 표시 여부 상태 추가
   bool showKimchiPlotBands = false;
   int _selectedStrategyTabIndex = 0; // 0: AI 매매 전략, 1: 김프 매매 전략
+  TodayCommentAlarmType _todayCommentAlarmType = TodayCommentAlarmType.off; // enum으로 변경
 
   @override
   void initState() {
     super.initState();
 
     if (!kIsWeb) {
+      _requestATT(); // ATT 권한 요청 추가
+      _initFCM();
+
       MobileAds.instance.initialize().then((InitializationStatus status) {
         _loadRewardedAd();
       });
-
-      _requestATT(); // ATT 권한 요청 추가
-      _initFCM();
     }
     _loadAllApis();
   }
@@ -338,8 +341,7 @@ class _MyHomePageState extends State<MyHomePage> {
       var adUnitId = "";
       if (kDebugMode) {
         if (Platform.isIOS) {
-          adUnitId = 'ca-app-pub-5520596727761259/5241271661';
-          // adUnitId = 'ca-app-pub-3940256099942544/1712485313';
+          adUnitId = 'ca-app-pub-3940256099942544/1712485313';
         } else if (Platform.isAndroid) {
           adUnitId = 'ca-app-pub-3940256099942544/5224354917';
         }
@@ -611,7 +613,106 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
+          IconButton(
+            iconSize: 30,
+            icon: Icon(
+              _todayCommentAlarmType == TodayCommentAlarmType.ai ||
+                      _todayCommentAlarmType == TodayCommentAlarmType.kimchi
+                  ? Icons.notifications_active
+                  : Icons.notifications_off,
+              color: _todayCommentAlarmType == TodayCommentAlarmType.off
+                  ? Colors.grey
+                  : Colors.deepPurple,
+            ),
+            tooltip: '알림 설정',
+            onPressed: () async {
+              final result = await showDialog<TodayCommentAlarmType>(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    title: const Text(
+                      '받을 알림을 선택하세요',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildAlarmOptionTile(
+                          context,
+                          TodayCommentAlarmType.ai,
+                          _todayCommentAlarmType,
+                          'AI 분석 알림 받기',
+                        ),
+                        _buildAlarmOptionTile(
+                          context,
+                          TodayCommentAlarmType.kimchi,
+                          _todayCommentAlarmType,
+                          '김프 알림 받기',
+                        ),
+                        _buildAlarmOptionTile(
+                          context,
+                          TodayCommentAlarmType.off,
+                          _todayCommentAlarmType,
+                          '알림 끄기',
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+              if (result != null) {
+                setState(() {
+                  _todayCommentAlarmType = result;
+                });
+              }
+            },
+          ),
         ],
+      ),
+    );
+  }
+
+  // 알림 옵션 위젯 빌더 (enum 타입으로 변경)
+  Widget _buildAlarmOptionTile(
+    BuildContext context,
+    TodayCommentAlarmType value,
+    TodayCommentAlarmType selected,
+    String text,
+  ) {
+    final isSelected = value == selected;
+    return GestureDetector(
+      onTap: () => Navigator.of(context).pop(value),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.deepPurple.shade50 : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 18,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            if (isSelected) const Icon(Icons.check, color: Colors.deepPurple),
+          ],
+        ),
       ),
     );
   }
