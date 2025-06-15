@@ -39,3 +39,28 @@ Future<void> printIDFA() async {
     print('IDFA 가져오기 실패: $e');
   }
 }
+
+enum TodayCommentAlarmType { off, ai, kimchi }
+
+extension TodayCommentAlarmTypePrefs on TodayCommentAlarmType {
+  static const _prefsKey = 'todayCommentAlarmType';
+
+  /// SharedPreferences에서 값을 읽어 TodayCommentAlarmType으로 반환
+  static Future<TodayCommentAlarmType> loadFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString(_prefsKey);
+    if (saved != null) {
+      return TodayCommentAlarmType.values.firstWhere(
+        (e) => e.name == saved,
+        orElse: () => TodayCommentAlarmType.off,
+      );
+    }
+    return TodayCommentAlarmType.off;
+  }
+
+  /// SharedPreferences에 값 저장
+  Future<void> saveToPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_prefsKey, name);
+  }
+}

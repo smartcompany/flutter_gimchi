@@ -99,8 +99,6 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-enum TodayCommentAlarmType { off, ai, kimchi }
-
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final ApiService api = ApiService();
   final GlobalKey chartKey = GlobalKey();
@@ -157,12 +155,16 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    _loadTodayCommentAlarmType(); // 추가
+    // 비동기로 enum 값을 불러와서 setState로 할당
+    TodayCommentAlarmTypePrefs.loadFromPrefs().then((value) {
+      setState(() {
+        _todayCommentAlarmType = value;
+      });
+    });
 
     if (!kIsWeb) {
       _requestATT();
       _initFCM();
-
       MobileAds.instance.initialize().then((InitializationStatus status) {
         _loadRewardedAd();
       });
@@ -249,45 +251,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               actions: [
                 TextButton(
                   onPressed: () async {
-                    await _setTodayCommentAlarmType(TodayCommentAlarmType.off);
                     Navigator.of(context).pop();
                   },
-                  child: const Text('허용 안함'),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    await _setTodayCommentAlarmType(TodayCommentAlarmType.ai);
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('허용'),
+                  child: const Text('닫기'),
                 ),
               ],
             ),
       );
     }
-  }
-
-  // SharedPreferences에서 알림 타입 불러오기
-  Future<void> _loadTodayCommentAlarmType() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString('todayCommentAlarmType');
-    if (saved != null) {
-      setState(() {
-        _todayCommentAlarmType = TodayCommentAlarmType.values.firstWhere(
-          (e) => e.name == saved,
-          orElse: () => TodayCommentAlarmType.off,
-        );
-      });
-    }
-  }
-
-  // 알림 타입 변경 시 SharedPreferences에 저장
-  Future<void> _setTodayCommentAlarmType(TodayCommentAlarmType type) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('todayCommentAlarmType', type.name);
-    setState(() {
-      _todayCommentAlarmType = type;
-    });
   }
 
   Future<void> _loadAllApis() async {
@@ -523,8 +494,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       bool hasPermission = await _hasNotificationPermission();
       if (!hasPermission &&
           _todayCommentAlarmType != TodayCommentAlarmType.off) {
+        
         setState(() {
-          _setTodayCommentAlarmType(TodayCommentAlarmType.off);
+          _todayCommentAlarmType = TodayCommentAlarmType.off; // 권한이 없으면 알림 끄기
+          _todayCommentAlarmType.saveToPrefs(); // 상태 업데이트
         });
       }
     }
@@ -765,7 +738,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 });
 
                 if (isSuccess) {
-                  await _setTodayCommentAlarmType(result);
+                  setState(() {
+                    _todayCommentAlarmType = result;
+                    _todayCommentAlarmType.saveToPrefs();
+                  });
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('알림 설정을 저장하는데 실패했습니다.')),
