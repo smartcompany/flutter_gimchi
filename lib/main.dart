@@ -248,10 +248,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   void showPushAlert(RemoteMessage message) {
-    if (_todayCommentAlarmType == TodayCommentAlarmType.off) {
-      return;
-    }
-
     if (message.notification != null && context.mounted) {
       showDialog(
         context: context,
