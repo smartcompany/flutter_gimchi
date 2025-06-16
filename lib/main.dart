@@ -1347,9 +1347,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     final profitRate =
         AISimulationPage.kimchiSellThreshold -
         AISimulationPage.kimchiBuyThreshold;
+
+    final buyPriceStr = buyPrice.toStringAsFixed(1);
+    final sellPriceStr = sellPrice.toStringAsFixed(1);
+
     final strategy =
-        '김치 프리미엄이 ${AISimulationPage.kimchiBuyThreshold}% 이하일 때 매수, '
-        '${AISimulationPage.kimchiSellThreshold}% 이상일 때 매도';
+        'USDT가 $buyPriceStr(${AISimulationPage.kimchiBuyThreshold}%) 이하일 때 매수, '
+        '$sellPriceStr(${AISimulationPage.kimchiSellThreshold}%) 이상일 때 매도';
     final profitRateStr = '+${profitRate.toStringAsFixed(1)}%';
 
     return makeStrategyTab(
