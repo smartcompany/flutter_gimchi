@@ -360,7 +360,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
       RewardedAd.load(
         adUnitId: adUnitId,
-        request: const AdRequest(),
+        request: const AdRequest(
+          nonPersonalizedAds: true, // 비개인화 광고 옵션 추가
+        ),
         rewardedAdLoadCallback: RewardedAdLoadCallback(
           onAdLoaded: (ad) {
             setState(() {
