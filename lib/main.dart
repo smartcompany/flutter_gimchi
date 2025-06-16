@@ -155,13 +155,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // 비동기로 enum 값을 불러와서 setState로 할당
-    TodayCommentAlarmTypePrefs.loadFromPrefs().then((value) {
-      setState(() {
-        _todayCommentAlarmType = value;
-      });
-    });
-
     if (!kIsWeb) {
       _requestATT();
       _initFCM();
@@ -169,7 +162,31 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         _loadRewardedAd();
       });
     }
-    _loadAllApis();
+
+    _loadAllApis().then((_) async {
+      // 데이터 로딩이 끝난 뒤, 프레임이 그려진 후에 팝업 띄우기
+      if (kIsWeb) {
+        // 웹에서는 권한 요청을 하지 않음
+        return;
+      }
+
+      _todayCommentAlarmType = await TodayCommentAlarmTypePrefs.loadFromPrefs();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        // 권한이 notDetermined이면 시스템 팝업 띄우기
+        final settings =
+            await FirebaseMessaging.instance.getNotificationSettings();
+        if (settings.authorizationStatus == AuthorizationStatus.notDetermined) {
+          final result = await FirebaseMessaging.instance.requestPermission();
+          // 허용/거부 결과에 따라 추가 안내 다이얼로그 띄우기
+          if (result.authorizationStatus == AuthorizationStatus.authorized ||
+              result.authorizationStatus == AuthorizationStatus.provisional) {
+            // 알림 타입 선택 다이얼로그 띄우기
+            await showAlarmSettingDialog(context);
+          }
+        }
+      });
+    });
   }
 
   @override
@@ -201,9 +218,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         return;
       }
     }
-
-    // 권한 요청 (iOS)
-    await FirebaseMessaging.instance.requestPermission();
 
     // FCM 토큰 얻기
     String? token = await FirebaseMessaging.instance.getToken();
@@ -494,7 +508,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       bool hasPermission = await _hasNotificationPermission();
       if (!hasPermission &&
           _todayCommentAlarmType != TodayCommentAlarmType.off) {
-        
         setState(() {
           _todayCommentAlarmType = TodayCommentAlarmType.off; // 권한이 없으면 알림 끄기
           _todayCommentAlarmType.saveToPrefs(); // 상태 업데이트
@@ -651,103 +664,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             ),
             tooltip: '알림 설정',
             onPressed: () async {
-              final prevType = _todayCommentAlarmType;
-              final result = await showDialog<TodayCommentAlarmType>(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    title: const Text(
-                      '받을 알림을 선택하세요',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        color: Colors.black87,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildAlarmOptionTile(
-                          context,
-                          TodayCommentAlarmType.ai,
-                          _todayCommentAlarmType,
-                          'AI 분석 알림 받기',
-                        ),
-                        _buildAlarmOptionTile(
-                          context,
-                          TodayCommentAlarmType.kimchi,
-                          _todayCommentAlarmType,
-                          '김프 알림 받기',
-                        ),
-                        _buildAlarmOptionTile(
-                          context,
-                          TodayCommentAlarmType.off,
-                          _todayCommentAlarmType,
-                          '알림 끄기',
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              );
-              if (result != null && result != prevType) {
-                // 알림을 켜는 경우 권한 체크
-                if (prevType == TodayCommentAlarmType.off &&
-                    (result == TodayCommentAlarmType.ai ||
-                        result == TodayCommentAlarmType.kimchi)) {
-                  final status = await Permission.notification.status;
-                  if (!status.isGranted) {
-                    final goToSettings = await showDialog<bool>(
-                      context: context,
-                      builder:
-                          (context) => AlertDialog(
-                            title: const Text('알림 권한 필요'),
-                            content: const Text(
-                              '알림을 받으려면 기기 설정에서 알림 권한을 허용해야 합니다.\n설정으로 이동하시겠습니까?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed:
-                                    () => Navigator.of(context).pop(false),
-                                child: const Text('취소'),
-                              ),
-                              TextButton(
-                                onPressed:
-                                    () => Navigator.of(context).pop(true),
-                                child: const Text('설정으로 이동'),
-                              ),
-                            ],
-                          ),
-                    );
-                    if (goToSettings == true) {
-                      await openAppSettings();
-                    }
-                    // 권한 허용 전까지는 알림 상태를 변경하지 않음
-                    return;
-                  }
-                }
-
-                // 알림 타입이 변경될 때 서버에 저장
-                final isSuccess = await ApiService.saveAndSyncUserData({
-                  UserDataKey.pushType: result.name,
-                });
-
-                if (isSuccess) {
-                  setState(() {
-                    _todayCommentAlarmType = result;
-                    _todayCommentAlarmType.saveToPrefs();
-                  });
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('알림 설정을 저장하는데 실패했습니다.')),
-                  );
-                }
-              }
+              await showAlarmSettingDialog(context);
             },
           ),
         ],
@@ -1314,6 +1231,113 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         ),
       ),
     );
+  }
+
+  // 알림 설정 다이얼로그 함수 분리
+  Future<TodayCommentAlarmType?> showAlarmSettingDialog(
+    BuildContext context,
+  ) async {
+    final prevType = _todayCommentAlarmType;
+    final updatedType = await showDialog<TodayCommentAlarmType>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            '받을 알림을 선택하세요',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildAlarmOptionTile(
+                context,
+                TodayCommentAlarmType.ai,
+                _todayCommentAlarmType,
+                'AI 분석 알림 받기',
+              ),
+              _buildAlarmOptionTile(
+                context,
+                TodayCommentAlarmType.kimchi,
+                _todayCommentAlarmType,
+                '김프 알림 받기',
+              ),
+              _buildAlarmOptionTile(
+                context,
+                TodayCommentAlarmType.off,
+                _todayCommentAlarmType,
+                '알림 끄기',
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (updatedType == null) {
+      // 다이얼로그가 취소되거나 닫힌 경우
+      return null;
+    }
+
+    if (updatedType != prevType) {
+      // 알림을 켜는 경우 권한 체크
+      if (prevType == TodayCommentAlarmType.off &&
+          (updatedType == TodayCommentAlarmType.ai ||
+              updatedType == TodayCommentAlarmType.kimchi)) {
+        final status = await Permission.notification.status;
+        if (!status.isGranted) {
+          final goToSettings = await showDialog<bool>(
+            context: context,
+            builder:
+                (context) => AlertDialog(
+                  title: const Text('알림 권한 필요'),
+                  content: const Text(
+                    '알림을 받으려면 기기 설정에서 알림 권한을 허용해야 합니다.\n설정으로 이동하시겠습니까?',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text('취소'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text('설정으로 이동'),
+                    ),
+                  ],
+                ),
+          );
+          if (goToSettings == true) {
+            await openAppSettings();
+          }
+          // 권한 허용 전까지는 알림 상태를 변경하지 않음
+          return null;
+        }
+      }
+
+      // 알림 타입이 변경될 때 서버에 저장
+      final isSuccess = await ApiService.saveAndSyncUserData({
+        UserDataKey.pushType: updatedType.name,
+      });
+
+      if (isSuccess) {
+        setState(() {
+          _todayCommentAlarmType = updatedType;
+          _todayCommentAlarmType.saveToPrefs();
+        });
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('알림 설정을 저장하는데 실패했습니다.')));
+      }
+    }
   }
 
   Widget _buildGimchiStrategyTab() {
