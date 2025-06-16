@@ -352,7 +352,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         }
       } else {
         if (Platform.isIOS) {
-          adUnitId = 'ca-app-pub-2232668267088457/6804471050'; // 실제 광고 ID
+          adUnitId = 'ca-app-pub-5520596727761259/5241271661'; // 실제 광고 ID
         } else if (Platform.isAndroid) {
           adUnitId = 'ca-app-pub-5520596727761259/2854023304'; // 실제 광고 ID
         }
