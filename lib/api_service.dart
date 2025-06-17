@@ -127,15 +127,29 @@ class ApiService {
     }
   }
 
-  static Future<String?> fetchRewardedAdUnitId() async {
+  static Future<MapEntry<String, String>?> fetchRewardedAdUnitId() async {
     try {
       final response = await http.get(Uri.parse(settingsUrl));
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
         if (Platform.isIOS) {
-          return json['ios_rewarded'];
+          final key = json['ios_ad'] as String?;
+          final iosRef = json['ref']?['ios'] as Map<String, dynamic>?;
+          if (key != null && iosRef != null && iosRef.containsKey(key)) {
+            final value = iosRef[key] as String?;
+            if (value != null) {
+              return MapEntry(key, value);
+            }
+          }
         } else if (Platform.isAndroid) {
-          return json['android_rewarded'];
+          final key = json['android_ad'] as String?;
+          final androidRef = json['ref']?['android'] as Map<String, dynamic>?;
+          if (key != null && androidRef != null && androidRef.containsKey(key)) {
+            final value = androidRef[key] as String?;
+            if (value != null) {
+              return MapEntry(key, value);
+            }
+          }
         }
       }
     } catch (e) {

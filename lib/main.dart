@@ -123,8 +123,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   List<USDTChartData> usdtChartData = [];
   Map<String, dynamic> usdtMap = {};
   List strategyList = [];
-  bool _strategyUnlocked = false; // 광고 시청 여부
+
+  AdsStatus _adsStatus = AdsStatus.unload; // 광고 상태 관리
+
   RewardedAd? _rewardedAd;
+  InterstitialAd? _interstitialAd;
 
   double kimchiMin = 0;
   double kimchiMax = 0;
@@ -338,80 +341,172 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   void _loadRewardedAd() async {
     try {
-      String? adUnitId;
+      MapEntry<String, String>? adUnitEntry;
+
       if (kDebugMode) {
         if (Platform.isIOS) {
-          adUnitId = 'ca-app-pub-3940256099942544/1712485313';
+          /*
+          adUnitEntry = MapEntry(
+            'rewarded_ad',
+            'ca-app-pub-3940256099942544/1712485313',
+          );
+          */
+          adUnitEntry = MapEntry(
+            'initial_ad',
+            'ca-app-pub-5520596727761259/9323926836',
+          );
         } else if (Platform.isAndroid) {
-          adUnitId = 'ca-app-pub-3940256099942544/5224354917';
+          adUnitEntry = MapEntry(
+            'rewarded_ad',
+            'ca-app-pub-3940256099942544/5224354917',
+          );
         }
       } else {
-        adUnitId = await ApiService.fetchRewardedAdUnitId();
+        adUnitEntry = await ApiService.fetchRewardedAdUnitId();
       }
 
-      if (adUnitId == null || adUnitId.isEmpty) {
+      if (adUnitEntry == null || adUnitEntry.value.isEmpty) {
         print('광고 ID를 받아오지 못했습니다.');
         setState(() {
-          _strategyUnlocked = true;
+          _adsStatus = AdsStatus.shown; // 광고 ID가 없으면 바로 전략 공개
         });
         return;
       }
 
-      RewardedAd.load(
-        adUnitId: adUnitId,
-        request: const AdRequest(nonPersonalizedAds: true),
-        rewardedAdLoadCallback: RewardedAdLoadCallback(
-          onAdLoaded: (ad) {
-            setState(() {
-              _rewardedAd = ad;
-            });
-            print('Rewarded Ad Loaded Successfully');
-          },
-          onAdFailedToLoad: (error) {
-            setState(() {
-              _rewardedAd = null;
-              _strategyUnlocked = true;
-            });
-            print('Failed to load rewarded ad: ${error.message}');
-          },
-        ),
-      );
+      if (adUnitEntry.key == 'rewarded_ad') {
+        // 보상형 광고 로드
+        RewardedAd.load(
+          adUnitId: adUnitEntry.value,
+          request: const AdRequest(nonPersonalizedAds: true),
+          rewardedAdLoadCallback: RewardedAdLoadCallback(
+            onAdLoaded: (ad) {
+              setState(() {
+                _rewardedAd = ad;
+                _adsStatus = AdsStatus.load;
+              });
+              print('Rewarded Ad Loaded Successfully');
+            },
+            onAdFailedToLoad: (error) {
+              setState(() {
+                _rewardedAd = null;
+                _adsStatus = AdsStatus.shown; // 광고 로드 실패 시 전략 공개
+              });
+              print('Failed to load rewarded ad: ${error.message}');
+            },
+          ),
+        );
+      } else if (adUnitEntry.key == 'initial_ad') {
+        // 전면 광고 로드
+        InterstitialAd.load(
+          adUnitId: adUnitEntry.value,
+          request: const AdRequest(nonPersonalizedAds: true),
+          adLoadCallback: InterstitialAdLoadCallback(
+            onAdLoaded: (ad) {
+              // 전면 광고를 바로 보여주거나, 원하는 시점에 ad.show() 호출
+              setState(() {
+                _interstitialAd = ad;
+                _adsStatus = AdsStatus.load; // 광고가 로드되면 상태 변경
+              });
+            },
+            onAdFailedToLoad: (error) {
+              setState(() {
+                _interstitialAd = null;
+                _adsStatus = AdsStatus.shown; // 광고 로드 실패 시 전략 공개
+              });
+              print('Failed to load interstitial ad: ${error.message}');
+            },
+          ),
+        );
+      } else {
+        print('알 수 없는 광고 타입: ${adUnitEntry.key}');
+        setState(() {
+          _adsStatus = AdsStatus.shown; // 알 수 없는 광고 타입은 전략 공개
+        });
+      }
     } catch (e, s) {
       print('Ad load exception: $e\n$s');
       setState(() {
-        _strategyUnlocked = true;
+        _adsStatus = AdsStatus.shown; // 예외 발생 시 전략 공개
       });
     }
   }
 
-  void _showRewardedAd({required ScrollController scrollController}) {
+  void _showAdsView({required ScrollController scrollController}) {
     if (_rewardedAd != null) {
-      _rewardedAd!.show(
-        onUserEarnedReward: (ad, reward) async {
-          setState(() {
-            _strategyUnlocked = true;
-          });
-          _rewardedAd?.dispose();
-          _loadRewardedAd();
-
-          // 프레임이 완전히 그려진 뒤 스크롤 이동
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (scrollController.hasClients) {
-              scrollController.animateTo(
-                scrollController.position.maxScrollExtent,
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.easeInOut,
-              );
-            }
-          });
-        },
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('광고를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.')),
-      );
-      _loadRewardedAd();
+      _showRewardAd(scrollController);
+      return;
     }
+
+    if (_interstitialAd != null) {
+      _showInterstitialAd(scrollController);
+      return;
+    }
+  }
+
+  void _showInterstitialAd(ScrollController scrollController) {
+    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (ad) => print('전면 광고가 표시됨'),
+      onAdDismissedFullScreenContent: (ad) {
+        print('전면 광고가 닫힘');
+        ad.dispose();
+
+        setState(() {
+          _adsStatus = AdsStatus.shown; // 광고가 성공적으로 표시되면 상태 변경
+        });
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (scrollController.hasClients) {
+            scrollController.animateTo(
+              scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeInOut,
+            );
+          }
+        });
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        print('전면 광고 표시 실패: $error');
+        ad.dispose();
+        _loadRewardedAd();
+
+        setState(() {
+          _adsStatus = AdsStatus.shown; // 광고 표시 실패 시 전략 공개
+        });
+      },
+    );
+    _interstitialAd!.show();
+  }
+
+  void _showRewardAd(ScrollController scrollController) {
+    _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (ad) => print('보상형 광고가 표시됨'),
+      onAdDismissedFullScreenContent: (ad) {
+        print('보상형 광고가 닫힘');
+        ad.dispose();
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        print('보상형 광고 표시 실패: $error');
+        ad.dispose();
+      },
+    );
+    _rewardedAd!.show(
+      onUserEarnedReward: (ad, reward) async {
+        setState(() {
+          _adsStatus = AdsStatus.shown; // 광고가 성공적으로 표시되면 상태 변경
+        });
+        ad?.dispose();
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (scrollController.hasClients) {
+            scrollController.animateTo(
+              scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeInOut,
+            );
+          }
+        });
+      },
+    );
   }
 
   // USDT 최소값 계산 함수
@@ -431,7 +526,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   // 조건 체크 함수
   Card? shouldShowAdUnlockButton() {
     if (kIsWeb) return null; // 웹에서는 광고 버튼 표시 안 함
-    if (_strategyUnlocked) return null; // 전략이 이미 공개된 경우
+    if (_adsStatus == AdsStatus.shown) return null; // 전략이 이미 공개된 경우
 
     return Card(
       elevation: 2,
@@ -442,11 +537,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16),
         child: Center(
           child: ElevatedButton.icon(
-            onPressed:
-                _rewardedAd == null
-                    ? null
-                    : () =>
-                        _showRewardedAd(scrollController: _scrollController),
+            onPressed: _getShowStrategyButtonHandler(),
             icon: const Icon(Icons.ondemand_video, color: Colors.white),
             label: const Text('광고 보고 전략 보기'),
             style: ElevatedButton.styleFrom(
@@ -1363,5 +1454,16 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       profitRateStr,
       strategy,
     );
+  }
+
+  // 광고 보고 전략 보기 버튼의 onPressed 핸들러 함수 분리
+  VoidCallback? _getShowStrategyButtonHandler() {
+    // 버튼을 활성화 후 액션 연동
+    if (_adsStatus == AdsStatus.load) {
+      return () => _showAdsView(scrollController: _scrollController);
+    }
+
+    // 버튼을 비활성화 상태로 유지
+    return null;
   }
 }

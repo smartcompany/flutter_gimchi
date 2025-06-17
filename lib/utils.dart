@@ -40,6 +40,8 @@ Future<void> printIDFA() async {
   }
 }
 
+enum AdsStatus { unload, load, shown }
+
 enum TodayCommentAlarmType { off, ai, kimchi }
 
 extension TodayCommentAlarmTypePrefs on TodayCommentAlarmType {
