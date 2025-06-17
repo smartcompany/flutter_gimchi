@@ -171,7 +171,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       _todayCommentAlarmType = await TodayCommentAlarmTypePrefs.loadFromPrefs();
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        final settings = await FirebaseMessaging.instance.getNotificationSettings();
+        final settings =
+            await FirebaseMessaging.instance.getNotificationSettings();
         if (settings.authorizationStatus == AuthorizationStatus.notDetermined) {
           final result = await FirebaseMessaging.instance.requestPermission();
           if (result.authorizationStatus == AuthorizationStatus.authorized ||
@@ -335,9 +336,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
-  void _loadRewardedAd() {
+  void _loadRewardedAd() async {
     try {
-      var adUnitId = "";
+      String? adUnitId;
       if (kDebugMode) {
         if (Platform.isIOS) {
           adUnitId = 'ca-app-pub-3940256099942544/1712485313';
@@ -345,18 +346,20 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           adUnitId = 'ca-app-pub-3940256099942544/5224354917';
         }
       } else {
-        if (Platform.isIOS) {
-          adUnitId = 'ca-app-pub-5520596727761259/5241271661'; // 실제 광고 ID
-        } else if (Platform.isAndroid) {
-          adUnitId = 'ca-app-pub-5520596727761259/2854023304'; // 실제 광고 ID
-        }
+        adUnitId = await ApiService.fetchRewardedAdUnitId();
+      }
+
+      if (adUnitId == null || adUnitId.isEmpty) {
+        print('광고 ID를 받아오지 못했습니다.');
+        setState(() {
+          _strategyUnlocked = true;
+        });
+        return;
       }
 
       RewardedAd.load(
         adUnitId: adUnitId,
-        request: const AdRequest(
-          nonPersonalizedAds: true, // 비개인화 광고 옵션 추가
-        ),
+        request: const AdRequest(nonPersonalizedAds: true),
         rewardedAdLoadCallback: RewardedAdLoadCallback(
           onAdLoaded: (ad) {
             setState(() {
@@ -367,7 +370,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           onAdFailedToLoad: (error) {
             setState(() {
               _rewardedAd = null;
-              _strategyUnlocked = true; // 광고 실패 시 전략 바로 공개
+              _strategyUnlocked = true;
             });
             print('Failed to load rewarded ad: ${error.message}');
           },
@@ -376,7 +379,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     } catch (e, s) {
       print('Ad load exception: $e\n$s');
       setState(() {
-        _strategyUnlocked = true; // 예외 발생 시도 전략 바로 공개
+        _strategyUnlocked = true;
       });
     }
   }

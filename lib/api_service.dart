@@ -33,6 +33,8 @@ class ApiService {
       "https://rate-history.vercel.app/api/fcm-token";
   static const String userDataUrl =
       "https://rate-history.vercel.app/api/user-data";
+  static const String settingsUrl =
+      "https://rate-history.vercel.app/api/settings";
 
   // USDT 데이터
   Future<Map<String, dynamic>> fetchUSDTData() async {
@@ -123,6 +125,23 @@ class ApiService {
     } catch (e) {
       print('FCM 토큰 서버 저장 에러: $e');
     }
+  }
+
+  static Future<String?> fetchRewardedAdUnitId() async {
+    try {
+      final response = await http.get(Uri.parse(settingsUrl));
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        if (Platform.isIOS) {
+          return json['ios_rewarded'];
+        } else if (Platform.isAndroid) {
+          return json['android_rewarded'];
+        }
+      }
+    } catch (e) {
+      print('광고 ID fetch 실패: $e');
+    }
+    return null;
   }
 
   static Future<bool> saveAndSyncUserData(
