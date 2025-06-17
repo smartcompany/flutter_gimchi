@@ -154,39 +154,33 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _initAll();
+  }
 
+  Future<void> _initAll() async {
     if (!kIsWeb) {
-      _requestATT();
-      _initFCM();
-      MobileAds.instance.initialize().then((InitializationStatus status) {
-        _loadRewardedAd();
-      });
+      await _requestATT();
+      _setupFCMPushSettings();
+      await MobileAds.instance.initialize();
+      _loadRewardedAd();
     }
 
-    _loadAllApis().then((_) async {
-      // 데이터 로딩이 끝난 뒤, 프레임이 그려진 후에 팝업 띄우기
-      if (kIsWeb) {
-        // 웹에서는 권한 요청을 하지 않음
-        return;
-      }
+    await _loadAllApis();
 
+    if (!kIsWeb) {
       _todayCommentAlarmType = await TodayCommentAlarmTypePrefs.loadFromPrefs();
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        // 권한이 notDetermined이면 시스템 팝업 띄우기
-        final settings =
-            await FirebaseMessaging.instance.getNotificationSettings();
+        final settings = await FirebaseMessaging.instance.getNotificationSettings();
         if (settings.authorizationStatus == AuthorizationStatus.notDetermined) {
           final result = await FirebaseMessaging.instance.requestPermission();
-          // 허용/거부 결과에 따라 추가 안내 다이얼로그 띄우기
           if (result.authorizationStatus == AuthorizationStatus.authorized ||
               result.authorizationStatus == AuthorizationStatus.provisional) {
-            // 알림 타입 선택 다이얼로그 띄우기
             await showAlarmSettingDialog(context);
           }
         }
       });
-    });
+    }
   }
 
   @override
@@ -205,7 +199,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
-  void _initFCM() async {
+  void _setupFCMPushSettings() async {
     if (kIsWeb) {
       print('FCM은 웹에서 지원되지 않습니다.');
       return;
