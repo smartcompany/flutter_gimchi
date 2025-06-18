@@ -351,10 +351,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             'ca-app-pub-3940256099942544/1712485313',
           );
           */
-          adUnitEntry = MapEntry(
-            'initial_ad',
-            'ca-app-pub-5520596727761259/9323926836',
-          );
+          adUnitEntry = await ApiService.fetchRewardedAdUnitId();
         } else if (Platform.isAndroid) {
           adUnitEntry = MapEntry(
             'rewarded_ad',
