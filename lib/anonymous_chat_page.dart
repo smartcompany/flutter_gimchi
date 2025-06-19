@@ -6,6 +6,7 @@ import 'package:flutter_chat_ui/flutter_chat_ui.dart' as fl_chat_ui;
 import 'utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:async';
 
 class AnonymousChatPage extends StatefulWidget {
   const AnonymousChatPage({super.key});
@@ -16,9 +17,9 @@ class AnonymousChatPage extends StatefulWidget {
 
 class _AnonymousChatPageState extends State<AnonymousChatPage> {
   late final fl_chat_core.InMemoryChatController _chatController;
-  final _firestore = FirebaseFirestore.instance;
-  final String _roomId = 'anonymous_room';
+  late final StreamSubscription _subscription;
 
+  final String _roomId = 'anonymous_room';
   String _userId = "";
 
   @override
@@ -27,19 +28,11 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
     _loadUserId();
     _chatController = fl_chat_core.InMemoryChatController(messages: const []);
 
-    // Firestgore에서 메시지 스트림 구독
-    _messagesStream.listen((messages) {
-      // 메시지들을 InMemoryChatController에 설정
-      _chatController.setMessages(messages);
-    });
-  }
-
-  Stream<List<fl_chat_core.Message>> get _messagesStream {
-    return _firestore
+    final messagesStream = FirebaseFirestore.instance
         .collection('chat_rooms')
         .doc(_roomId)
         .collection('messages')
-        .orderBy('createdAt', descending: false) // false로 변경: 오래된 메시지가 먼저
+        .orderBy('createdAt', descending: false)
         .snapshots()
         .map((snapshot) {
           return snapshot.docs.map((doc) {
@@ -67,6 +60,12 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
             );
           }).toList();
         });
+
+    // Firestgore에서 메시지 스트림 구독
+    _subscription = messagesStream.listen((messages) {
+      // 메시지들을 InMemoryChatController에 설정
+      _chatController.setMessages(messages);
+    });
   }
 
   Future<void> _loadUserId() async {
@@ -78,6 +77,7 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
 
   @override
   void dispose() {
+    _subscription.cancel();
     _chatController.dispose();
     super.dispose();
   }
