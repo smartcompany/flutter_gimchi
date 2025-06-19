@@ -39,7 +39,7 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
         .collection('chat_rooms')
         .doc(_roomId)
         .collection('messages')
-        .orderBy('createdAt', descending: true)
+        .orderBy('createdAt', descending: false) // false로 변경: 오래된 메시지가 먼저
         .snapshots()
         .map((snapshot) {
           return snapshot.docs.map((doc) {
@@ -89,15 +89,7 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('익명 대화방'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.chat_bubble_outline),
-            onPressed: () {},
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('익명 대화방'), actions: []),
       body: SafeArea(
         child: fl_chat_ui.Chat(
           chatController: _chatController,
@@ -119,8 +111,6 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
       id: const Uuid().v4(),
       text: message,
     );
-
-    //_chatController.insertMessage(textMessage);
 
     // Firestore에 메시지 저장 (비동기 처리, 오류 무시)
     await FirebaseFirestore.instance
