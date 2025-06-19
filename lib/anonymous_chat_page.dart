@@ -106,7 +106,7 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('익명 대화방'), actions: []),
+      appBar: AppBar(title: const Text('토론방'), actions: []),
       body: SafeArea(
         child: fl_chat_ui.Chat(
           chatController: _chatController,
