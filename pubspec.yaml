@@ -39,16 +39,20 @@ dependencies:
   fl_chart: ^1.0.0
   webview_flutter: ^4.2.2
   syncfusion_flutter_charts: ^29.2.4
-  google_mobile_ads: ^5.0.0
+  google_mobile_ads: ^6.0.0
   shared_preferences: ^2.2.2
-  firebase_core: ^2.24.2
-  firebase_messaging: ^14.9.4
+  firebase_core: ^3.14.0
+  firebase_messaging: ^15.2.7
+  firebase_auth: ^5.6.0
+  cloud_firestore: ^5.6.9
   uuid: ^4.5.1
-  firebase_crashlytics: ^3.4.16
-  device_info_plus: ^10.1.0
+  firebase_crashlytics: ^4.3.7
+  device_info_plus: ^11.5.0
   app_tracking_transparency: ^2.0.6+1
   advertising_id: ^2.7.1
   permission_handler: ^12.0.0+1
+  flutter_chat_ui: ^2.5.2
+  flutter_chat_types: ^3.6.2
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.3

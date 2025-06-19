@@ -17,7 +17,8 @@ import 'api_service.dart';
 import 'utils.dart';
 import 'widgets.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart'; // ATT 패키지 import 추가
-import 'package:permission_handler/permission_handler.dart'; // 상단 import에 추가
+import 'package:permission_handler/permission_handler.dart';
+import 'anonymous_chat_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -677,14 +678,20 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5FA),
       appBar: AppBar(
-        title: const Text(
-          "USDT Signal",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        foregroundColor: Colors.black87,
+        title: const Text('USDT Signal'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline),
+            onPressed: () async {
+              // 채팅봇 페이지로 네비게이트
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AnonymousChatPage(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: SafeArea(child: singleChildScrollView),
     );
