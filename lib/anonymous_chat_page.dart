@@ -88,6 +88,23 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    final builders = fl_chat_core.Builders(
+      textMessageBuilder:
+          (
+            context,
+            message,
+            index, {
+            required bool isSentByMe,
+            fl_chat_core.MessageGroupStatus? groupStatus,
+          }) => USTextMessageBuilder(
+            context,
+            message,
+            index,
+            isSentByMe: isSentByMe,
+            groupStatus: groupStatus,
+          ),
+    );
+
     return Scaffold(
       appBar: AppBar(title: const Text('익명 대화방'), actions: []),
       body: SafeArea(
@@ -95,6 +112,7 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
           chatController: _chatController,
           currentUserId: _userId,
           onMessageSend: _onMessageSend,
+          builders: builders,
           resolveUser: (fl_chat_core.UserID id) async {
             return fl_chat_core.User(id: id, name: 'John Doe');
           },
@@ -125,4 +143,61 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
           'type': 'text',
         });
   }
+}
+
+// 1. authorId와 익명번호를 매핑할 Map을 만듭니다.
+final Map<String, int> _authorIdToAnonNum = {};
+int _anonCounter = 1;
+
+// 2. 메시지 리스트를 순회하며 authorId별로 번호를 부여합니다.
+int getAnonNum(String authorId) {
+  if (!_authorIdToAnonNum.containsKey(authorId)) {
+    _authorIdToAnonNum[authorId] = _anonCounter++;
+  }
+  return _authorIdToAnonNum[authorId]!;
+}
+
+Color getAnonColor(String authorId) {
+  final colors = [
+    Colors.red,
+    Colors.blue,
+    Colors.green,
+    Colors.orange,
+    Colors.purple,
+  ];
+  final anonNum = getAnonNum(authorId);
+  return colors[(anonNum - 1) % colors.length];
+}
+
+Widget USTextMessageBuilder(
+  BuildContext context,
+  fl_chat_core.TextMessage message,
+  int index, {
+  required bool isSentByMe,
+  fl_chat_core.MessageGroupStatus? groupStatus,
+}) {
+  // authorId별로 색상 매핑
+  final colors = [
+    Colors.blue[100],
+    Colors.green[100],
+    Colors.orange[100],
+    Colors.purple[100],
+    Colors.red[100],
+    Colors.teal[100],
+    Colors.amber[100],
+  ];
+
+  // authorId별로 고유한 색상 인덱스 생성
+  int colorIndex = message.authorId.hashCode % colors.length;
+  final bgColor = colors[colorIndex];
+
+  return Container(
+    margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: bgColor,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Text(message.text, style: const TextStyle(fontSize: 16)),
+  );
 }
