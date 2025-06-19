@@ -1,13 +1,14 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart' as fl_chat_core;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart' as fl_chat_ui;
-import 'package:flutter_chat_types/flutter_chat_types.dart' as fl_chat_types;
 import 'utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
 class AnonymousChatPage extends StatefulWidget {
-  const AnonymousChatPage({Key? key}) : super(key: key);
+  const AnonymousChatPage({super.key});
 
   @override
   State<AnonymousChatPage> createState() => _AnonymousChatPageState();
@@ -17,7 +18,6 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
   late final fl_chat_core.InMemoryChatController _chatController;
   final _firestore = FirebaseFirestore.instance;
   final String _roomId = 'anonymous_room';
-  late final fl_chat_types.User _user;
 
   String _userId = "";
 
@@ -26,12 +26,6 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
     super.initState();
     _loadUserId();
     _chatController = fl_chat_core.InMemoryChatController(messages: const []);
-    _user = fl_chat_types.User(
-      id: _userId,
-      firstName: 'Anonymous',
-      lastName: '',
-      imageUrl: '',
-    );
 
     // Firestgore에서 메시지 스트림 구독
     _messagesStream.listen((messages) {
@@ -50,11 +44,25 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
         .map((snapshot) {
           return snapshot.docs.map((doc) {
             final data = doc.data();
+            final createdAt = data['createdAt'];
+
+            DateTime createdAtMillis;
+
+            // createdAt이 Timestamp면 변환, 아니면 그대로 사용
+            if (createdAt is Timestamp) {
+              createdAtMillis = DateTime.fromMillisecondsSinceEpoch(
+                createdAt.millisecondsSinceEpoch,
+              );
+            } else if (createdAt is int) {
+              createdAtMillis = DateTime.fromMillisecondsSinceEpoch(createdAt);
+            } else {
+              createdAtMillis = DateTime.now();
+            }
 
             return fl_chat_core.TextMessage(
               id: data['id'],
               authorId: data['authorId'],
-              createdAt: DateTime.fromMillisecondsSinceEpoch(data['createdAt']),
+              createdAt: createdAtMillis,
               text: data['text'],
             );
           }).toList();
@@ -106,7 +114,7 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
   // onMessageSend에 연결할 멤버 함수
   Future<void> _onMessageSend(String message) async {
     final textMessage = fl_chat_core.TextMessage(
-      authorId: _user.id,
+      authorId: _userId,
       createdAt: DateTime.now(),
       id: const Uuid().v4(),
       text: message,
