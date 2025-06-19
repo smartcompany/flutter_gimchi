@@ -1,20 +1,23 @@
-import 'dart:math';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_core/flutter_chat_core.dart';
-import 'package:flutter_chat_ui/flutter_chat_ui.dart';
-import 'utils.dart'; // Assuming this file contains getOrCreateUserId function
+import 'package:flutter_chat_core/flutter_chat_core.dart' as fl_chat_core;
+import 'package:flutter_chat_ui/flutter_chat_ui.dart' as fl_chat_ui;
+import 'package:flutter_chat_types/flutter_chat_types.dart' as fl_chat_types;
+import 'utils.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uuid/uuid.dart';
 
 class AnonymousChatPage extends StatefulWidget {
-  const AnonymousChatPage({super.key});
+  const AnonymousChatPage({Key? key}) : super(key: key);
 
   @override
-  AnonymousChatPageState createState() => AnonymousChatPageState();
+  State<AnonymousChatPage> createState() => _AnonymousChatPageState();
 }
 
-class AnonymousChatPageState extends State<AnonymousChatPage> {
-  late final InMemoryChatController _chatController;
+class _AnonymousChatPageState extends State<AnonymousChatPage> {
+  late final fl_chat_core.InMemoryChatController _chatController;
+  final _firestore = FirebaseFirestore.instance;
+  final String _roomId = 'anonymous_room';
+  late final fl_chat_types.User _user;
 
   String _userId = "";
 
@@ -22,18 +25,40 @@ class AnonymousChatPageState extends State<AnonymousChatPage> {
   void initState() {
     super.initState();
     _loadUserId();
-    _chatController = InMemoryChatController(messages: const []);
+    _chatController = fl_chat_core.InMemoryChatController(messages: const []);
+    _user = fl_chat_types.User(
+      id: _userId,
+      firstName: 'Anonymous',
+      lastName: '',
+      imageUrl: '',
+    );
 
-    // Foreground 메시지 수신
-    FirebaseMessaging.onMessage.listen((RemoteMessage msg) {
-      print('Foreground message: ${msg.notification?.title}');
+    // Firestgore에서 메시지 스트림 구독
+    _messagesStream.listen((messages) {
+      // 메시지들을 InMemoryChatController에 설정
+      _chatController.setMessages(messages);
     });
-    FirebaseMessaging.onBackgroundMessage(_bgHandler);
   }
 
-  // Background 메시지 핸들러
-  Future<void> _bgHandler(RemoteMessage msg) async {
-    print('Background message: ${msg.notification?.body}');
+  Stream<List<fl_chat_core.Message>> get _messagesStream {
+    return _firestore
+        .collection('chat_rooms')
+        .doc(_roomId)
+        .collection('messages')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+
+            return fl_chat_core.TextMessage(
+              id: data['id'],
+              authorId: data['authorId'],
+              createdAt: DateTime.fromMillisecondsSinceEpoch(data['createdAt']),
+              text: data['text'],
+            );
+          }).toList();
+        });
   }
 
   Future<void> _loadUserId() async {
@@ -66,25 +91,40 @@ class AnonymousChatPageState extends State<AnonymousChatPage> {
         ],
       ),
       body: SafeArea(
-        child: Chat(
+        child: fl_chat_ui.Chat(
           chatController: _chatController,
           currentUserId: _userId,
-          onMessageSend: (text) {
-            _chatController.insertMessage(
-              TextMessage(
-                // Better to use UUID or similar for the ID - IDs must be unique
-                id: '${Random().nextInt(1000) + 1}',
-                authorId: _userId,
-                createdAt: DateTime.now().toUtc(),
-                text: text,
-              ),
-            );
-          },
-          resolveUser: (UserID id) async {
-            return User(id: id, name: 'John Doe');
+          onMessageSend: _onMessageSend,
+          resolveUser: (fl_chat_core.UserID id) async {
+            return fl_chat_core.User(id: id, name: 'John Doe');
           },
         ),
       ),
     );
+  }
+
+  // onMessageSend에 연결할 멤버 함수
+  Future<void> _onMessageSend(String message) async {
+    final textMessage = fl_chat_core.TextMessage(
+      authorId: _user.id,
+      createdAt: DateTime.now(),
+      id: const Uuid().v4(),
+      text: message,
+    );
+
+    //_chatController.insertMessage(textMessage);
+
+    // Firestore에 메시지 저장 (비동기 처리, 오류 무시)
+    await FirebaseFirestore.instance
+        .collection('chat_rooms')
+        .doc(_roomId)
+        .collection('messages')
+        .add({
+          'authorId': textMessage.authorId,
+          'createdAt': textMessage.createdAt,
+          'id': textMessage.id,
+          'text': textMessage.text,
+          'type': 'text',
+        });
   }
 }
