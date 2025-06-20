@@ -220,15 +220,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     try {
       String? token = await FirebaseMessaging.instance.getToken();
       print('FCM Token: $token');
+
+       // 서버에 토큰을 저장(POST)해야 푸시를 받을 수 있습니다.
+      if (token != null) {
+        await ApiService.saveFcmTokenToServer(token);
+      }
     } catch (e) {
       print('FCM 토큰을 가져오는 중 오류 발생: $e');
       _showRetryDialog();
       return;
-    }
-
-    // 서버에 토큰을 저장(POST)해야 푸시를 받을 수 있습니다.
-    if (token != null) {
-      await ApiService.saveFcmTokenToServer(token);
     }
 
     // 앱이 푸시 클릭으로 실행된 경우 알림 팝업
