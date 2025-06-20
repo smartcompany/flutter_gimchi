@@ -221,7 +221,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       String? token = await FirebaseMessaging.instance.getToken();
       print('FCM Token: $token');
 
-       // 서버에 토큰을 저장(POST)해야 푸시를 받을 수 있습니다.
+      // 서버에 토큰을 저장(POST)해야 푸시를 받을 수 있습니다.
       if (token != null) {
         await ApiService.saveFcmTokenToServer(token);
       }
@@ -359,10 +359,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           */
           adUnitEntry = await ApiService.fetchRewardedAdUnitId();
         } else if (Platform.isAndroid) {
+          /*
           adUnitEntry = MapEntry(
             'rewarded_ad',
             'ca-app-pub-3940256099942544/5224354917',
           );
+          */
+          adUnitEntry = await ApiService.fetchRewardedAdUnitId();
         }
       } else {
         adUnitEntry = await ApiService.fetchRewardedAdUnitId();
@@ -395,6 +398,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 _adsStatus = AdsStatus.shown; // 광고 로드 실패 시 전략 공개
               });
               print('Failed to load rewarded ad: ${error.message}');
+              print('AD Unit ID: ${adUnitEntry?.value}');
             },
           ),
         );
