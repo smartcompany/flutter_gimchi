@@ -217,8 +217,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
 
     // FCM 토큰 얻기
-    String? token = await FirebaseMessaging.instance.getToken();
-    print('FCM Token: $token');
+    try {
+      String? token = await FirebaseMessaging.instance.getToken();
+      print('FCM Token: $token');
+    } catch (e) {
+      print('FCM 토큰을 가져오는 중 오류 발생: $e');
+      _showRetryDialog();
+      return;
+    }
+
     // 서버에 토큰을 저장(POST)해야 푸시를 받을 수 있습니다.
     if (token != null) {
       await ApiService.saveFcmTokenToServer(token);
@@ -569,14 +576,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('종료'),
+                child: const Text('아니오'),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                   _loadAllApis();
                 },
-                child: const Text('YES'),
+                child: const Text('예'),
               ),
             ],
           ),
