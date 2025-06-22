@@ -119,12 +119,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool showGimchiTrading = false; // 김프 거래 표시 여부 추가
   bool showExchangeRate = true; // 환율 표시 여부 추가
   String? strategyText;
-  Map<String, dynamic>? latestStrategy;
-  ChartData? latestGimchiStrategy;
+  StrategyMap? latestStrategy;
   ChartData? latestExchangeRate;
   List<USDTChartData> usdtChartData = [];
-  Map<String, dynamic> usdtMap = {};
-  List strategyList = [];
+  Map<DateTime, USDTChartData> usdtMap = {};
+  List<StrategyMap> strategyList = [];
 
   AdsStatus _adsStatus = AdsStatus.unload; // 광고 상태 관리
 
@@ -160,6 +159,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initAll();
+    _startPolling();
   }
 
   Future<void> _initAll() async {
@@ -189,8 +189,32 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
-  void startPolling() {
-    Timer.periodic(Duration(seconds: 10), (timer) {});
+  void _startPolling() {
+    Timer.periodic(Duration(seconds: 10), (timer) async {
+      final usdt = await api.fetchLatestUSDTData();
+      final exchangeRate = await api.fetchLatestExchangeRate();
+      if (!mounted) return; // 위젯이 마운트되지 않은 경우 early return
+
+      if (usdtChartData.isEmpty || usdtMap.isEmpty || exchangeRates.isEmpty) {
+        return;
+      }
+
+      setState(() {
+        if (usdt != null) {
+          usdtChartData.last.close = usdt;
+          final key = usdtChartData.last.time; // 시간 문자열로 변환
+          if (usdtMap.containsKey(key)) {
+            usdtMap[key]?.close = usdt;
+          }
+        }
+
+        if (exchangeRate != null) {
+          ChartData latestExchangeRateData = exchangeRates.last;
+          latestExchangeRateData.value = exchangeRate;
+          exchangeRates.last.value = exchangeRate;
+        }
+      });
+    });
   }
 
   @override
@@ -297,24 +321,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       ]);
 
       exchangeRates = results[0] as List<ChartData>;
-      usdtMap = results[1] as Map<String, dynamic>;
+      usdtMap = results[1] as Map<DateTime, USDTChartData>;
       kimchiPremium = results[2] as List<ChartData>;
-      strategyList = results[3] as List;
+      strategyList = results[3] as List<StrategyMap>;
 
       final exchangeRate = await api.fetchLatestExchangeRate();
       if (exchangeRate != null) {
-        ChartData latestExchangeRateData = ChartData(
-          DateTime.now(),
-          exchangeRates.last.value,
-        );
-        latestExchangeRateData.value = exchangeRate;
-        exchangeRates.last = latestExchangeRateData;
+        exchangeRates.last.value = exchangeRate;
       }
 
       setState(() {
-        latestGimchiStrategy = kimchiPremium.first as ChartData?;
         latestExchangeRate = exchangeRates.last as ChartData?;
-        latestStrategy = strategyList.first as Map<String, dynamic>?;
+        latestStrategy = strategyList.first as StrategyMap?;
 
         kimchiMin = kimchiPremium
             .map((e) => e.value)
@@ -327,13 +345,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         if (usdtMap.isNotEmpty) {
           final List<USDTChartData> rate = [];
           usdtMap.forEach((key, value) {
-            final close = value['close']?.toDouble() ?? 0;
-            final high = value['high']?.toDouble() ?? 0;
-            final low = value['low']?.toDouble() ?? 0;
-            final open = value['open']?.toDouble() ?? 0;
-            rate.add(
-              USDTChartData(DateTime.parse(key), open, close, high, low),
-            );
+            final close = value.close;
+            final high = value.high;
+            final low = value.low;
+            final open = value.open;
+            rate.add(USDTChartData(key, open, close, high, low));
           });
           rate.sort((a, b) => a.time.compareTo(b.time));
           usdtChartData = rate;

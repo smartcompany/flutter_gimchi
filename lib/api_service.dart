@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdt_signal/utils.dart';
 
+typedef StrategyMap = Map<String, dynamic>;
+
 class ChartData {
   final DateTime time;
   double value;
@@ -12,10 +14,10 @@ class ChartData {
 
 class USDTChartData {
   final DateTime time;
-  final double open;
-  final double close;
-  final double high;
-  final double low;
+  double open;
+  double close;
+  double high;
+  double low;
   USDTChartData(this.time, this.open, this.close, this.high, this.low);
 }
 
@@ -79,10 +81,24 @@ class ApiService {
   }
 
   // USDT 데이터
-  Future<Map<String, dynamic>> fetchUSDTData() async {
+  Future<Map<DateTime, USDTChartData>> fetchUSDTData() async {
     final response = await http.get(Uri.parse(upbitUsdtUrl));
     if (response.statusCode == 200) {
-      return json.decode(response.body) as Map<String, dynamic>;
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      final Map<DateTime, USDTChartData> result = {};
+      data.forEach((key, val) {
+        final dateTime = DateTime.parse(key);
+        final usdtChartData = USDTChartData(
+          dateTime,
+          val['open'].toDouble(),
+          val['close'].toDouble(),
+          val['high'].toDouble(),
+          val['low'].toDouble(),
+        );
+        result[dateTime] = usdtChartData;
+      });
+
+      return result;
     } else {
       throw Exception("Failed to fetch USDT data: ${response.statusCode}");
     }
@@ -121,16 +137,15 @@ class ApiService {
   }
 
   // 전략 데이터
-  Future<List?> fetchStrategy() async {
+  Future<List<StrategyMap>?> fetchStrategy() async {
     final response = await http.get(Uri.parse(strategyUrl));
     if (response.statusCode == 200) {
       final strategyText = utf8.decode(response.bodyBytes);
       try {
         final rawList = json.decode(strategyText);
-        // 모든 숫자 필드를 double로 변환
         final converted =
             (rawList as List).map((item) {
-              final map = Map<String, dynamic>.from(item);
+              final map = StrategyMap.from(item);
               map.updateAll(
                 (key, value) => value is int ? value.toDouble() : value,
               );

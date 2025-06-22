@@ -8,8 +8,8 @@ enum SimulationType { ai, kimchi }
 
 class AISimulationPage extends StatefulWidget {
   final SimulationType simulationType;
-  final Map usdtMap;
-  final List strategyList;
+  final Map<DateTime, USDTChartData> usdtMap;
+  final List<StrategyMap> strategyList;
   final List<ChartData> usdExchangeRates;
 
   // ChartOnlyPageModel을 직접 받는 생성자 추가
@@ -31,8 +31,8 @@ class AISimulationPage extends StatefulWidget {
 
   static List<SimulationResult> simulateResults(
     List<ChartData> usdExchangeRates,
-    List strategyList,
-    Map usdtMap,
+    List<StrategyMap> strategyList,
+    Map<DateTime, USDTChartData> usdtMap,
   ) {
     return _AISimulationPageState.simulateResults(
       usdExchangeRates,
@@ -43,8 +43,8 @@ class AISimulationPage extends StatefulWidget {
 
   static List<SimulationResult> gimchiSimulateResults(
     List<ChartData> usdExchangeRates,
-    List strategyList,
-    Map usdtMap,
+    List<StrategyMap> strategyList,
+    Map<DateTime, USDTChartData> usdtMap,
   ) {
     return _AISimulationPageState.gimchiSimulateResults(
       usdExchangeRates,
@@ -59,7 +59,7 @@ class AISimulationPage extends StatefulWidget {
 
 class _AISimulationPageState extends State<AISimulationPage>
     with SingleTickerProviderStateMixin {
-  List<Map<String, dynamic>>? strategies;
+  List<StrategyMap>? strategies;
   List<SimulationResult> results = [];
   bool loading = true;
   String? error;
@@ -123,7 +123,7 @@ class _AISimulationPageState extends State<AISimulationPage>
         );
 
         setState(() {
-          strategies = List<Map<String, dynamic>>.from(strategyList);
+          strategies = List<StrategyMap>.from(strategyList);
           results = simResults;
           loading = false;
         });
@@ -135,7 +135,7 @@ class _AISimulationPageState extends State<AISimulationPage>
         );
 
         setState(() {
-          strategies = List<Map<String, dynamic>>.from(strategyList);
+          strategies = List<StrategyMap>.from(strategyList);
           results = simResults;
           loading = false;
         });
@@ -150,9 +150,9 @@ class _AISimulationPageState extends State<AISimulationPage>
   }
 
   // 특정 날짜부터 usdtMap 데이터를 조회하는 함수
-  static List<MapEntry<String, dynamic>> getEntriesFromDate(
-    Map<String, dynamic> usdtMap,
-    String startDate,
+  static List<MapEntry<DateTime, dynamic>> getEntriesFromDate(
+    Map<DateTime, dynamic> usdtMap,
+    DateTime startDate,
   ) {
     // 날짜 오름차순 정렬
     final sortedEntries =
@@ -167,8 +167,8 @@ class _AISimulationPageState extends State<AISimulationPage>
   // simResults 생성 로직을 별도 함수로 분리
   static List<SimulationResult> simulateResults(
     List<ChartData> usdExchangeRates, // ← 추가
-    List strategyList,
-    Map usdtMap,
+    List<StrategyMap> strategyList,
+    Map<DateTime, USDTChartData> usdtMap,
   ) {
     // 날짜 오름차순 정렬
     strategyList.sort((a, b) {
@@ -178,15 +178,15 @@ class _AISimulationPageState extends State<AISimulationPage>
       return dateA.compareTo(dateB);
     });
 
-    final Map<String, Map<String, dynamic>> strategyMap = {
+    final Map<DateTime, StrategyMap> strategyMap = {
       for (var strat in strategyList)
-        if (strat['analysis_date'] != null) strat['analysis_date']: strat,
+        if (strat['analysis_date'] != null)
+          DateTime.parse(strat['analysis_date']): strat,
     };
 
     // 2. usdExchangeRateMap 생성
     final usdExchangeRateMap = {
-      for (var rate in usdExchangeRates)
-        DateFormat('yyyy-MM-dd').format(rate.time): rate.value,
+      for (var rate in usdExchangeRates) rate.time: rate.value,
     };
 
     List<SimulationResult> simResults = [];
@@ -194,20 +194,21 @@ class _AISimulationPageState extends State<AISimulationPage>
     double totalKRW = initialKRW;
     SimulationResult? unselledResult;
 
-    String? sellDate;
-    String? buyDate;
+    DateTime? sellDate;
+    DateTime? buyDate;
 
-    String strategyDate = strategyList.first['analysis_date'];
-    final filteredEntries = getEntriesFromDate(
-      usdtMap.cast<String, dynamic>(),
-      strategyDate,
-    );
+    DateTime strategyDate =
+        strategyList.first['analysis_date'] != null
+            ? DateTime.parse(strategyList.first['analysis_date'])
+            : DateTime.now();
+
+    final filteredEntries = getEntriesFromDate(usdtMap, strategyDate);
 
     Map<String, dynamic>? strategy = strategyMap[strategyDate];
     double buyPrice = 0;
 
     for (final entry in filteredEntries) {
-      final String date = entry.key;
+      final date = entry.key;
       final newStrategy = strategyMap[date];
       if (newStrategy != null) {
         strategy = newStrategy;
@@ -216,8 +217,8 @@ class _AISimulationPageState extends State<AISimulationPage>
 
       final double? buyStrategyPrice = _toDouble(strategy?['buy_price']);
       final double? sellStrategyPrice = _toDouble(strategy?['sell_price']);
-      final lowPrice = _toDouble(usdtMap[date]?['low']) ?? 0;
-      final highPrice = _toDouble(usdtMap[date]?['high']) ?? 0;
+      final lowPrice = usdtMap[date]?.low ?? 0;
+      final highPrice = usdtMap[date]?.high ?? 0;
 
       if (buyStrategyPrice == null || sellStrategyPrice == null) {
         continue;
@@ -232,7 +233,7 @@ class _AISimulationPageState extends State<AISimulationPage>
         if (buyDate == null) continue;
       }
 
-      final high = _toDouble(usdtMap[date]?['high']) ?? 0;
+      final high = usdtMap[date]?.high ?? 0;
       final canSell = isSellCondition(usdtMap, date, buyDate!);
 
       if (canSell && high >= sellStrategyPrice) {
@@ -256,7 +257,7 @@ class _AISimulationPageState extends State<AISimulationPage>
         sellDate = null;
         unselledResult = null;
       } else {
-        final usdtPrice = _toDouble(usdtMap[date]?['close']);
+        final usdtPrice = usdtMap[date]?.close;
         final usdtCount = totalKRW / buyPrice;
         final finalKRW = usdtCount * (usdtPrice ?? 0);
 
@@ -284,14 +285,14 @@ class _AISimulationPageState extends State<AISimulationPage>
   }
 
   static double addResultCard(
-    String sellDate,
-    String date,
+    DateTime sellDate,
+    DateTime date,
     double buyPrice,
     double? sellPrice,
     double totalKRW,
     List<SimulationResult> simResults,
-    String? buyDate,
-    Map<String, double> usdExchangeRateMap, // ← 추가
+    DateTime? buyDate,
+    Map<DateTime, double> usdExchangeRateMap, // ← 추가
   ) {
     print('Sell condition met: sellDate=$sellDate anaysisDate=$date');
 
@@ -315,9 +316,9 @@ class _AISimulationPageState extends State<AISimulationPage>
         buyPrice: buyPrice,
         sellDate: sellDate,
         sellPrice: sellPrice,
-        profit: profit ?? 0,
-        profitRate: profitRate ?? 0,
-        finalKRW: finalKRW ?? 0,
+        profit: profit,
+        profitRate: profitRate,
+        finalKRW: finalKRW,
         finalUSDT: null,
         usdExchangeRateAtBuy: usdExchangeRateMap[buyDate], // ← 추가
         usdExchangeRateAtSell: usdExchangeRateMap[sellDate], // ← 추가
@@ -336,8 +337,8 @@ class _AISimulationPageState extends State<AISimulationPage>
     double totalKRW = initialKRW;
     SimulationResult? unselledResult;
 
-    String sellDate = "";
-    String buyDate = "";
+    DateTime? sellDate;
+    DateTime? buyDate;
     double? buyPrice;
     double? sellPrice;
 
@@ -429,12 +430,12 @@ class _AISimulationPageState extends State<AISimulationPage>
 
         // 다음 거래를 위해 초기화 (복리)
         totalKRW = finalKRW;
-        buyDate = "";
+        buyDate = null;
         buyPrice = null;
         sellPrice = null;
         unselledResult = null;
       } else {
-        final usdtPrice = _toDouble(usdtMap[date]?['close']);
+        final usdtPrice = usdtMap[date]?.close;
         final usdtCount = totalKRW / buyPrice;
         final finalKRW = usdtCount * (usdtPrice ?? 0);
 
@@ -463,11 +464,11 @@ class _AISimulationPageState extends State<AISimulationPage>
 
   static bool isSellCondition(
     Map<dynamic, dynamic> usdtMap,
-    date,
-    String buyDate,
+    DateTime date,
+    DateTime? buyDate,
   ) {
-    final open = _toDouble(usdtMap[date]?['open']) ?? 0;
-    final close = _toDouble(usdtMap[date]?['close']) ?? 0;
+    final open = usdtMap[date]?.open ?? 0;
+    final close = usdtMap[date]?.close ?? 0;
     final canSell = (buyDate == date) ? (open < close) : true;
 
     return canSell;
@@ -481,7 +482,7 @@ class _AISimulationPageState extends State<AISimulationPage>
     return null;
   }
 
-  void _showStrategyDialog(BuildContext context, String date) {
+  void _showStrategyDialog(BuildContext context, DateTime? date) {
     final strategy = strategies?.firstWhere(
       (s) => s['analysis_date'] == date,
       orElse: () => {},
@@ -1011,8 +1012,8 @@ class _AISimulationPageState extends State<AISimulationPage>
                           if (results.isEmpty) return const Text('-');
                           final firstDate = results.first.buyDate;
                           final lastDate = results.last.analysisDate;
-                          final start = DateTime.tryParse(firstDate);
-                          final end = DateTime.tryParse(lastDate);
+                          final start = firstDate;
+                          final end = lastDate;
                           if (start == null || end == null)
                             return const Text('-');
                           final days = end.difference(start).inDays;
@@ -1045,7 +1046,7 @@ class _AISimulationPageState extends State<AISimulationPage>
     );
   }
 
-  OutlinedButton setupStretegyButton(BuildContext context, String date) {
+  OutlinedButton setupStretegyButton(BuildContext context, DateTime? date) {
     // 버튼 스타일에서 padding, minimumSize 조정
     final buttonStyle = OutlinedButton.styleFrom(
       foregroundColor: Colors.deepPurple,
@@ -1068,10 +1069,10 @@ class _AISimulationPageState extends State<AISimulationPage>
 }
 
 class SimulationResult {
-  final String analysisDate;
-  final String buyDate;
+  final DateTime analysisDate;
+  final DateTime? buyDate;
   final double buyPrice;
-  final String? sellDate;
+  final DateTime? sellDate;
   final double? sellPrice;
   final double profit;
   final double profitRate;

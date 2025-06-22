@@ -8,8 +8,8 @@ import 'api_service.dart';
 class ChartOnlyPage extends StatefulWidget {
   final List<ChartData> exchangeRates;
   final List<ChartData> kimchiPremium;
-  final List strategyList;
-  final Map<String, dynamic> usdtMap; // USDT 데이터 맵
+  final List<StrategyMap> strategyList;
+  final Map<DateTime, USDTChartData> usdtMap; // USDT 데이터 맵
   final List<USDTChartData> usdtChartData;
   final double kimchiMin;
   final double kimchiMax;
@@ -285,7 +285,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                   ScatterSeries<dynamic, DateTime>(
                     name: showAITrading ? 'AI 매수' : '김프 매수',
                     dataSource: aiTradeResults.toList(),
-                    xValueMapper: (r, _) => DateTime.parse(r.buyDate),
+                    xValueMapper: (r, _) => r.buyDate,
                     yValueMapper: (r, _) => r.buyPrice,
                     markerSettings: const MarkerSettings(
                       isVisible: true,
@@ -301,7 +301,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                         aiTradeResults
                             .where((r) => r.sellDate != null)
                             .toList(),
-                    xValueMapper: (r, _) => DateTime.parse(r.sellDate!),
+                    xValueMapper: (r, _) => r.sellDate!,
                     yValueMapper: (r, _) => r.sellPrice!,
                     markerSettings: const MarkerSettings(
                       isVisible: true,
@@ -368,12 +368,10 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
     if (show && aiTradeResults.isNotEmpty && widget.usdtChartData.isNotEmpty) {
       // AI 매수/매도 날짜 리스트
       final allDates = [
-        ...aiTradeResults
-            .where((r) => r.buyDate != null)
-            .map((r) => DateTime.parse(r.buyDate)),
+        ...aiTradeResults.where((r) => r.buyDate != null).map((r) => r.buyDate),
         ...aiTradeResults
             .where((r) => r.sellDate != null)
-            .map((r) => DateTime.parse(r.sellDate!)),
+            .map((r) => r.sellDate!),
       ];
       if (allDates.isNotEmpty) {
         allDates.sort();
@@ -597,7 +595,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
   SimulationResult? getSimulationResult(DateTime date) {
     for (final result in aiTradeResults) {
       if (result.buyDate != null) {
-        final buyDate = DateTime.parse(result.buyDate);
+        final buyDate = result.buyDate;
         if (buyDate.year == date.year &&
             buyDate.month == date.month &&
             buyDate.day == date.day) {
@@ -605,7 +603,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         }
       }
       if (result.sellDate != null) {
-        final sellDate = DateTime.parse(result.sellDate!);
+        final sellDate = result.sellDate!;
         if (sellDate.year == date.year &&
             sellDate.month == date.month &&
             sellDate.day == date.day) {
@@ -657,8 +655,8 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
 class ChartOnlyPageModel {
   final List<ChartData> exchangeRates;
   final List<ChartData> kimchiPremium;
-  final List strategyList;
-  final Map<String, dynamic> usdtMap;
+  final List<StrategyMap> strategyList;
+  final Map<DateTime, USDTChartData> usdtMap;
   final List<USDTChartData> usdtChartData;
   final double kimchiMin;
   final double kimchiMax;
