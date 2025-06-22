@@ -6,7 +6,7 @@ import 'package:usdt_signal/utils.dart';
 
 class ChartData {
   final DateTime time;
-  final double value;
+  double value;
   ChartData(this.time, this.value);
 }
 
@@ -35,6 +35,48 @@ class ApiService {
       "https://rate-history.vercel.app/api/user-data";
   static const String settingsUrl =
       "https://rate-history.vercel.app/api/settings";
+  static const String latestUsdtUrl =
+      'https://api.upbit.com/v1/ticker?markets=KRW-USDT';
+  static const latestExchangeRateUrl = 'https://v6.exchangerate-api.com/v6/';
+  static const String exchangeRateKey = '88918cf514aae52a57ec6b9f';
+
+  Future<double?> fetchLatestUSDTData() async {
+    try {
+      // 업비트 API에서 최신 USDT 환율 정보 가져오기
+      final response = await http.get(Uri.parse(latestUsdtUrl));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body)[0]; // API 응답에서 첫 번째 데이터 가져오기
+        return data['trade_price']?.toDouble(); // trade_price 필드에서 환율 값 추출
+      } else {
+        print('USDT 데이터 가져오기 실패: ${response.statusCode}');
+        return null;
+      }
+    } catch (error) {
+      print('USDT 데이터 가져오기 실패: $error');
+      return null;
+    }
+  }
+
+  Future<double?> fetchLatestExchangeRate() async {
+    final url = '$latestExchangeRateUrl/$exchangeRateKey/pair/USD/KRW';
+
+    try {
+      // HTTP GET 요청으로 환율 데이터 가져오기
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['conversion_rate'].toDouble(); // 환율 데이터 반환
+      } else {
+        print('환율 가져오기 실패: ${response.statusCode}');
+        return null;
+      }
+    } catch (error) {
+      print('환율 가져오기 실패: $error');
+      return null;
+    }
+  }
 
   // USDT 데이터
   Future<Map<String, dynamic>> fetchUSDTData() async {
@@ -144,7 +186,9 @@ class ApiService {
         } else if (Platform.isAndroid) {
           final key = json['android_ad'] as String?;
           final androidRef = json['ref']?['android'] as Map<String, dynamic>?;
-          if (key != null && androidRef != null && androidRef.containsKey(key)) {
+          if (key != null &&
+              androidRef != null &&
+              androidRef.containsKey(key)) {
             final value = androidRef[key] as String?;
             if (value != null) {
               return MapEntry(key, value);

@@ -518,7 +518,9 @@ class _AISimulationPageState extends State<AISimulationPage>
                   ],
                 ),
                 const SizedBox(height: 12),
-                if (strategy != null && strategy.isNotEmpty) ...[
+                if (widget.simulationType == SimulationType.ai &&
+                    strategy != null &&
+                    strategy.isNotEmpty) ...[
                   _StrategyDialogRow(
                     label: '매수 가격',
                     value: '${strategy['buy_price']}',

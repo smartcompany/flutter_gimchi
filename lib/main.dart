@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
@@ -186,6 +189,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
+  void startPolling() {
+    Timer.periodic(Duration(seconds: 10), (timer) {});
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -288,12 +295,23 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         api.fetchKimchiPremiumData(),
         api.fetchStrategy(),
       ]);
-      setState(() {
-        exchangeRates = results[0] as List<ChartData>;
-        usdtMap = results[1] as Map<String, dynamic>;
-        kimchiPremium = results[2] as List<ChartData>;
-        strategyList = results[3] as List;
 
+      exchangeRates = results[0] as List<ChartData>;
+      usdtMap = results[1] as Map<String, dynamic>;
+      kimchiPremium = results[2] as List<ChartData>;
+      strategyList = results[3] as List;
+
+      final exchangeRate = await api.fetchLatestExchangeRate();
+      if (exchangeRate != null) {
+        ChartData latestExchangeRateData = ChartData(
+          DateTime.now(),
+          exchangeRates.last.value,
+        );
+        latestExchangeRateData.value = exchangeRate;
+        exchangeRates.last = latestExchangeRateData;
+      }
+
+      setState(() {
         latestGimchiStrategy = kimchiPremium.first as ChartData?;
         latestExchangeRate = exchangeRates.last as ChartData?;
         latestStrategy = strategyList.first as Map<String, dynamic>?;
