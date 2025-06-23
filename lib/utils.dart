@@ -4,6 +4,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:advertising_id/advertising_id.dart';
+import 'package:intl/intl.dart';
 
 // 사용자 ID 가져오기/생성 함수
 Future<String> getOrCreateUserId() async {
@@ -14,6 +15,10 @@ Future<String> getOrCreateUserId() async {
     await prefs.setString('user_id', userId);
   }
   return userId;
+}
+
+double gimchiPremium(double usdtPrice, double exchangerate) {
+  return ((usdtPrice - exchangerate) / exchangerate * 100);
 }
 
 // iOS 시뮬레이터 여부 확인 함수
@@ -37,6 +42,17 @@ Future<void> printIDFA() async {
     print('IDFA: $idfa');
   } catch (e) {
     print('IDFA 가져오기 실패: $e');
+  }
+}
+
+extension DateTimeCustomString on DateTime {
+  /// 문자열이 DateTime으로 변환 가능하면 yyyy/MM/dd 포맷으로 반환, 아니면 null 반환
+  String toCustomString() {
+    return DateFormat('yyyy/MM/dd').format(this);
+  }
+
+  bool isSameDate(DateTime other) {
+    return year == other.year && month == other.month && day == other.day;
   }
 }
 

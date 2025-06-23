@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:usdt_signal/ChartOnlyPage.dart'; // ChartOnlyPageModel import 추가
 import 'package:usdt_signal/api_service.dart';
+import 'utils.dart';
 
 enum SimulationType { ai, kimchi }
 
@@ -152,8 +153,13 @@ class _AISimulationPageState extends State<AISimulationPage>
   // 특정 날짜부터 usdtMap 데이터를 조회하는 함수
   static List<MapEntry<DateTime, dynamic>> getEntriesFromDate(
     Map<DateTime, dynamic> usdtMap,
-    DateTime startDate,
+    DateTime? startDate,
   ) {
+    if (startDate == null) {
+      // startDate가 null인 경우 전체 데이터를 반환
+      return usdtMap.entries.toList();
+    }
+
     // 날짜 오름차순 정렬
     final sortedEntries =
         usdtMap.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
@@ -196,11 +202,9 @@ class _AISimulationPageState extends State<AISimulationPage>
 
     DateTime? sellDate;
     DateTime? buyDate;
-
-    DateTime strategyDate =
-        strategyList.first['analysis_date'] != null
-            ? DateTime.parse(strategyList.first['analysis_date'])
-            : DateTime.now();
+    DateTime? strategyDate = DateTime.parse(
+      strategyList.first['analysis_date'],
+    );
 
     final filteredEntries = getEntriesFromDate(usdtMap, strategyDate);
 
@@ -329,8 +333,8 @@ class _AISimulationPageState extends State<AISimulationPage>
 
   static List<SimulationResult> gimchiSimulateResults(
     List<ChartData> usdExchangeRates,
-    List strategyList,
-    Map usdtMap,
+    List<StrategyMap> strategyList,
+    Map<DateTime, USDTChartData> usdtMap,
   ) {
     List<SimulationResult> simResults = [];
     double initialKRW = 1000000;
@@ -354,24 +358,21 @@ class _AISimulationPageState extends State<AISimulationPage>
     });
 
     if (AISimulationPage.matchSameDatesAsAI) {
-      final strategyFirstDate = strategyList.first['analysis_date'];
-      if (strategyFirstDate != null) {
-        sortedDates.removeWhere(
-          (date) => date.compareTo(strategyFirstDate) < 0,
-        );
-      }
+      final strategyFirstDate = DateTime.parse(
+        strategyList.first['analysis_date'],
+      );
+      sortedDates.removeWhere((date) => date.compareTo(strategyFirstDate) < 0);
     }
 
     final usdExchangeRatesMap = {
-      for (var rate in usdExchangeRates)
-        DateFormat('yyyy-MM-dd').format(rate.time): rate.value,
+      for (var rate in usdExchangeRates) rate.time: rate.value,
     };
 
     for (final date in sortedDates) {
       final usdtDay = usdtMap[date];
       final usdExchangeRate = usdExchangeRatesMap[date] ?? 0.0;
-      final usdtLow = _toDouble(usdtDay['low']) ?? 0.0;
-      final usdtHigh = _toDouble(usdtDay['high']) ?? 0.0;
+      final usdtLow = usdtDay?.low ?? 0.0;
+      final usdtHigh = usdtDay?.high ?? 0.0;
       final buyTargetPrice =
           usdExchangeRate * (1 + AISimulationPage.kimchiBuyThreshold / 100);
       final sellTargetPrice =
@@ -482,9 +483,9 @@ class _AISimulationPageState extends State<AISimulationPage>
     return null;
   }
 
-  void _showStrategyDialog(BuildContext context, DateTime? date) {
+  void _showStrategyDialog(BuildContext context, DateTime date) {
     final strategy = strategies?.firstWhere(
-      (s) => s['analysis_date'] == date,
+      (s) => DateTime.parse(s['analysis_date']).isSameDate(date),
       orElse: () => {},
     );
 
@@ -505,7 +506,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                 Row(
                   children: [
                     Text(
-                      '$date 전략',
+                      '${date.toCustomString()} 전략',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
@@ -776,7 +777,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        '매수→${r.buyDate} / 매도→${r.sellDate ?? "미체결"}',
+                                        '매수→${r.buyDate?.toCustomString()}\n매도→${r.sellDate?.toCustomString() ?? "미체결"}',
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 15,
@@ -930,8 +931,10 @@ class _AISimulationPageState extends State<AISimulationPage>
                         builder: (context) {
                           // 시작일은 첫 번째 결과의 buyDate, 종료일은 마지막 결과에서 sellDate 가 있으면 그 값, 없으면 buyDate
                           if (results.isEmpty) return const Text('-');
-                          final startDate = results.first.buyDate;
-                          final endDate = results.last.analysisDate;
+                          final startDate =
+                              results.first.buyDate?.toCustomString();
+                          final endDate =
+                              results.last.analysisDate.toCustomString();
                           final text =
                               results.isEmpty
                                   ? '-'
@@ -1058,7 +1061,7 @@ class _AISimulationPageState extends State<AISimulationPage>
 
     return OutlinedButton(
       onPressed: () {
-        _showStrategyDialog(context, date);
+        _showStrategyDialog(context, date!);
       },
       style: buttonStyle,
       child: const Text('전략 보기'),

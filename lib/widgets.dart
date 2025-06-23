@@ -23,9 +23,22 @@ class InfoItem extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        TweenAnimationBuilder<double>(
+          key: ValueKey(value), // value가 바뀔 때마다 새 위젯으로 인식
+          tween: Tween<double>(begin: 1.5, end: 1.0),
+          duration: Duration(milliseconds: 500),
+          builder: (context, scale, child) {
+            return Transform.scale(
+              scale: scale,
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          },
         ),
       ],
     );
