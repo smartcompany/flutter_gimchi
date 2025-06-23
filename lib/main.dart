@@ -636,6 +636,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   // 2. 포그라운드 복귀 시 알림 권한 체크
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (kIsWeb) return; // 웹에서는 앱 라이프사이클 이벤트를 처리하지 않음
+
     if (state == AppLifecycleState.resumed) {
       bool hasPermission = await _hasNotificationPermission();
       if (!hasPermission &&
