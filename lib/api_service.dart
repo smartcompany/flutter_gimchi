@@ -39,7 +39,8 @@ class ApiService {
       "https://rate-history.vercel.app/api/settings";
   static const String latestUsdtUrl =
       'https://api.upbit.com/v1/ticker?markets=KRW-USDT';
-  static const latestExchangeRateUrl = 'https://v6.exchangerate-api.com/v6/';
+  static const latestExchangeRateUrl =
+      'https://rate-history.vercel.app/api/rate-history';
   static const String exchangeRateKey = '88918cf514aae52a57ec6b9f';
 
   Future<double?> fetchLatestUSDTData() async {
@@ -61,21 +62,13 @@ class ApiService {
   }
 
   Future<double?> fetchLatestExchangeRate() async {
-    final url = '$latestExchangeRateUrl/$exchangeRateKey/pair/USD/KRW';
-
-    try {
-      // HTTP GET 요청으로 환율 데이터 가져오기
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['conversion_rate'].toDouble(); // 환율 데이터 반환
-      } else {
-        print('환율 가져오기 실패: ${response.statusCode}');
-        return null;
-      }
-    } catch (error) {
-      print('환율 가져오기 실패: $error');
+    final resut = await fetchExchangeRateData(justLatest: true);
+    if (resut.isNotEmpty) {
+      // 가장 최근의 환율 데이터 반환
+      resut.sort((a, b) => b.time.compareTo(a.time));
+      return resut.first.value;
+    } else {
+      print('환율 데이터가 비어 있습니다.');
       return null;
     }
   }
@@ -105,8 +98,11 @@ class ApiService {
   }
 
   // 환율 데이터
-  Future<List<ChartData>> fetchExchangeRateData() async {
-    final response = await http.get(Uri.parse(rateHistoryUrl));
+  Future<List<ChartData>> fetchExchangeRateData({
+    bool justLatest = false,
+  }) async {
+    final url = justLatest ? latestExchangeRateUrl : rateHistoryUrl;
+    final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final List<ChartData> rate = [];
