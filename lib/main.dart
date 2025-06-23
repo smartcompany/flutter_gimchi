@@ -723,17 +723,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       appBar: AppBar(
         title: const Text('USDT Signal'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.chat_outlined, color: Colors.deepPurple),
-            onPressed: () async {
-              // 채팅봇 페이지로 네비게이트
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AnonymousChatPage(),
-                ),
-              );
-            },
-          ),
+          if (!kIsWeb)
+            IconButton(
+              icon: const Icon(Icons.chat_outlined, color: Colors.deepPurple),
+              onPressed: () async {
+                // 채팅봇 페이지로 네비게이트
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const AnonymousChatPage(),
+                  ),
+                );
+              },
+            ),
         ],
       ),
       body: SafeArea(child: singleChildScrollView),
