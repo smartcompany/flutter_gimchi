@@ -54,6 +54,141 @@ class AISimulationPage extends StatefulWidget {
     );
   }
 
+  static Future<bool> showKimchiStrategyUpdatePopup(
+    BuildContext context, {
+    bool showSameDatesAsAI = false,
+  }) async {
+    final result = await showDialog<Map<String, Object>>(
+      context: context,
+      builder: (context) {
+        double buy = AISimulationPage.kimchiBuyThreshold.toDouble();
+        double sell = AISimulationPage.kimchiSellThreshold.toDouble();
+        bool sameAsAI = AISimulationPage.matchSameDatesAsAI;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('김프 전략 변경'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      const Text('매수 기준(%)'),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          initialValue: buy.toString(),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                            signed: true,
+                          ),
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (v) {
+                            final n = double.tryParse(v);
+                            if (n != null && n >= -10 && n <= 10) {
+                              setState(() {
+                                buy = n;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Text('매도 기준(%)'),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          initialValue: sell.toString(),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                            signed: true,
+                          ),
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (v) {
+                            final n = double.tryParse(v);
+                            if (n != null && n >= -10 && n <= 10) {
+                              setState(() {
+                                sell = n;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (showSameDatesAsAI)
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: sameAsAI,
+                          onChanged: (val) {
+                            setState(() {
+                              sameAsAI = val ?? false;
+                            });
+                          },
+                        ),
+                        const Text('AI와 동일 일정 적용'),
+                      ],
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('취소'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(
+                      context,
+                    ).pop({'buy': buy, 'sell': sell, 'sameAsAI': sameAsAI});
+                  },
+                  child: const Text('확인'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null) {
+      final buy = result['buy'] as double;
+      final sell = result['sell'] as double;
+      final sameAsAI = result['sameAsAI'] as bool;
+
+      final isSuccess = await ApiService.saveAndSyncUserData({
+        UserDataKey.gimchiBuyPercent: buy,
+        UserDataKey.gimchiSellPercent: sell,
+      });
+
+      if (isSuccess) {
+        AISimulationPage.kimchiBuyThreshold = buy;
+        AISimulationPage.kimchiSellThreshold = sell;
+        AISimulationPage.matchSameDatesAsAI = sameAsAI;
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('설정 저장에 실패했습니다.')));
+      }
+
+      return isSuccess;
+    }
+    return false;
+  }
+
   @override
   State<AISimulationPage> createState() => _AISimulationPageState();
 }
@@ -582,144 +717,13 @@ class _AISimulationPageState extends State<AISimulationPage>
                     icon: const Icon(Icons.settings, color: Colors.deepPurple),
                     tooltip: '전략 변경',
                     onPressed: () async {
-                      final result = await showDialog<Map<String, Object>>(
-                        context: context,
-                        builder: (context) {
-                          double buy =
-                              AISimulationPage.kimchiBuyThreshold.toDouble();
-                          double sell =
-                              AISimulationPage.kimchiSellThreshold.toDouble();
-                          bool sameAsAI = AISimulationPage.matchSameDatesAsAI;
-
-                          return StatefulBuilder(
-                            builder: (context, setState) {
-                              return AlertDialog(
-                                title: const Text('김프 전략 변경'),
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        const Text('매수 기준(%)'),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: TextFormField(
-                                            initialValue: buy.toString(),
-                                            keyboardType:
-                                                const TextInputType.numberWithOptions(
-                                                  decimal: true,
-                                                  signed: true,
-                                                ),
-                                            decoration: const InputDecoration(
-                                              border: OutlineInputBorder(),
-                                              isDense: true,
-                                            ),
-                                            onChanged: (v) {
-                                              final n = double.tryParse(v);
-                                              if (n != null &&
-                                                  n >= -10 &&
-                                                  n <= 10) {
-                                                setState(() {
-                                                  buy = n;
-                                                });
-                                              }
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Row(
-                                      children: [
-                                        const Text('매도 기준(%)'),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: TextFormField(
-                                            initialValue: sell.toString(),
-                                            keyboardType:
-                                                const TextInputType.numberWithOptions(
-                                                  decimal: true,
-                                                  signed: true,
-                                                ),
-                                            decoration: const InputDecoration(
-                                              border: OutlineInputBorder(),
-                                              isDense: true,
-                                            ),
-                                            onChanged: (v) {
-                                              final n = double.tryParse(v);
-                                              if (n != null &&
-                                                  n >= -10 &&
-                                                  n <= 10) {
-                                                setState(() {
-                                                  sell = n;
-                                                });
-                                              }
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 20),
-                                    Row(
-                                      children: [
-                                        Checkbox(
-                                          value: sameAsAI,
-                                          onChanged: (val) {
-                                            setState(() {
-                                              sameAsAI = val ?? false;
-                                            });
-                                          },
-                                        ),
-                                        const Text('AI와 동일 일정 적용'),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed:
-                                        () => Navigator.of(context).pop(),
-                                    child: const Text('취소'),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop({
-                                        'buy': buy,
-                                        'sell': sell,
-                                        'sameAsAI': sameAsAI,
-                                      });
-                                    },
-                                    child: const Text('확인'),
-                                  ),
-                                ],
-                              );
-                            },
+                      final success =
+                          await AISimulationPage.showKimchiStrategyUpdatePopup(
+                            context,
+                            showSameDatesAsAI: true,
                           );
-                        },
-                      );
-
-                      if (result != null) {
-                        final buy = result['buy'] as double;
-                        final sell = result['sell'] as double;
-                        final sameAsAI = result['sameAsAI'] as bool;
-
-                        final isSuccess = await ApiService.saveAndSyncUserData({
-                          UserDataKey.gimchiBuyPercent: buy,
-                          UserDataKey.gimchiSellPercent: sell,
-                        });
-
-                        if (isSuccess) {
-                          setState(() {
-                            AISimulationPage.kimchiBuyThreshold = buy;
-                            AISimulationPage.kimchiSellThreshold = sell;
-                            AISimulationPage.matchSameDatesAsAI = sameAsAI;
-                            runSimulation(); // 기준 변경 후 시뮬레이션 재실행
-                          });
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('설정 저장에 실패했습니다.')),
-                          );
-                        }
+                      if (success) {
+                        runSimulation();
                       }
                     },
                   ),

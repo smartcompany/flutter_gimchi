@@ -1308,6 +1308,16 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                                 ),
                               ),
                               actions: [
+                                if (type == SimulationType.kimchi)
+                                  TextButton(
+                                    onPressed: () async {
+                                      Navigator.of(context).pop();
+                                      await AISimulationPage.showKimchiStrategyUpdatePopup(
+                                        context,
+                                      );
+                                    },
+                                    child: const Text('김프 전략 변경'),
+                                  ),
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(),
                                   child: const Text('닫기'),
