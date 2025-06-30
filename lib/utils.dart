@@ -60,6 +60,50 @@ enum AdsStatus { unload, load, shown }
 
 enum TodayCommentAlarmType { off, ai, kimchi }
 
+class SimulationCondition {
+  SimulationCondition._internal();
+  static final SimulationCondition instance = SimulationCondition._internal();
+
+  double _kimchiBuyThreshold = 1.0;
+  double get kimchiBuyThreshold => _kimchiBuyThreshold;
+  double _kimchiSellThreshold = 3.0;
+  double get kimchiSellThreshold => _kimchiSellThreshold;
+  bool _matchSameDatesAsAI = false;
+  bool get matchSameDatesAsAI => _matchSameDatesAsAI;
+
+  void load() {
+    SharedPreferences.getInstance().then((prefs) {
+      instance._kimchiBuyThreshold =
+          prefs.getDouble('kimchiBuyThreshold') ?? 1.0;
+      instance._kimchiSellThreshold =
+          prefs.getDouble('kimchiSellThreshold') ?? 1.0;
+      instance._matchSameDatesAsAI =
+          prefs.getBool('matchSameDatesAsAI') ?? false;
+    });
+  }
+
+  void saveKimchiBuyThreshold(double value) {
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setDouble('kimchiBuyThreshold', value);
+      _kimchiBuyThreshold = value;
+    });
+  }
+
+  void saveKimchiSellThreshold(double value) {
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setDouble('kimchiSellThreshold', value);
+      _kimchiSellThreshold = value;
+    });
+  }
+
+  void saveMatchSameDatesAsAI(bool value) {
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool('matchSameDatesAsAI', value);
+      _matchSameDatesAsAI = value;
+    });
+  }
+}
+
 extension TodayCommentAlarmTypePrefs on TodayCommentAlarmType {
   static const _prefsKey = 'todayCommentAlarmType';
 

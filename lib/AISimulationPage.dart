@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdt_signal/ChartOnlyPage.dart'; // ChartOnlyPageModel import 추가
 import 'package:usdt_signal/api_service.dart';
 import 'utils.dart';
@@ -24,11 +25,6 @@ class AISimulationPage extends StatefulWidget {
     required this.usdExchangeRates,
     this.chartOnlyPageModel,
   });
-
-  // 외부에서 참조 가능한 static 변수로 변경
-  static double kimchiBuyThreshold = 1;
-  static double kimchiSellThreshold = 3;
-  static bool matchSameDatesAsAI = false;
 
   static List<SimulationResult> simulateResults(
     List<ChartData> usdExchangeRates,
@@ -61,9 +57,9 @@ class AISimulationPage extends StatefulWidget {
     final result = await showDialog<Map<String, Object>>(
       context: context,
       builder: (context) {
-        double buy = AISimulationPage.kimchiBuyThreshold.toDouble();
-        double sell = AISimulationPage.kimchiSellThreshold.toDouble();
-        bool sameAsAI = AISimulationPage.matchSameDatesAsAI;
+        double buy = SimulationCondition.instance.kimchiBuyThreshold;
+        double sell = SimulationCondition.instance.kimchiSellThreshold;
+        bool sameAsAI = SimulationCondition.instance.matchSameDatesAsAI;
 
         return StatefulBuilder(
           builder: (context, setState) {
@@ -175,9 +171,9 @@ class AISimulationPage extends StatefulWidget {
       });
 
       if (isSuccess) {
-        AISimulationPage.kimchiBuyThreshold = buy;
-        AISimulationPage.kimchiSellThreshold = sell;
-        AISimulationPage.matchSameDatesAsAI = sameAsAI;
+        SimulationCondition.instance.saveKimchiBuyThreshold(buy);
+        SimulationCondition.instance.saveKimchiSellThreshold(sell);
+        SimulationCondition.instance.saveMatchSameDatesAsAI(sameAsAI);
       } else {
         ScaffoldMessenger.of(
           context,
@@ -492,7 +488,7 @@ class _AISimulationPageState extends State<AISimulationPage>
       return dateA.compareTo(dateB);
     });
 
-    if (AISimulationPage.matchSameDatesAsAI) {
+    if (SimulationCondition.instance.matchSameDatesAsAI) {
       final strategyFirstDate = DateTime.parse(
         strategyList.first['analysis_date'],
       );
@@ -509,9 +505,11 @@ class _AISimulationPageState extends State<AISimulationPage>
       final usdtLow = usdtDay?.low ?? 0.0;
       final usdtHigh = usdtDay?.high ?? 0.0;
       final buyTargetPrice =
-          usdExchangeRate * (1 + AISimulationPage.kimchiBuyThreshold / 100);
+          usdExchangeRate *
+          (1 + SimulationCondition.instance.kimchiBuyThreshold / 100);
       final sellTargetPrice =
-          usdExchangeRate * (1 + AISimulationPage.kimchiSellThreshold / 100);
+          usdExchangeRate *
+          (1 + SimulationCondition.instance.kimchiSellThreshold / 100);
 
       // 매수 조건: 프리미엄 buyThreshold% 미만, 아직 매수 안한 상태
       if (buyPrice == null) {
@@ -683,7 +681,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                 ] else ...[
                   Text(
                     widget.simulationType == SimulationType.kimchi
-                        ? '김치 프리미엄이 ${AISimulationPage.kimchiBuyThreshold}% 이하일 때 매수, ${AISimulationPage.kimchiSellThreshold}% 이상일 때 매도 전략입니다.'
+                        ? '김치 프리미엄이 ${SimulationCondition.instance.kimchiBuyThreshold}% 이하일 때 매수, ${SimulationCondition.instance.kimchiSellThreshold}% 이상일 때 매도 전략입니다.'
                         : '해당 날짜에 대한 전략이 없습니다.',
                   ),
                 ],

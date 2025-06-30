@@ -156,6 +156,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    SimulationCondition.instance.load();
     _initAll();
     _startPolling();
   }
@@ -757,10 +758,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       sellPrice = latestStrategy?['sell_price'] ?? 0;
     } else {
       buyPrice =
-          (exchangeRateValue * (1 + AISimulationPage.kimchiBuyThreshold / 100));
+          (exchangeRateValue *
+              (1 + SimulationCondition.instance.kimchiBuyThreshold / 100));
       sellPrice =
           (exchangeRateValue *
-              (1 + AISimulationPage.kimchiSellThreshold / 100));
+              (1 + SimulationCondition.instance.kimchiSellThreshold / 100));
     }
 
     // 오늘 날짜에 대한 코멘트 생성
@@ -1489,21 +1491,21 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   Widget _buildGimchiStrategyTab() {
     final buyPrice =
         (exchangeRates.last.value *
-            (1 + AISimulationPage.kimchiBuyThreshold / 100));
+            (1 + SimulationCondition.instance.kimchiBuyThreshold / 100));
     final sellPrice =
         (exchangeRates.last.value *
-            (1 + AISimulationPage.kimchiSellThreshold / 100));
+            (1 + SimulationCondition.instance.kimchiSellThreshold / 100));
 
     final profitRate =
-        AISimulationPage.kimchiSellThreshold -
-        AISimulationPage.kimchiBuyThreshold;
+        SimulationCondition.instance.kimchiSellThreshold -
+        SimulationCondition.instance.kimchiBuyThreshold;
 
     final buyPriceStr = buyPrice.toStringAsFixed(1);
     final sellPriceStr = sellPrice.toStringAsFixed(1);
 
     final strategy =
-        'USDT가 $buyPriceStr(${AISimulationPage.kimchiBuyThreshold}%) 이하일 때 매수, '
-        '$sellPriceStr(${AISimulationPage.kimchiSellThreshold}%) 이상일 때 매도';
+        'USDT가 $buyPriceStr(${SimulationCondition.instance.kimchiBuyThreshold}%) 이하일 때 매수, '
+        '$sellPriceStr(${SimulationCondition.instance.kimchiSellThreshold}%) 이상일 때 매도';
     final profitRateStr = '+${profitRate.toStringAsFixed(1)}%';
 
     return makeStrategyTab(
