@@ -76,7 +76,7 @@ class SimulationCondition {
       instance._kimchiBuyThreshold =
           prefs.getDouble('kimchiBuyThreshold') ?? 1.0;
       instance._kimchiSellThreshold =
-          prefs.getDouble('kimchiSellThreshold') ?? 1.0;
+          prefs.getDouble('kimchiSellThreshold') ?? 3.0;
       instance._matchSameDatesAsAI =
           prefs.getBool('matchSameDatesAsAI') ?? false;
     });
