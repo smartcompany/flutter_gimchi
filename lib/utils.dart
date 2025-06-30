@@ -82,25 +82,22 @@ class SimulationCondition {
     });
   }
 
-  void saveKimchiBuyThreshold(double value) {
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setDouble('kimchiBuyThreshold', value);
-      _kimchiBuyThreshold = value;
-    });
+  Future<void> saveKimchiBuyThreshold(double value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('kimchiBuyThreshold', value);
+    _kimchiBuyThreshold = value;
   }
 
-  void saveKimchiSellThreshold(double value) {
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setDouble('kimchiSellThreshold', value);
-      _kimchiSellThreshold = value;
-    });
+  Future<void> saveKimchiSellThreshold(double value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('kimchiSellThreshold', value);
+    _kimchiSellThreshold = value;
   }
 
-  void saveMatchSameDatesAsAI(bool value) {
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setBool('matchSameDatesAsAI', value);
-      _matchSameDatesAsAI = value;
-    });
+  Future<void> saveMatchSameDatesAsAI(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('matchSameDatesAsAI', value);
+    _matchSameDatesAsAI = value;
   }
 }
 

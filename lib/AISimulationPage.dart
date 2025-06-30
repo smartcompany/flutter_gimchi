@@ -171,9 +171,9 @@ class AISimulationPage extends StatefulWidget {
       });
 
       if (isSuccess) {
-        SimulationCondition.instance.saveKimchiBuyThreshold(buy);
-        SimulationCondition.instance.saveKimchiSellThreshold(sell);
-        SimulationCondition.instance.saveMatchSameDatesAsAI(sameAsAI);
+        await SimulationCondition.instance.saveKimchiBuyThreshold(buy);
+        await SimulationCondition.instance.saveKimchiSellThreshold(sell);
+        await SimulationCondition.instance.saveMatchSameDatesAsAI(sameAsAI);
       } else {
         ScaffoldMessenger.of(
           context,
