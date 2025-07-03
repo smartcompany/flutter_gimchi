@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
+import 'package:usdt_signal/l10n/app_localizations.dart';
 import 'ChartOnlyPage.dart';
 import 'AISimulationPage.dart';
 import 'dart:io';
@@ -19,6 +20,8 @@ import 'widgets.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart'; // ATT 패키지 import 추가
 import 'package:permission_handler/permission_handler.dart';
 import 'anonymous_chat_page.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +43,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('en'), Locale('kr'), Locale('zh')],
       home: OnboardingLauncher(),
       debugShowCheckedModeBanner: false, // 이 줄을 추가!
     );
@@ -303,7 +313,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   onPressed: () async {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('닫기'),
+                  child: Text(AppLocalizations.of(context)!.close),
                 ),
               ],
             ),
@@ -586,7 +596,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           child: ElevatedButton.icon(
             onPressed: _getShowStrategyButtonHandler(),
             icon: const Icon(Icons.ondemand_video, color: Colors.white),
-            label: const Text('광고 보고 전략 보기'),
+            label: Text(AppLocalizations.of(context)!.seeAdsAndStrategy),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.deepPurple,
               foregroundColor: Colors.white,
@@ -615,12 +625,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            title: const Text('불러오기 실패'),
+            title: Text(AppLocalizations.of(context)!.loadingFail),
             content: const Text('데이터를 불러오는데 실패했습니다.\n다시 시도하시겠습니까?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('아니오'),
+                child: Text(AppLocalizations.of(context)!.no),
               ),
               TextButton(
                 onPressed: () {
@@ -714,7 +724,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             if (kDebugMode)
               TextButton(
                 onPressed: () => throw Exception(),
-                child: const Text("Throw Test Exception"),
+                child: Text(AppLocalizations.of(context)!.throw_test_exception),
               ),
           ],
         ),
@@ -724,7 +734,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5FA),
       appBar: AppBar(
-        title: const Text('USDT Signal'),
+        title: Text(AppLocalizations.of(context)!.usdt_signal),
         actions: [
           if (!kIsWeb)
             IconButton(
@@ -767,11 +777,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
     // 오늘 날짜에 대한 코멘트 생성
     if (usdtPrice <= buyPrice) {
-      comment = '⚠️ 현재 매수 유리 구간입니다';
+      comment = '⚠️ ${AppLocalizations.of(context)!.buyWin}';
     } else if (usdtPrice > sellPrice) {
-      comment = '⚠️ 현재 매도 유리 구간입니다';
+      comment = '⚠️ ${AppLocalizations.of(context)!.sellWin}';
     } else {
-      comment = '⚠️ 현재 관망 구간입니다';
+      comment = '⚠️ ${AppLocalizations.of(context)!.justSee}';
     }
 
     return Padding(
@@ -862,19 +872,19 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             InfoItem(
-              label: 'USDT',
+              label: AppLocalizations.of(context)!.usdt,
               value:
                   todayUsdt != null ? todayUsdt.close.toStringAsFixed(1) : '-',
               color: Colors.blue,
             ),
             InfoItem(
-              label: '환율',
+              label: AppLocalizations.of(context)!.exchangeRate,
               value:
                   todayRate != null ? todayRate.value.toStringAsFixed(1) : '-',
               color: Colors.green,
             ),
             InfoItem(
-              label: '김치 프리미엄',
+              label: AppLocalizations.of(context)!.gimchiPremiem,
               value:
                   todayKimchi != null
                       ? '${todayKimchi.value.toStringAsFixed(2)}%'
@@ -966,7 +976,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 if (!(showAITrading || showGimchiTrading))
                   // 일반 라인 차트 (USDT)
                   LineSeries<USDTChartData, DateTime>(
-                    name: 'USDT',
+                    name: AppLocalizations.of(context)!.usdt,
                     dataSource: usdtChartData,
                     xValueMapper: (USDTChartData data, _) => data.time,
                     yValueMapper: (USDTChartData data, _) => data.close,
@@ -976,7 +986,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 else
                   // 기존 캔들 차트
                   CandleSeries<USDTChartData, DateTime>(
-                    name: 'USDT',
+                    name: AppLocalizations.of(context)!.usdt,
                     dataSource: usdtChartData,
                     xValueMapper: (USDTChartData data, _) => data.time,
                     lowValueMapper: (USDTChartData data, _) => data.low,
@@ -990,7 +1000,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 // 환율 그래프를 showExchangeRate가 true일 때만 표시
                 if (showExchangeRate)
                   LineSeries<ChartData, DateTime>(
-                    name: '환율',
+                    name: AppLocalizations.of(context)!.exchangeRate,
                     dataSource: exchangeRates,
                     xValueMapper: (ChartData data, _) => data.time,
                     yValueMapper: (ChartData data, _) => data.value,
@@ -999,7 +1009,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ),
                 if (showKimchiPremium)
                   LineSeries<ChartData, DateTime>(
-                    name: '김치 프리미엄(%)',
+                    name: '${AppLocalizations.of(context)!.gimchiPremiem}(%)',
                     dataSource: kimchiPremium,
                     xValueMapper: (ChartData data, _) => data.time,
                     yValueMapper: (ChartData data, _) => data.value,
@@ -1152,7 +1162,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     _selectedStrategyTabIndex = idx;
                   });
                 },
-                tabs: const [Tab(text: 'AI 매매 전략'), Tab(text: '김프 매매 전략')],
+                tabs: [
+                  Tab(text: AppLocalizations.of(context)!.aiStrategy),
+                  Tab(text: AppLocalizations.of(context)!.gimchiStrategy),
+                ],
               ),
               const SizedBox(height: 12),
               SizedBox(
@@ -1184,7 +1197,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
     return makeStrategyTab(
       SimulationType.ai,
-      '전략 보기',
+      AppLocalizations.of(context)!.seeStrategy,
       buyPrice,
       sellPrice,
       profitRateStr,
@@ -1229,14 +1242,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '매수: $buyPriceStr',
+                  '${AppLocalizations.of(context)!.buy}: $buyPriceStr',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
                 Text(
-                  '매도: $sellPriceStr',
+                  '${AppLocalizations.of(context)!.sell}: $sellPriceStr',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -1249,7 +1262,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '수익률: $profitRateStr',
+                  '${AppLocalizations.of(context)!.gain}: $profitRateStr',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -1320,11 +1333,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                                         context,
                                       );
                                     },
-                                    child: const Text('김프 전략 변경'),
+                                    child: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.changeStrategy,
+                                    ),
                                   ),
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('닫기'),
+                                  child: Text(
+                                    AppLocalizations.of(context)!.close,
+                                  ),
                                 ),
                               ],
                             ),
@@ -1339,8 +1358,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               width: double.infinity,
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.bar_chart, color: Colors.deepPurple),
-                label: const Text(
-                  '시뮬레이션 해보기',
+                label: Text(
+                  AppLocalizations.of(context)!.runSimulation,
                   style: TextStyle(
                     color: Colors.deepPurple,
                     fontWeight: FontWeight.bold,
@@ -1446,18 +1465,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             context: context,
             builder:
                 (context) => AlertDialog(
-                  title: const Text('알림 권한 필요'),
+                  title: Text(AppLocalizations.of(context)!.needPermission),
                   content: const Text(
                     '알림을 받으려면 기기 설정에서 알림 권한을 허용해야 합니다.\n설정으로 이동하시겠습니까?',
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text('취소'),
+                      child: Text(AppLocalizations.of(context)!.cancel),
                     ),
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(true),
-                      child: const Text('설정으로 이동'),
+                      child: Text(AppLocalizations.of(context)!.moveToSetting),
                     ),
                   ],
                 ),
@@ -1481,9 +1500,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           _todayCommentAlarmType.saveToPrefs();
         });
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('알림 설정을 저장하는데 실패했습니다.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.failedToSaveAlarm),
+          ),
+        );
       }
     }
   }
@@ -1504,13 +1525,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     final sellPriceStr = sellPrice.toStringAsFixed(1);
 
     final strategy =
-        'USDT가 $buyPriceStr(${SimulationCondition.instance.kimchiBuyThreshold}%) 이하일 때 매수, '
-        '$sellPriceStr(${SimulationCondition.instance.kimchiSellThreshold}%) 이상일 때 매도';
+        'USDT가 $buyPriceStr(${SimulationCondition.instance.kimchiBuyThreshold}%) 이하일 때 ${AppLocalizations.of(context)!.buy}, '
+        '$sellPriceStr(${SimulationCondition.instance.kimchiSellThreshold}%) 이상일 때 ${AppLocalizations.of(context)!.sell}';
     final profitRateStr = '+${profitRate.toStringAsFixed(1)}%';
 
     return makeStrategyTab(
       SimulationType.kimchi,
-      '전략 보기',
+      AppLocalizations.of(context)!.seeStrategy,
       buyPrice,
       sellPrice,
       profitRateStr,

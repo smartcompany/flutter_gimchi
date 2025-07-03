@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdt_signal/ChartOnlyPage.dart'; // ChartOnlyPageModel import 추가
 import 'package:usdt_signal/api_service.dart';
+import 'package:usdt_signal/l10n/app_localizations.dart';
 import 'utils.dart';
 
 enum SimulationType { ai, kimchi }
@@ -753,8 +754,12 @@ class _AISimulationPageState extends State<AISimulationPage>
                           children: [
                             Text(
                               SimulationType.ai == widget.simulationType
-                                  ? 'AI 매매 시뮬레이션 (100 만원 기준)'
-                                  : '김프 매매 시뮬레이션 (100 만원 기준)',
+                                  ? AppLocalizations.of(
+                                    context,
+                                  )!.aiTradingSimulation
+                                  : AppLocalizations.of(
+                                    context,
+                                  )!.gimchTradingSimulation,
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -819,7 +824,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                                           ),
                                         ),
                                         Text(
-                                          '최종 원화: ${krwFormat.format(r.finalKRW.round())}원',
+                                          '${AppLocalizations.of(context)!.finalKRW}: ${krwFormat.format(r.finalKRW.round())}원',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w500,
                                           ),
@@ -870,8 +875,8 @@ class _AISimulationPageState extends State<AISimulationPage>
                     crossAxisAlignment:
                         CrossAxisAlignment.center, // ← 여기서 center로 맞춰줌
                     children: [
-                      const Text(
-                        '매매 기간',
+                      Text(
+                        AppLocalizations.of(context)!.tradingPerioid,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -962,8 +967,8 @@ class _AISimulationPageState extends State<AISimulationPage>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        '누적 최종 원화',
+                      Text(
+                        AppLocalizations.of(context)!.stackedFinalKRW,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -983,8 +988,8 @@ class _AISimulationPageState extends State<AISimulationPage>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        '총 수익률',
+                      Text(
+                        AppLocalizations.of(context)!.totalGain,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -1005,8 +1010,8 @@ class _AISimulationPageState extends State<AISimulationPage>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        '추정 연 수익률',
+                      Text(
+                        AppLocalizations.of(context)!.extimatedYearGain,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
