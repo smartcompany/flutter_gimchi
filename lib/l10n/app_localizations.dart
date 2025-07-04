@@ -405,6 +405,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'확인'**
   String get confirm;
+
+  /// No description provided for @chatRoom.
+  ///
+  /// In ko, this message translates to:
+  /// **'토론방'**
+  String get chatRoom;
 }
 
 class _AppLocalizationsDelegate

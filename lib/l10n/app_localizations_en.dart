@@ -167,4 +167,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirm => 'Confirm';
+
+  @override
+  String get chatRoom => 'Chat Room';
 }

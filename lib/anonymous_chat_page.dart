@@ -7,7 +7,7 @@ import 'utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:async';
-import 'l10n/app_localizations.dart';
+import 'utils.dart';
 
 class AnonymousChatPage extends StatefulWidget {
   const AnonymousChatPage({super.key});
@@ -107,7 +107,7 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('토론방'), actions: []),
+      appBar: AppBar(title: Text(l10n(context).chatRoom), actions: []),
       body: SafeArea(
         child: fl_chat_ui.Chat(
           chatController: _chatController,

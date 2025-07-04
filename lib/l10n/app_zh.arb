@@ -50,5 +50,6 @@
   "kimchiPremiumBackgroundDescriptionTooltip": "泡菜溢价背景说明",
   "whatIsKimchiPremiumBackground": "什么是泡菜溢价背景？",
   "kimchiPremiumBackgroundDescription": "图表背景颜色根据泡菜溢价数值而变化。溢价越高背景越红，越低则偏蓝。此功能可帮助你根据泡菜溢价的高低来直观判断买卖时机，一目了然地把握其波动性。",
-  "confirm": "确认"
+  "confirm": "确认",
+  "chatRoom": "聊天室"
 }

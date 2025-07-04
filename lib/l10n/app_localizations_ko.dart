@@ -163,4 +163,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get confirm => '확인';
+
+  @override
+  String get chatRoom => '토론방';
 }

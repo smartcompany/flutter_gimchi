@@ -163,4 +163,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get confirm => '确认';
+
+  @override
+  String get chatRoom => '聊天室';
 }

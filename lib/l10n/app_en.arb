@@ -50,5 +50,6 @@
   "kimchiPremiumBackgroundDescriptionTooltip": "Explanation of Kimchi Premium Background",
   "whatIsKimchiPremiumBackground": "What is the Kimchi Premium Background?",
   "kimchiPremiumBackgroundDescription": "The background color of the chart changes depending on the Kimchi Premium value. The higher the premium, the redder it becomes; the lower the premium, the bluer it becomes. This allows you to visually assess buy/sell timing based on the Kimchi Premium. It helps you grasp the volatility at a glance.",
-  "confirm": "Confirm"
+  "confirm": "Confirm",
+  "chatRoom": "Chat Room"
 }
