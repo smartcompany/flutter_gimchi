@@ -313,7 +313,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   onPressed: () async {
                     Navigator.of(context).pop();
                   },
-                  child: Text(AppLocalizations.of(context)!.close),
+                  child: Text(l10n(context).close),
                 ),
               ],
             ),
@@ -596,7 +596,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           child: ElevatedButton.icon(
             onPressed: _getShowStrategyButtonHandler(),
             icon: const Icon(Icons.ondemand_video, color: Colors.white),
-            label: Text(AppLocalizations.of(context)!.seeAdsAndStrategy),
+            label: Text(l10n(context).seeAdsAndStrategy),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.deepPurple,
               foregroundColor: Colors.white,
@@ -625,12 +625,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            title: Text(AppLocalizations.of(context)!.loadingFail),
+            title: Text(l10n(context).loadingFail),
             content: const Text('데이터를 불러오는데 실패했습니다.\n다시 시도하시겠습니까?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text(AppLocalizations.of(context)!.no),
+                child: Text(l10n(context).no),
               ),
               TextButton(
                 onPressed: () {
@@ -724,7 +724,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             if (kDebugMode)
               TextButton(
                 onPressed: () => throw Exception(),
-                child: Text(AppLocalizations.of(context)!.throw_test_exception),
+                child: Text(l10n(context).throw_test_exception),
               ),
           ],
         ),
@@ -734,7 +734,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5FA),
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.usdt_signal),
+        title: Text(l10n(context).usdt_signal),
         actions: [
           if (!kIsWeb)
             IconButton(
@@ -777,11 +777,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
     // 오늘 날짜에 대한 코멘트 생성
     if (usdtPrice <= buyPrice) {
-      comment = '⚠️ ${AppLocalizations.of(context)!.buyWin}';
+      comment = '⚠️ ${l10n(context).buyWin}';
     } else if (usdtPrice > sellPrice) {
-      comment = '⚠️ ${AppLocalizations.of(context)!.sellWin}';
+      comment = '⚠️ ${l10n(context).sellWin}';
     } else {
-      comment = '⚠️ ${AppLocalizations.of(context)!.justSee}';
+      comment = '⚠️ ${l10n(context).justSee}';
     }
 
     return Padding(
@@ -872,19 +872,19 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             InfoItem(
-              label: AppLocalizations.of(context)!.usdt,
+              label: l10n(context).usdt,
               value:
                   todayUsdt != null ? todayUsdt.close.toStringAsFixed(1) : '-',
               color: Colors.blue,
             ),
             InfoItem(
-              label: AppLocalizations.of(context)!.exchangeRate,
+              label: l10n(context).exchangeRate,
               value:
                   todayRate != null ? todayRate.value.toStringAsFixed(1) : '-',
               color: Colors.green,
             ),
             InfoItem(
-              label: AppLocalizations.of(context)!.gimchiPremiem,
+              label: l10n(context).gimchiPremiem,
               value:
                   todayKimchi != null
                       ? '${todayKimchi.value.toStringAsFixed(2)}%'
@@ -976,7 +976,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 if (!(showAITrading || showGimchiTrading))
                   // 일반 라인 차트 (USDT)
                   LineSeries<USDTChartData, DateTime>(
-                    name: AppLocalizations.of(context)!.usdt,
+                    name: l10n(context).usdt,
                     dataSource: usdtChartData,
                     xValueMapper: (USDTChartData data, _) => data.time,
                     yValueMapper: (USDTChartData data, _) => data.close,
@@ -986,7 +986,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 else
                   // 기존 캔들 차트
                   CandleSeries<USDTChartData, DateTime>(
-                    name: AppLocalizations.of(context)!.usdt,
+                    name: l10n(context).usdt,
                     dataSource: usdtChartData,
                     xValueMapper: (USDTChartData data, _) => data.time,
                     lowValueMapper: (USDTChartData data, _) => data.low,
@@ -1000,7 +1000,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 // 환율 그래프를 showExchangeRate가 true일 때만 표시
                 if (showExchangeRate)
                   LineSeries<ChartData, DateTime>(
-                    name: AppLocalizations.of(context)!.exchangeRate,
+                    name: l10n(context).exchangeRate,
                     dataSource: exchangeRates,
                     xValueMapper: (ChartData data, _) => data.time,
                     yValueMapper: (ChartData data, _) => data.value,
@@ -1009,7 +1009,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ),
                 if (showKimchiPremium)
                   LineSeries<ChartData, DateTime>(
-                    name: '${AppLocalizations.of(context)!.gimchiPremiem}(%)',
+                    name: '${l10n(context).gimchiPremiem}(%)',
                     dataSource: kimchiPremium,
                     xValueMapper: (ChartData data, _) => data.time,
                     yValueMapper: (ChartData data, _) => data.value,
@@ -1163,8 +1163,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   });
                 },
                 tabs: [
-                  Tab(text: AppLocalizations.of(context)!.aiStrategy),
-                  Tab(text: AppLocalizations.of(context)!.gimchiStrategy),
+                  Tab(text: l10n(context).aiStrategy),
+                  Tab(text: l10n(context).gimchiStrategy),
                 ],
               ),
               const SizedBox(height: 12),
@@ -1197,7 +1197,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
     return makeStrategyTab(
       SimulationType.ai,
-      AppLocalizations.of(context)!.seeStrategy,
+      l10n(context).seeStrategy,
       buyPrice,
       sellPrice,
       profitRateStr,
@@ -1242,14 +1242,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${AppLocalizations.of(context)!.buy}: $buyPriceStr',
+                  '${l10n(context).buy}: $buyPriceStr',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
                 Text(
-                  '${AppLocalizations.of(context)!.sell}: $sellPriceStr',
+                  '${l10n(context).sell}: $sellPriceStr',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -1262,7 +1262,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${AppLocalizations.of(context)!.gain}: $profitRateStr',
+                  '${l10n(context).gain}: $profitRateStr',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -1341,9 +1341,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                                   ),
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(),
-                                  child: Text(
-                                    AppLocalizations.of(context)!.close,
-                                  ),
+                                  child: Text(l10n(context).close),
                                 ),
                               ],
                             ),
@@ -1359,7 +1357,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.bar_chart, color: Colors.deepPurple),
                 label: Text(
-                  AppLocalizations.of(context)!.runSimulation,
+                  l10n(context).runSimulation,
                   style: TextStyle(
                     color: Colors.deepPurple,
                     fontWeight: FontWeight.bold,
@@ -1465,18 +1463,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             context: context,
             builder:
                 (context) => AlertDialog(
-                  title: Text(AppLocalizations.of(context)!.needPermission),
+                  title: Text(l10n(context).needPermission),
                   content: const Text(
                     '알림을 받으려면 기기 설정에서 알림 권한을 허용해야 합니다.\n설정으로 이동하시겠습니까?',
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
-                      child: Text(AppLocalizations.of(context)!.cancel),
+                      child: Text(l10n(context).cancel),
                     ),
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(true),
-                      child: Text(AppLocalizations.of(context)!.moveToSetting),
+                      child: Text(l10n(context).moveToSetting),
                     ),
                   ],
                 ),
@@ -1501,9 +1499,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.failedToSaveAlarm),
-          ),
+          SnackBar(content: Text(l10n(context).failedToSaveAlarm)),
         );
       }
     }
@@ -1525,13 +1521,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     final sellPriceStr = sellPrice.toStringAsFixed(1);
 
     final strategy =
-        'USDT가 $buyPriceStr(${SimulationCondition.instance.kimchiBuyThreshold}%) 이하일 때 ${AppLocalizations.of(context)!.buy}, '
-        '$sellPriceStr(${SimulationCondition.instance.kimchiSellThreshold}%) 이상일 때 ${AppLocalizations.of(context)!.sell}';
+        'USDT가 $buyPriceStr(${SimulationCondition.instance.kimchiBuyThreshold}%) 이하일 때 ${l10n(context).buy}, '
+        '$sellPriceStr(${SimulationCondition.instance.kimchiSellThreshold}%) 이상일 때 ${l10n(context).sell}';
     final profitRateStr = '+${profitRate.toStringAsFixed(1)}%';
 
     return makeStrategyTab(
       SimulationType.kimchi,
-      AppLocalizations.of(context)!.seeStrategy,
+      l10n(context).seeStrategy,
       buyPrice,
       sellPrice,
       profitRateStr,

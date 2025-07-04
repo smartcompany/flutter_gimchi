@@ -824,7 +824,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                                           ),
                                         ),
                                         Text(
-                                          '${AppLocalizations.of(context)!.finalKRW}: ${krwFormat.format(r.finalKRW.round())}원',
+                                          '${l10n(context).finalKRW}: ${krwFormat.format(r.finalKRW.round())}원',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w500,
                                           ),
@@ -876,7 +876,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                         CrossAxisAlignment.center, // ← 여기서 center로 맞춰줌
                     children: [
                       Text(
-                        AppLocalizations.of(context)!.tradingPerioid,
+                        l10n(context).tradingPerioid,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -968,7 +968,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        AppLocalizations.of(context)!.stackedFinalKRW,
+                        l10n(context).stackedFinalKRW,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -989,7 +989,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        AppLocalizations.of(context)!.totalGain,
+                        l10n(context).totalGain,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -1011,7 +1011,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        AppLocalizations.of(context)!.extimatedYearGain,
+                        l10n(context).extimatedYearGain,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

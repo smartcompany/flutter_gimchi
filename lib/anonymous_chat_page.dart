@@ -7,6 +7,7 @@ import 'utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:async';
+import 'l10n/app_localizations.dart';
 
 class AnonymousChatPage extends StatefulWidget {
   const AnonymousChatPage({super.key});

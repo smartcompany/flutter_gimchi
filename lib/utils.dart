@@ -4,7 +4,13 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:advertising_id/advertising_id.dart';
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:usdt_signal/l10n/app_localizations.dart';
+
+AppLocalizations l10n(BuildContext context) {
+  return AppLocalizations.of(context)!;
+}
 
 // 사용자 ID 가져오기/생성 함수
 Future<String> getOrCreateUserId() async {

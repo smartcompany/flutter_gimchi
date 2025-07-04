@@ -5,6 +5,7 @@ import 'package:usdt_signal/AISimulationPage.dart';
 import 'package:usdt_signal/widgets.dart';
 import 'package:usdt_signal/l10n/app_localizations.dart';
 import 'api_service.dart';
+import 'utils.dart';
 
 class ChartOnlyPage extends StatefulWidget {
   final List<ChartData> exchangeRates;
@@ -121,13 +122,11 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                 0.8 // 가로모드: 화면 높이의 80%
             : mediaQuery.size.height * 0.6; // 세로모드: 기존 60%
 
-    final l10n = AppLocalizations.of(context)!;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5FA),
       appBar: AppBar(
         title: Text(
-          l10n.chartTrendAnalysis,
+          l10n(context).chartTrendAnalysis,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
@@ -140,9 +139,9 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
           child: Column(
             children: [
-              _buildChartCard(chartHeight, l10n),
+              _buildChartCard(chartHeight, l10n(context)),
               const SizedBox(height: 8),
-              _buildCheckboxCard(l10n),
+              _buildCheckboxCard(l10n(context)),
             ],
           ),
         ),
