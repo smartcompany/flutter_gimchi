@@ -51,5 +51,30 @@
   "whatIsKimchiPremiumBackground": "What is the Kimchi Premium Background?",
   "kimchiPremiumBackgroundDescription": "The background color of the chart changes depending on the Kimchi Premium value. The higher the premium, the redder it becomes; the lower the premium, the bluer it becomes. This allows you to visually assess buy/sell timing based on the Kimchi Premium. It helps you grasp the volatility at a glance.",
   "confirm": "Confirm",
-  "chatRoom": "Chat Room"
+  "chatRoom": "Chat Room",
+  "gimchBaseTrade":"KR Premiem Base Trade",
+  "aiBaseTrade":"AI Base Trade",
+  "seeWithChart":"View with Chart",
+  "buyBase": "Buy Threshold (%)",
+  "sellBase": "Sell Threshold (%)",
+  "sameAsAI": "Apply same schedule as AI",
+  "failedToSaveSettings": "Failed to save settings.",
+  "strategy": "Strategy",
+  "buyPrice": "Buy Price",
+  "sellPrice": "Sell Price",
+  "expectedGain": "Expected Return",
+  "summary": "Summary",
+  "kimchiStrategyComment": "Buy when the Kimchi Premium is below {buyThreshold}%, and sell when it is above {sellThreshold}%.",
+  "@kimchiStrategyComment": {
+    "description": "Kimchi premium buy/sell strategy explanation",
+    "placeholders": {
+      "buyThreshold": {
+        "type": "double"
+      },
+      "sellThreshold": {
+        "type": "double"
+      }
+    }
+  },
+  "sellIfCurrentPrice": "Sell if current price"
 }

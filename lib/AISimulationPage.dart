@@ -65,13 +65,13 @@ class AISimulationPage extends StatefulWidget {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('김프 전략 변경'),
+              title: Text(l10n(context).changeStrategy),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     children: [
-                      const Text('매수 기준(%)'),
+                      Text(l10n(context).buyBase),
                       const SizedBox(width: 12),
                       Expanded(
                         child: TextFormField(
@@ -99,7 +99,7 @@ class AISimulationPage extends StatefulWidget {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      const Text('매도 기준(%)'),
+                      Text(l10n(context).sellBase),
                       const SizedBox(width: 12),
                       Expanded(
                         child: TextFormField(
@@ -136,7 +136,7 @@ class AISimulationPage extends StatefulWidget {
                             });
                           },
                         ),
-                        const Text('AI와 동일 일정 적용'),
+                        Text(l10n(context).sameAsAI),
                       ],
                     ),
                 ],
@@ -144,7 +144,7 @@ class AISimulationPage extends StatefulWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('취소'),
+                  child: Text(l10n(context).cancel),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -152,7 +152,7 @@ class AISimulationPage extends StatefulWidget {
                       context,
                     ).pop({'buy': buy, 'sell': sell, 'sameAsAI': sameAsAI});
                   },
-                  child: const Text('확인'),
+                  child: Text(l10n(context).confirm),
                 ),
               ],
             );
@@ -176,9 +176,9 @@ class AISimulationPage extends StatefulWidget {
         await SimulationCondition.instance.saveKimchiSellThreshold(sell);
         await SimulationCondition.instance.saveMatchSameDatesAsAI(sameAsAI);
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('설정 저장에 실패했습니다.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n(context).failedToSaveSettings)),
+        );
       }
 
       return isSuccess;
@@ -640,7 +640,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                 Row(
                   children: [
                     Text(
-                      '${date.toCustomString()} 전략',
+                      '${date.toCustomString()} ${l10n(context).strategy}',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
@@ -658,20 +658,20 @@ class _AISimulationPageState extends State<AISimulationPage>
                     strategy != null &&
                     strategy.isNotEmpty) ...[
                   _StrategyDialogRow(
-                    label: '매수 가격',
+                    label: l10n(context).buyPrice,
                     value: '${strategy['buy_price']}',
                   ),
                   _StrategyDialogRow(
-                    label: '매도 가격',
+                    label: l10n(context).sellPrice,
                     value: '${strategy['sell_price']}',
                   ),
                   _StrategyDialogRow(
-                    label: '기대 수익률',
+                    label: l10n(context).expectedGain,
                     value: '${strategy['expected_return']}',
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    '요약',
+                  Text(
+                    l10n(context).summary,
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                   ),
                   const SizedBox(height: 4),
@@ -682,7 +682,10 @@ class _AISimulationPageState extends State<AISimulationPage>
                 ] else ...[
                   Text(
                     widget.simulationType == SimulationType.kimchi
-                        ? '김치 프리미엄이 ${SimulationCondition.instance.kimchiBuyThreshold}% 이하일 때 매수, ${SimulationCondition.instance.kimchiSellThreshold}% 이상일 때 매도 전략입니다.'
+                        ? l10n(context).kimchiStrategyComment(
+                          SimulationCondition.instance.kimchiBuyThreshold,
+                          SimulationCondition.instance.kimchiSellThreshold,
+                        )
                         : '해당 날짜에 대한 전략이 없습니다.',
                   ),
                 ],
@@ -701,8 +704,8 @@ class _AISimulationPageState extends State<AISimulationPage>
       appBar: AppBar(
         title: Text(
           widget.simulationType == SimulationType.kimchi
-              ? '김프 기준 매매'
-              : 'AI 전략 매매',
+              ? l10n(context).gimchBaseTrade
+              : l10n(context).aiBaseTrade,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
@@ -714,7 +717,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                 ? [
                   IconButton(
                     icon: const Icon(Icons.settings, color: Colors.deepPurple),
-                    tooltip: '전략 변경',
+                    tooltip: l10n(context).changeStrategy,
                     onPressed: () async {
                       final success =
                           await AISimulationPage.showKimchiStrategyUpdatePopup(
@@ -794,7 +797,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                                       Row(
                                         children: [
                                           Text(
-                                            '매수: ${krwFormat.format(r.buyPrice)}원',
+                                            '${l10n(context).buy}: ${krwFormat.format(r.buyPrice)}',
                                           ),
                                           const SizedBox(width: 8),
                                           setupStretegyButton(
@@ -807,7 +810,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                                         Row(
                                           children: [
                                             Text(
-                                              '매도: ${krwFormat.format(r.sellPrice!)}원',
+                                              '${l10n(context).sell}: ${krwFormat.format(r.sellPrice!)}',
                                             ),
                                             const SizedBox(width: 8),
                                             setupStretegyButton(
@@ -818,26 +821,26 @@ class _AISimulationPageState extends State<AISimulationPage>
                                         ),
                                         const SizedBox(height: 2), // ← 간격 줄이기
                                         Text(
-                                          '수익: ${krwFormat.format(r.profit.round())}원 (${r.profitRate.toStringAsFixed(2)})%',
+                                          '${l10n(context).gain}: ${krwFormat.format(r.profit.round())} (${r.profitRate.toStringAsFixed(2)})%',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                         Text(
-                                          '${l10n(context).finalKRW}: ${krwFormat.format(r.finalKRW.round())}원',
+                                          '${l10n(context).finalKRW}: ${krwFormat.format(r.finalKRW.round())}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                       ] else if (r.finalUSDT != null) ...[
                                         Text(
-                                          '최종 USDT: ${r.finalUSDT?.toStringAsFixed(4)} USDT',
+                                          '${l10n(context).usdt}: ${r.finalUSDT?.toStringAsFixed(4)} USDT',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                         Text(
-                                          '현재가 매도시: ${krwFormat.format(r.finalKRW.round())}원',
+                                          '${l10n(context).sellIfCurrentPrice}: ${krwFormat.format(r.finalKRW.round())}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w500,
                                           ),
@@ -890,8 +893,8 @@ class _AISimulationPageState extends State<AISimulationPage>
                           Icons.show_chart,
                           color: Colors.deepPurple,
                         ),
-                        label: const Text(
-                          '차트로 보기',
+                        label: Text(
+                          l10n(context).seeWithChart,
                           style: TextStyle(
                             color: Colors.deepPurple,
                             fontWeight: FontWeight.bold,
@@ -1071,7 +1074,7 @@ class _AISimulationPageState extends State<AISimulationPage>
         _showStrategyDialog(context, date!);
       },
       style: buttonStyle,
-      child: const Text('전략 보기'),
+      child: Text(l10n(context).seeStrategy),
     );
   }
 

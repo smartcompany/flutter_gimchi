@@ -411,6 +411,90 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'토론방'**
   String get chatRoom;
+
+  /// No description provided for @gimchBaseTrade.
+  ///
+  /// In ko, this message translates to:
+  /// **'김프 기준 매매'**
+  String get gimchBaseTrade;
+
+  /// No description provided for @aiBaseTrade.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 전략 매매'**
+  String get aiBaseTrade;
+
+  /// No description provided for @seeWithChart.
+  ///
+  /// In ko, this message translates to:
+  /// **'차트로 보기'**
+  String get seeWithChart;
+
+  /// No description provided for @buyBase.
+  ///
+  /// In ko, this message translates to:
+  /// **'매수 기준(%)'**
+  String get buyBase;
+
+  /// No description provided for @sellBase.
+  ///
+  /// In ko, this message translates to:
+  /// **'매도 기준(%)'**
+  String get sellBase;
+
+  /// No description provided for @sameAsAI.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI와 동일 일정 적용'**
+  String get sameAsAI;
+
+  /// No description provided for @failedToSaveSettings.
+  ///
+  /// In ko, this message translates to:
+  /// **'설정 저장에 실패했습니다.'**
+  String get failedToSaveSettings;
+
+  /// No description provided for @strategy.
+  ///
+  /// In ko, this message translates to:
+  /// **'전략'**
+  String get strategy;
+
+  /// No description provided for @buyPrice.
+  ///
+  /// In ko, this message translates to:
+  /// **'매수 가격'**
+  String get buyPrice;
+
+  /// No description provided for @sellPrice.
+  ///
+  /// In ko, this message translates to:
+  /// **'매도 가격'**
+  String get sellPrice;
+
+  /// No description provided for @expectedGain.
+  ///
+  /// In ko, this message translates to:
+  /// **'기대 수익률'**
+  String get expectedGain;
+
+  /// No description provided for @summary.
+  ///
+  /// In ko, this message translates to:
+  /// **'요약'**
+  String get summary;
+
+  /// 김치 프리미엄 매수/매도 전략 설명
+  ///
+  /// In ko, this message translates to:
+  /// **'김치 프리미엄이 {buyThreshold}% 이하일 때 매수, {sellThreshold}% 이상일 때 매도 전략입니다.'**
+  String kimchiStrategyComment(double buyThreshold, double sellThreshold);
+
+  /// No description provided for @sellIfCurrentPrice.
+  ///
+  /// In ko, this message translates to:
+  /// **'현재가 매도시'**
+  String get sellIfCurrentPrice;
 }
 
 class _AppLocalizationsDelegate

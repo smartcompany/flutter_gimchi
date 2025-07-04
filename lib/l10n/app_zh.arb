@@ -51,5 +51,30 @@
   "whatIsKimchiPremiumBackground": "什么是泡菜溢价背景？",
   "kimchiPremiumBackgroundDescription": "图表背景颜色根据泡菜溢价数值而变化。溢价越高背景越红，越低则偏蓝。此功能可帮助你根据泡菜溢价的高低来直观判断买卖时机，一目了然地把握其波动性。",
   "confirm": "确认",
-  "chatRoom": "聊天室"
+  "chatRoom": "聊天室",
+  "gimchBaseTrade":"韩元溢价基准交易",
+  "aiBaseTrade":"AI 基准交易",
+  "seeWithChart":"使用图表查看",
+  "buyBase": "买入基准（%）",
+  "sellBase": "卖出基准（%）",
+  "sameAsAI": "与AI使用相同的时间设置",
+  "failedToSaveSettings": "保存设置失败。",
+  "strategy": "策略",
+  "buyPrice": "买入价格",
+  "sellPrice": "卖出价格",
+  "expectedGain": "预期收益率",
+  "summary": "摘要",
+  "kimchiStrategyComment": "当泡菜溢价低于 {buyThreshold}% 时买入，高于 {sellThreshold}% 时卖出。",
+  "@kimchiStrategyComment": {
+    "description": "关于泡菜溢价的买入/卖出策略说明",
+    "placeholders": {
+      "buyThreshold": {
+        "type": "double"
+      },
+      "sellThreshold": {
+        "type": "double"
+      }
+    }
+  },
+  "sellIfCurrentPrice": "当前价格卖出"
 }

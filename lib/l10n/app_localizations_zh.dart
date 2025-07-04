@@ -166,4 +166,48 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chatRoom => '聊天室';
+
+  @override
+  String get gimchBaseTrade => '韩元溢价基准交易';
+
+  @override
+  String get aiBaseTrade => 'AI 基准交易';
+
+  @override
+  String get seeWithChart => '使用图表查看';
+
+  @override
+  String get buyBase => '买入基准（%）';
+
+  @override
+  String get sellBase => '卖出基准（%）';
+
+  @override
+  String get sameAsAI => '与AI使用相同的时间设置';
+
+  @override
+  String get failedToSaveSettings => '保存设置失败。';
+
+  @override
+  String get strategy => '策略';
+
+  @override
+  String get buyPrice => '买入价格';
+
+  @override
+  String get sellPrice => '卖出价格';
+
+  @override
+  String get expectedGain => '预期收益率';
+
+  @override
+  String get summary => '摘要';
+
+  @override
+  String kimchiStrategyComment(double buyThreshold, double sellThreshold) {
+    return '当泡菜溢价低于 $buyThreshold% 时买入，高于 $sellThreshold% 时卖出。';
+  }
+
+  @override
+  String get sellIfCurrentPrice => '当前价格卖出';
 }

@@ -166,4 +166,48 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chatRoom => '토론방';
+
+  @override
+  String get gimchBaseTrade => '김프 기준 매매';
+
+  @override
+  String get aiBaseTrade => 'AI 전략 매매';
+
+  @override
+  String get seeWithChart => '차트로 보기';
+
+  @override
+  String get buyBase => '매수 기준(%)';
+
+  @override
+  String get sellBase => '매도 기준(%)';
+
+  @override
+  String get sameAsAI => 'AI와 동일 일정 적용';
+
+  @override
+  String get failedToSaveSettings => '설정 저장에 실패했습니다.';
+
+  @override
+  String get strategy => '전략';
+
+  @override
+  String get buyPrice => '매수 가격';
+
+  @override
+  String get sellPrice => '매도 가격';
+
+  @override
+  String get expectedGain => '기대 수익률';
+
+  @override
+  String get summary => '요약';
+
+  @override
+  String kimchiStrategyComment(double buyThreshold, double sellThreshold) {
+    return '김치 프리미엄이 $buyThreshold% 이하일 때 매수, $sellThreshold% 이상일 때 매도 전략입니다.';
+  }
+
+  @override
+  String get sellIfCurrentPrice => '현재가 매도시';
 }

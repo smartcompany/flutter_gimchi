@@ -170,4 +170,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatRoom => 'Chat Room';
+
+  @override
+  String get gimchBaseTrade => 'KR Premiem Base Trade';
+
+  @override
+  String get aiBaseTrade => 'AI Base Trade';
+
+  @override
+  String get seeWithChart => 'View with Chart';
+
+  @override
+  String get buyBase => 'Buy Threshold (%)';
+
+  @override
+  String get sellBase => 'Sell Threshold (%)';
+
+  @override
+  String get sameAsAI => 'Apply same schedule as AI';
+
+  @override
+  String get failedToSaveSettings => 'Failed to save settings.';
+
+  @override
+  String get strategy => 'Strategy';
+
+  @override
+  String get buyPrice => 'Buy Price';
+
+  @override
+  String get sellPrice => 'Sell Price';
+
+  @override
+  String get expectedGain => 'Expected Return';
+
+  @override
+  String get summary => 'Summary';
+
+  @override
+  String kimchiStrategyComment(double buyThreshold, double sellThreshold) {
+    return 'Buy when the Kimchi Premium is below $buyThreshold%, and sell when it is above $sellThreshold%.';
+  }
+
+  @override
+  String get sellIfCurrentPrice => 'Sell if current price';
 }
