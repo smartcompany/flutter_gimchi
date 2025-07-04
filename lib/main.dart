@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [Locale('en'), Locale('kr'), Locale('zh')],
+      supportedLocales: const [Locale('en'), Locale('ko'), Locale('zh')],
       home: OnboardingLauncher(),
       debugShowCheckedModeBanner: false, // 이 줄을 추가!
     );

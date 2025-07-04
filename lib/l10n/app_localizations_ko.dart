@@ -4,9 +4,9 @@ import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
 
-/// The translations for Kanuri (`kr`).
-class AppLocalizationsKr extends AppLocalizations {
-  AppLocalizationsKr([String locale = 'kr']) : super(locale);
+/// The translations for Korean (`ko`).
+class AppLocalizationsKo extends AppLocalizations {
+  AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
   String get usdt => '테더';
@@ -109,4 +109,58 @@ class AppLocalizationsKr extends AppLocalizations {
 
   @override
   String get extimatedYearGain => '추정 연 수익률';
+
+  @override
+  String get chartTrendAnalysis => '차트 추세 분석';
+
+  @override
+  String get aiSell => 'AI 매도';
+
+  @override
+  String get kimchiPremiumSell => '김프 매도';
+
+  @override
+  String get aiBuy => 'AI 매수';
+
+  @override
+  String get kimchiPremiumBuy => '김프 매수';
+
+  @override
+  String changeFromPreviousDay(Object change) {
+    return '전일 대비: $change%';
+  }
+
+  @override
+  String get kimchiPremiumPercent => '김치 프리미엄(%)';
+
+  @override
+  String get resetChart => '차트 리셋';
+
+  @override
+  String get backToPreviousChart => '차트 이전';
+
+  @override
+  String get kimchiPremium => '김치 프리미엄';
+
+  @override
+  String get aiBuySell => 'AI 매수/매도';
+
+  @override
+  String get kimchiPremiumBuySell => '김프 매수/매도';
+
+  @override
+  String get kimchiPremiumBackground => '김치 프리미엄 배경';
+
+  @override
+  String get kimchiPremiumBackgroundDescriptionTooltip => '김치 프리미엄 배경 설명';
+
+  @override
+  String get whatIsKimchiPremiumBackground => '김치 프리미엄 배경이란?';
+
+  @override
+  String get kimchiPremiumBackgroundDescription =>
+      '차트의 배경색은 김치 프리미엄 값에 따라 달라집니다. 프리미엄이 높을수록 빨간색, 낮을수록 파란색에 가깝게 표시되어 김치 프리미엄에 따른 매수 매도 시점을 시각적으로 파악할 수 있습니다. 이 기능은 김치 프리미엄의 변동성을 한눈에 파악하는 데 도움을 줍니다.';
+
+  @override
+  String get confirm => '확인';
 }

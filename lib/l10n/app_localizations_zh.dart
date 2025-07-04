@@ -109,4 +109,58 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get extimatedYearGain => '预估年收益率';
+
+  @override
+  String get chartTrendAnalysis => '图表趋势分析';
+
+  @override
+  String get aiSell => 'AI 卖出';
+
+  @override
+  String get kimchiPremiumSell => '泡菜溢价卖出';
+
+  @override
+  String get aiBuy => 'AI 买入';
+
+  @override
+  String get kimchiPremiumBuy => '泡菜溢价买入';
+
+  @override
+  String changeFromPreviousDay(Object change) {
+    return '较前一日变化：$change%';
+  }
+
+  @override
+  String get kimchiPremiumPercent => '泡菜溢价 (%)';
+
+  @override
+  String get resetChart => '重置图表';
+
+  @override
+  String get backToPreviousChart => '上一张图表';
+
+  @override
+  String get kimchiPremium => '泡菜溢价';
+
+  @override
+  String get aiBuySell => 'AI 买入/卖出';
+
+  @override
+  String get kimchiPremiumBuySell => '泡菜溢价买入/卖出';
+
+  @override
+  String get kimchiPremiumBackground => '泡菜溢价背景';
+
+  @override
+  String get kimchiPremiumBackgroundDescriptionTooltip => '泡菜溢价背景说明';
+
+  @override
+  String get whatIsKimchiPremiumBackground => '什么是泡菜溢价背景？';
+
+  @override
+  String get kimchiPremiumBackgroundDescription =>
+      '图表背景颜色根据泡菜溢价数值而变化。溢价越高背景越红，越低则偏蓝。此功能可帮助你根据泡菜溢价的高低来直观判断买卖时机，一目了然地把握其波动性。';
+
+  @override
+  String get confirm => '确认';
 }

@@ -90,10 +90,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seeStrategy => 'View strategy';
 
   @override
-  String get aiTradingSimulation => 'AI Trading Simulation (based on 1 million KRW)';
+  String get aiTradingSimulation =>
+      'AI Trading Simulation (based on 1 million KRW)';
 
   @override
-  String get gimchTradingSimulation => 'KR Premium Trading Simulation (based on 1 million KRW)';
+  String get gimchTradingSimulation =>
+      'KR Premium Trading Simulation (based on 1 million KRW)';
 
   @override
   String get finalKRW => 'Final KRW';
@@ -109,4 +111,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get extimatedYearGain => 'Estimated Annual Return';
+
+  @override
+  String get chartTrendAnalysis => 'Chart Trend Analysis';
+
+  @override
+  String get aiSell => 'AI Sell';
+
+  @override
+  String get kimchiPremiumSell => 'Kimchi Premium Sell';
+
+  @override
+  String get aiBuy => 'AI Buy';
+
+  @override
+  String get kimchiPremiumBuy => 'Kimchi Premium Buy';
+
+  @override
+  String changeFromPreviousDay(Object change) {
+    return 'Change from previous day: $change%';
+  }
+
+  @override
+  String get kimchiPremiumPercent => 'Kimchi Premium (%)';
+
+  @override
+  String get resetChart => 'Reset Chart';
+
+  @override
+  String get backToPreviousChart => 'Previous Chart';
+
+  @override
+  String get kimchiPremium => 'Kimchi Premium';
+
+  @override
+  String get aiBuySell => 'AI Buy/Sell';
+
+  @override
+  String get kimchiPremiumBuySell => 'Kimchi Premium Buy/Sell';
+
+  @override
+  String get kimchiPremiumBackground => 'Kimchi Premium Background';
+
+  @override
+  String get kimchiPremiumBackgroundDescriptionTooltip =>
+      'Explanation of Kimchi Premium Background';
+
+  @override
+  String get whatIsKimchiPremiumBackground =>
+      'What is the Kimchi Premium Background?';
+
+  @override
+  String get kimchiPremiumBackgroundDescription =>
+      'The background color of the chart changes depending on the Kimchi Premium value. The higher the premium, the redder it becomes; the lower the premium, the bluer it becomes. This allows you to visually assess buy/sell timing based on the Kimchi Premium. It helps you grasp the volatility at a glance.';
+
+  @override
+  String get confirm => 'Confirm';
 }

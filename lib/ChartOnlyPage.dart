@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:usdt_signal/AISimulationPage.dart';
 import 'package:usdt_signal/widgets.dart';
+import 'package:usdt_signal/l10n/app_localizations.dart';
 import 'api_service.dart';
 
 class ChartOnlyPage extends StatefulWidget {
@@ -120,11 +121,13 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                 0.8 // 가로모드: 화면 높이의 80%
             : mediaQuery.size.height * 0.6; // 세로모드: 기존 60%
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5FA),
       appBar: AppBar(
-        title: const Text(
-          "차트 추세 분석",
+        title: Text(
+          l10n.chartTrendAnalysis,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
@@ -137,9 +140,9 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
           child: Column(
             children: [
-              _buildChartCard(chartHeight),
+              _buildChartCard(chartHeight, l10n),
               const SizedBox(height: 8),
-              _buildCheckboxCard(),
+              _buildCheckboxCard(l10n),
             ],
           ),
         ),
@@ -148,7 +151,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
   }
 
   // 3. 차트 카드
-  Widget _buildChartCard(double chartHeight) {
+  Widget _buildChartCard(double chartHeight, AppLocalizations l10n) {
     List<PlotBand> kimchiPlotBands =
         showKimchiPlotBands ? getKimchiPlotBands() : [];
 
@@ -166,34 +169,53 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
             ),
             child: SfCartesianChart(
               onTooltipRender: (TooltipArgs args) {
-                final clickedPoint =
-                    args.dataPoints?[(args.pointIndex ?? 0) as int];
+                final pointIndex = args.pointIndex?.toInt() ?? 0;
+                final clickedPoint = args.dataPoints?[pointIndex];
+                if (clickedPoint == null) return;
 
                 // Date로 부터 환율 정보를 얻는다.
                 final exchangeRate = getExchangeRate(clickedPoint.x);
-                // Date로 부터 USDT 정보를 얻는다.
                 final usdtValue = getUsdtValue(clickedPoint.x);
                 // 김치 프리미엄 계산은 USDT 값과 환율을 이용
                 double kimchiPremiumValue;
 
                 // AI 매도, 김프 매도 일 경우 김치 프리미엄은 simulationResult의 usdExchageRateAtSell을 사용 계산
-                if (args.header == 'AI 매도' || args.header == '김프 매도') {
+                if (args.header == l10n.aiSell ||
+                    args.header == l10n.kimchiPremiumSell) {
                   final simulationResult = getSimulationResult(clickedPoint.x);
                   kimchiPremiumValue =
                       simulationResult?.gimchiPremiumAtSell() ?? 0.0;
-                } else if (args.header == 'AI 매수' || args.header == '김프 매수') {
+                } else if (args.header == l10n.aiBuy ||
+                    args.header == l10n.kimchiPremiumBuy) {
                   final simulationResult = getSimulationResult(clickedPoint.x);
                   kimchiPremiumValue =
                       simulationResult?.gimchiPremiumAtBuy() ?? 0.0;
                 } else {
-                  kimchiPremiumValue =
-                      ((usdtValue - exchangeRate) / exchangeRate * 100);
+                  if (exchangeRate != 0) {
+                    kimchiPremiumValue =
+                        ((usdtValue - exchangeRate) / exchangeRate * 100);
+                  } else {
+                    kimchiPremiumValue = 0.0;
+                  }
                 }
 
+                String newText =
+                    '${args.text}\n${l10n.gimchiPremiem}: ${kimchiPremiumValue.toStringAsFixed(2)}%';
+
+                // '환율' 시리즈의 툴팁에만 변동률 추가
+                if (args.header == l10n.exchangeRate && pointIndex > 0) {
+                  final prevRate = widget.exchangeRates[pointIndex - 1].value;
+                  final currentRate = widget.exchangeRates[pointIndex].value;
+                  if (prevRate != 0) {
+                    final changePercent =
+                        (currentRate - prevRate) / prevRate * 100;
+                    final sign = changePercent >= 0 ? '+' : '';
+                    newText +=
+                        '\n${l10n.changeFromPreviousDay('$sign${changePercent.toStringAsFixed(2)}')}';
+                  }
+                }
                 // 툴팁 텍스트를 기존 텍스트에 김치 프리미엄 값을 추가
-                args.text =
-                    '${args.text}\n'
-                    'Gimchi: ${kimchiPremiumValue.toStringAsFixed(2)}%';
+                args.text = newText;
               },
 
               legend: const Legend(
@@ -239,7 +261,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                 if (!(showAITrading || showGimchiTrading))
                   // 일반 라인 차트 (USDT)
                   LineSeries<USDTChartData, DateTime>(
-                    name: 'USDT',
+                    name: l10n.usdt,
                     dataSource: widget.usdtChartData,
                     xValueMapper: (USDTChartData data, _) => data.time,
                     yValueMapper: (USDTChartData data, _) => data.close,
@@ -249,7 +271,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                 else
                   // 기존 캔들 차트
                   CandleSeries<USDTChartData, DateTime>(
-                    name: 'USDT',
+                    name: l10n.usdt,
                     dataSource: widget.usdtChartData,
                     xValueMapper: (USDTChartData data, _) => data.time,
                     lowValueMapper: (USDTChartData data, _) => data.low,
@@ -263,7 +285,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                 // 환율 그래프를 showExchangeRate가 true일 때만 표시
                 if (showExchangeRate)
                   LineSeries<ChartData, DateTime>(
-                    name: '환율',
+                    name: l10n.exchangeRate,
                     dataSource: widget.exchangeRates,
                     xValueMapper: (ChartData data, _) => data.time,
                     yValueMapper: (ChartData data, _) => data.value,
@@ -272,7 +294,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                   ),
                 if (showKimchiPremium)
                   LineSeries<ChartData, DateTime>(
-                    name: '김치 프리미엄(%)',
+                    name: l10n.kimchiPremiumPercent,
                     dataSource: widget.kimchiPremium,
                     xValueMapper: (ChartData data, _) => data.time,
                     yValueMapper: (ChartData data, _) => data.value,
@@ -283,7 +305,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                 if ((showAITrading || showGimchiTrading) &&
                     aiTradeResults.isNotEmpty) ...[
                   ScatterSeries<dynamic, DateTime>(
-                    name: showAITrading ? 'AI 매수' : '김프 매수',
+                    name: showAITrading ? l10n.aiBuy : l10n.kimchiPremiumBuy,
                     dataSource: aiTradeResults.toList(),
                     xValueMapper: (r, _) => r.buyDate,
                     yValueMapper: (r, _) => r.buyPrice,
@@ -296,7 +318,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                     ),
                   ),
                   ScatterSeries<dynamic, DateTime>(
-                    name: showAITrading ? 'AI 매도' : '김프 매도',
+                    name: showAITrading ? l10n.aiSell : l10n.kimchiPremiumSell,
                     dataSource:
                         aiTradeResults
                             .where((r) => r.sellDate != null)
@@ -328,7 +350,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
             ),
             child: IconButton(
               icon: const Icon(Icons.refresh, color: Colors.deepPurple),
-              tooltip: '차트 리셋',
+              tooltip: l10n.resetChart,
               onPressed: () {
                 setState(() {
                   _zoomPanBehavior.reset();
@@ -352,7 +374,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                 Icons.close_fullscreen,
                 color: Colors.deepPurple,
               ),
-              tooltip: '차트 이전',
+              tooltip: l10n.backToPreviousChart,
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -412,7 +434,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
     }
   }
 
-  Widget _buildCheckboxCard() {
+  Widget _buildCheckboxCard(AppLocalizations l10n) {
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -426,21 +448,21 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
           children: [
             CheckBoxItem(
               value: showExchangeRate,
-              label: '환율',
+              label: l10n.exchangeRate,
               color: Colors.green,
               onChanged:
                   (val) => setState(() => showExchangeRate = val ?? true),
             ),
             CheckBoxItem(
               value: showKimchiPremium,
-              label: '김치 프리미엄',
+              label: l10n.kimchiPremium,
               color: Colors.orange,
               onChanged:
                   (val) => setState(() => showKimchiPremium = val ?? true),
             ),
             CheckBoxItem(
               value: showAITrading,
-              label: 'AI 매수/매도',
+              label: l10n.aiBuySell,
               color: Colors.deepPurple,
               onChanged: (val) {
                 setState(() {
@@ -464,7 +486,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
             ),
             CheckBoxItem(
               value: showGimchiTrading,
-              label: '김프 매수/매도',
+              label: l10n.kimchiPremiumBuySell,
               color: Colors.teal,
               onChanged: (val) async {
                 setState(() {
@@ -502,7 +524,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                 children: [
                   CheckBoxItem(
                     value: showKimchiPlotBands,
-                    label: '김치 프리미엄 배경',
+                    label: l10n.kimchiPremiumBackground,
                     color: Colors.blue,
                     onChanged: (val) {
                       setState(() {
@@ -519,7 +541,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                       color: Colors.blue,
                       size: 20,
                     ),
-                    tooltip: '김치 프리미엄 배경 설명',
+                    tooltip: l10n.kimchiPremiumBackgroundDescriptionTooltip,
                     padding: const EdgeInsets.all(0), // 아이콘 버튼 여백 최소화
                     constraints: const BoxConstraints(), // 아이콘 버튼 크기 최소화
                     onPressed: () {
@@ -527,17 +549,14 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                         context: context,
                         builder:
                             (_) => AlertDialog(
-                              title: const Text('김치 프리미엄 배경이란?'),
-                              content: const Text(
-                                '차트의 배경색은 김치 프리미엄 값에 따라 달라집니다. '
-                                '프리미엄이 높을수록 빨간색, 낮을수록 파란색에 가깝게 표시되어 '
-                                '김치 프리미엄에 따른 매수 매도 시점을 시각적으로 파악할 수 있습니다. '
-                                '이 기능은 김치 프리미엄의 변동성을 한눈에 파악하는 데 도움을 줍니다.',
+                              title: Text(l10n.whatIsKimchiPremiumBackground),
+                              content: Text(
+                                l10n.kimchiPremiumBackgroundDescription,
                               ),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('확인'),
+                                  child: Text(l10n.confirm),
                                 ),
                               ],
                             ),
