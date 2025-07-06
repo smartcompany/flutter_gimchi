@@ -495,6 +495,96 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'현재가 매도시'**
   String get sellIfCurrentPrice;
+
+  /// No description provided for @onboardingTitle1.
+  ///
+  /// In ko, this message translates to:
+  /// **'USDT는 단순한 달러가 아닙니다'**
+  String get onboardingTitle1;
+
+  /// No description provided for @onboardingBody1.
+  ///
+  /// In ko, this message translates to:
+  /// **'1 USDT ≒ 1 USD이지만, 거래소·시세·환율에 따라 실제 가격은 달라요. 특히 한국에서는 ‘김치 프리미엄’과 ‘환율 차이’로 시세 차이가 자주 발생합니다.'**
+  String get onboardingBody1;
+
+  /// No description provided for @onboardingImageDesc1.
+  ///
+  /// In ko, this message translates to:
+  /// **'USDT vs 김치 프리미엄 비교 그래프'**
+  String get onboardingImageDesc1;
+
+  /// No description provided for @onboardingTitle2.
+  ///
+  /// In ko, this message translates to:
+  /// **'김치 프리미엄 + 환율 차이 = 수익의 기회'**
+  String get onboardingTitle2;
+
+  /// No description provided for @onboardingBody2.
+  ///
+  /// In ko, this message translates to:
+  /// **'한국에서는 USDT가 해외보다 비싸게 거래되는 경우가 많습니다. (이걸 ‘김치 프리미엄’이라 부릅니다.) 여기에 환율까지 고려하면, 시세 차익이 더 커질 수 있습니다. 우리 앱은 AI가 김프와 환율을 분석해, 최적의 매수/매도 시점을 찾아줍니다.'**
+  String get onboardingBody2;
+
+  /// No description provided for @onboardingImageDesc2.
+  ///
+  /// In ko, this message translates to:
+  /// **'USDT → 저가 매수 → 고가 매도 → 안정적인 수익 구조'**
+  String get onboardingImageDesc2;
+
+  /// No description provided for @onboardingTitle3.
+  ///
+  /// In ko, this message translates to:
+  /// **'매수/매도 타이밍? 우리가 알려드려요'**
+  String get onboardingTitle3;
+
+  /// No description provided for @onboardingBody3.
+  ///
+  /// In ko, this message translates to:
+  /// **'김치 프리미엄, 환율, 해외 시세를 실시간 분석해서 “지금 사세요 / 지금 파세요”를 AI가 시그널로 알려줍니다.'**
+  String get onboardingBody3;
+
+  /// No description provided for @onboardingImageDesc3.
+  ///
+  /// In ko, this message translates to:
+  /// **'실제 앱 화면 캡처 예시 (매수 시그널 알림)'**
+  String get onboardingImageDesc3;
+
+  /// No description provided for @onboardingTitle4.
+  ///
+  /// In ko, this message translates to:
+  /// **'만약 100만원으로 시작했다면?'**
+  String get onboardingTitle4;
+
+  /// No description provided for @onboardingBody4.
+  ///
+  /// In ko, this message translates to:
+  /// **'실제 과거 데이터를 기반으로, 우리 전략을 썼을 때 수익률 보여드릴게요.'**
+  String get onboardingBody4;
+
+  /// No description provided for @onboardingImageDesc4.
+  ///
+  /// In ko, this message translates to:
+  /// **'날짜별 자산 변화 시각화'**
+  String get onboardingImageDesc4;
+
+  /// No description provided for @previous.
+  ///
+  /// In ko, this message translates to:
+  /// **'이전'**
+  String get previous;
+
+  /// No description provided for @start.
+  ///
+  /// In ko, this message translates to:
+  /// **'시작하기'**
+  String get start;
+
+  /// No description provided for @next.
+  ///
+  /// In ko, this message translates to:
+  /// **'다음'**
+  String get next;
 }
 
 class _AppLocalizationsDelegate

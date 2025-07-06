@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:usdt_signal/utils.dart';
 
 class OnboardingPage extends StatefulWidget {
   final VoidCallback? onFinish;
@@ -12,42 +13,35 @@ class _OnboardingPageState extends State<OnboardingPage> {
   final PageController _controller = PageController();
   int _currentPage = 0;
 
-  final List<_OnboardingSlide> slides = [
-    _OnboardingSlide(
-      title: "USDT는 단순한 달러가 아닙니다",
-      body:
-          "1 USDT ≒ 1 USD이지만, 거래소·시세·환율에 따라 실제 가격은 달라요. "
-          "특히 한국에서는 ‘김치 프리미엄’과 ‘환율 차이’로 시세 차이가 자주 발생합니다.",
-      image: Icons.show_chart, // 실제 앱에서는 이미지로 교체
-      imageDesc: "USDT vs 김치 프리미엄 비교 그래프",
-    ),
-    _OnboardingSlide(
-      title: "김치 프리미엄 + 환율 차이 = 수익의 기회",
-      body:
-          "한국에서는 USDT가 해외보다 비싸게 거래되는 경우가 많습니다. (이걸 ‘김치 프리미엄’이라 부릅니다.) "
-          "여기에 환율까지 고려하면, 시세 차익이 더 커질 수 있습니다. "
-          "우리 앱은 AI가 김프와 환율을 분석해, 최적의 매수/매도 시점을 찾아줍니다.",
-      image: Icons.swap_horiz,
-      imageDesc: "USDT → 저가 매수 → 고가 매도 → 안정적인 수익 구조",
-    ),
-    _OnboardingSlide(
-      title: "매수/매도 타이밍? 우리가 알려드려요",
-      body:
-          "김치 프리미엄, 환율, 해외 시세를 실시간 분석해서 "
-          "“지금 사세요 / 지금 파세요”를 AI가 시그널로 알려줍니다.",
-      image: Icons.notifications_active,
-      imageDesc: "실제 앱 화면 캡처 예시 (매수 시그널 알림)",
-    ),
-    _OnboardingSlide(
-      title: "만약 100만원으로 시작했다면?",
-      body: "실제 과거 데이터를 기반으로, 우리 전략을 썼을 때 수익률 보여드릴게요.",
-      image: Icons.show_chart,
-      imageDesc: "날짜별 자산 변화 시각화",
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final List<_OnboardingSlide> slides = [
+      _OnboardingSlide(
+        title: l10n(context).onboardingTitle1,
+        body: l10n(context).onboardingBody1,
+        image: Icons.show_chart, // 실제 앱에서는 이미지로 교체
+        imageDesc: l10n(context).onboardingImageDesc1,
+      ),
+      _OnboardingSlide(
+        title: l10n(context).onboardingTitle2,
+        body: l10n(context).onboardingBody2,
+        image: Icons.swap_horiz,
+        imageDesc: l10n(context).onboardingImageDesc2,
+      ),
+      _OnboardingSlide(
+        title: l10n(context).onboardingTitle3,
+        body: l10n(context).onboardingBody3,
+        image: Icons.notifications_active,
+        imageDesc: l10n(context).onboardingImageDesc3,
+      ),
+      _OnboardingSlide(
+        title: l10n(context).onboardingTitle4,
+        body: l10n(context).onboardingBody4,
+        image: Icons.show_chart,
+        imageDesc: l10n(context).onboardingImageDesc4,
+      ),
+    ];
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -95,7 +89,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                           curve: Curves.ease,
                         );
                       },
-                      child: const Text("이전"),
+                      child: Text(l10n(context).previous),
                     )
                   else
                     const SizedBox(width: 60),
@@ -111,7 +105,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       }
                     },
                     child: Text(
-                      _currentPage == slides.length - 1 ? "시작하기" : "다음",
+                      _currentPage == slides.length - 1
+                          ? l10n(context).start
+                          : l10n(context).next,
                     ),
                   ),
                 ],

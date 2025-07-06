@@ -210,4 +210,51 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sellIfCurrentPrice => '当前价格卖出';
+
+  @override
+  String get onboardingTitle1 => 'USDT 不仅仅是美元';
+
+  @override
+  String get onboardingBody1 =>
+      '1 USDT ≈ 1 USD，但实际价格会因交易所、市价和汇率而异。特别是在韩国，由于“泡菜溢价”和“汇率差异”，经常会产生价差。';
+
+  @override
+  String get onboardingImageDesc1 => 'USDT vs 泡菜溢价对比图';
+
+  @override
+  String get onboardingTitle2 => '泡菜溢价 + 汇率差异 = 盈利机会';
+
+  @override
+  String get onboardingBody2 =>
+      '在韩国，USDT的交易价格通常高于海外（这被称为“泡菜溢价”）。如果再考虑到汇率，价差可能会更大。我们的应用程序通过AI分析泡菜溢价和汇率，为您找到最佳的买入/卖出时机。';
+
+  @override
+  String get onboardingImageDesc2 => 'USDT → 低价买入 → 高价卖出 → 稳定的盈利结构';
+
+  @override
+  String get onboardingTitle3 => '买/卖时机？我们来告诉您';
+
+  @override
+  String get onboardingBody3 => '我们的AI实时分析泡菜溢价、汇率和海外市价，并以“立即购买/立即出售”的信号通知您。';
+
+  @override
+  String get onboardingImageDesc3 => '实际应用屏幕截图示例（买入信号通知）';
+
+  @override
+  String get onboardingTitle4 => '如果从100万韩元开始会怎样？';
+
+  @override
+  String get onboardingBody4 => '根据过去的实际数据，我们将向您展示使用我们的策略可以达到的收益率。';
+
+  @override
+  String get onboardingImageDesc4 => '按日期显示资产变化';
+
+  @override
+  String get previous => '上一步';
+
+  @override
+  String get start => '开始使用';
+
+  @override
+  String get next => '下一步';
 }

@@ -12,10 +12,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get usdt => 'USDT';
 
   @override
-  String get exchangeRate => 'Exchange Rate';
+  String get exchangeRate => 'FX';
 
   @override
-  String get gimchiPremiem => 'KR Premiem';
+  String get gimchiPremiem => 'K-Premium';
 
   @override
   String get cancel => 'Cancel';
@@ -60,19 +60,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get usdt_signal => 'USDT Signal';
 
   @override
-  String get buyWin => 'It is currently a favorable time to buy';
+  String get buyWin => 'Favorable time to buy';
 
   @override
-  String get sellWin => 'It is currently a favorable time to sell';
+  String get sellWin => 'Favorable time to sell';
 
   @override
-  String get justSee => 'It is currently a wait-and-see period';
+  String get justSee => 'A wait-and-see period';
 
   @override
   String get aiStrategy => 'AI Strategy';
 
   @override
-  String get gimchiStrategy => 'KR Premiem Strategy';
+  String get gimchiStrategy => 'K-Premium Strategy';
 
   @override
   String get buy => 'Buy';
@@ -87,30 +87,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get runSimulation => 'Run simulation';
 
   @override
-  String get seeStrategy => 'View strategy';
+  String get seeStrategy => 'Strategy';
 
   @override
-  String get aiTradingSimulation =>
-      'AI Trading Simulation (based on 1 million KRW)';
+  String get aiTradingSimulation => 'AI Simulated Trade (₩1M)';
 
   @override
-  String get gimchTradingSimulation =>
-      'KR Premium Trading Simulation (based on 1 million KRW)';
+  String get gimchTradingSimulation => 'K-Premium AI Simulated Trade (₩1M)';
 
   @override
   String get finalKRW => 'Final KRW';
 
   @override
-  String get tradingPerioid => 'Trading Period';
+  String get tradingPerioid => 'Period';
 
   @override
-  String get stackedFinalKRW => 'Accumulated Final KRW';
+  String get stackedFinalKRW => 'Final ₩';
 
   @override
-  String get totalGain => 'Total Rate of Return';
+  String get totalGain => 'Total Gain';
 
   @override
-  String get extimatedYearGain => 'Estimated Annual Return';
+  String get extimatedYearGain => 'Est. %/yr';
 
   @override
   String get chartTrendAnalysis => 'Chart Trend Analysis';
@@ -119,21 +117,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiSell => 'AI Sell';
 
   @override
-  String get kimchiPremiumSell => 'Kimchi Premium Sell';
+  String get kimchiPremiumSell => 'K-Premium Sell';
 
   @override
   String get aiBuy => 'AI Buy';
 
   @override
-  String get kimchiPremiumBuy => 'Kimchi Premium Buy';
+  String get kimchiPremiumBuy => 'K-Premium Buy';
 
   @override
   String changeFromPreviousDay(Object change) {
-    return 'Change from previous day: $change%';
+    return 'D-1: $change%';
   }
 
   @override
-  String get kimchiPremiumPercent => 'Kimchi Premium (%)';
+  String get kimchiPremiumPercent => 'K-Premium (%)';
 
   @override
   String get resetChart => 'Reset Chart';
@@ -142,28 +140,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backToPreviousChart => 'Previous Chart';
 
   @override
-  String get kimchiPremium => 'Kimchi Premium';
+  String get kimchiPremium => 'K-Premium';
 
   @override
   String get aiBuySell => 'AI Buy/Sell';
 
   @override
-  String get kimchiPremiumBuySell => 'Kimchi Premium Buy/Sell';
+  String get kimchiPremiumBuySell => 'K-Premium Buy/Sell';
 
   @override
-  String get kimchiPremiumBackground => 'Kimchi Premium Background';
+  String get kimchiPremiumBackground => 'K-Premium Background';
 
   @override
-  String get kimchiPremiumBackgroundDescriptionTooltip =>
-      'Explanation of Kimchi Premium Background';
+  String get kimchiPremiumBackgroundDescriptionTooltip => 'K-Premium Explained';
 
   @override
   String get whatIsKimchiPremiumBackground =>
-      'What is the Kimchi Premium Background?';
+      'What is the K-Premium Background?';
 
   @override
   String get kimchiPremiumBackgroundDescription =>
-      'The background color of the chart changes depending on the Kimchi Premium value. The higher the premium, the redder it becomes; the lower the premium, the bluer it becomes. This allows you to visually assess buy/sell timing based on the Kimchi Premium. It helps you grasp the volatility at a glance.';
+      'The background color of the chart changes depending on the K-Premium value. The higher the premium, the redder it becomes; the lower the premium, the bluer it becomes. This allows you to visually assess buy/sell timing based on the K-Premium. It helps you grasp the volatility at a glance.';
 
   @override
   String get confirm => 'Confirm';
@@ -172,13 +169,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatRoom => 'Chat Room';
 
   @override
-  String get gimchBaseTrade => 'KR Premiem Base Trade';
+  String get gimchBaseTrade => 'K-Premium Base Trade';
 
   @override
   String get aiBaseTrade => 'AI Base Trade';
 
   @override
-  String get seeWithChart => 'View with Chart';
+  String get seeWithChart => 'Show Chart';
 
   @override
   String get buyBase => 'Buy Threshold (%)';
@@ -187,7 +184,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sellBase => 'Sell Threshold (%)';
 
   @override
-  String get sameAsAI => 'Apply same schedule as AI';
+  String get sameAsAI => 'Use AI Schedule';
 
   @override
   String get failedToSaveSettings => 'Failed to save settings.';
@@ -209,9 +206,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String kimchiStrategyComment(double buyThreshold, double sellThreshold) {
-    return 'Buy when the Kimchi Premium is below $buyThreshold%, and sell when it is above $sellThreshold%.';
+    return 'Buy when the K-Premium is below $buyThreshold%, and sell when it is above $sellThreshold%.';
   }
 
   @override
   String get sellIfCurrentPrice => 'Sell if current price';
+
+  @override
+  String get onboardingTitle1 => 'USDT is not just a dollar';
+
+  @override
+  String get onboardingBody1 =>
+      '1 USDT ≈ 1 USD, but the actual price varies depending on the exchange, market price, and exchange rate. Especially in Korea, price differences often occur due to the \'Kimchi Premium\' and \'exchange rate differences\'.';
+
+  @override
+  String get onboardingImageDesc1 => 'USDT vs. Kimchi Premium comparison graph';
+
+  @override
+  String get onboardingTitle2 =>
+      'Kimchi Premium + Exchange Rate Difference = Opportunity for Profit';
+
+  @override
+  String get onboardingBody2 =>
+      'In Korea, USDT is often traded at a higher price than abroad (this is called the \'Kimchi Premium\'). When you also consider the exchange rate, the price difference can be even greater. Our app\'s AI analyzes the Kimchi Premium and exchange rate to find the optimal buying/selling points.';
+
+  @override
+  String get onboardingImageDesc2 =>
+      'USDT → Buy Low → Sell High → Stable Profit Structure';
+
+  @override
+  String get onboardingTitle3 => 'Buy/Sell Timing? We\'ll let you know';
+
+  @override
+  String get onboardingBody3 =>
+      'Our AI analyzes the Kimchi Premium, exchange rate, and overseas market prices in real-time to give you signals like \'Buy Now / Sell Now\'.';
+
+  @override
+  String get onboardingImageDesc3 =>
+      'Example of actual app screen capture (Buy signal notification)';
+
+  @override
+  String get onboardingTitle4 => 'What if you started with ₩1,000,000?';
+
+  @override
+  String get onboardingBody4 =>
+      'Based on actual past data, we\'ll show you the rate of return you would have achieved using our strategy.';
+
+  @override
+  String get onboardingImageDesc4 => 'Asset change visualization by date';
+
+  @override
+  String get previous => 'Previous';
+
+  @override
+  String get start => 'Get Started';
+
+  @override
+  String get next => 'Next';
 }
