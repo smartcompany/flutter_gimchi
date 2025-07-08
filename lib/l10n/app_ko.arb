@@ -91,5 +91,10 @@
   "onboardingImageDesc4": "날짜별 자산 변화 시각화",
   "previous": "이전",
   "start": "시작하기",
-  "next": "다음"
+  "next": "다음",
+  "selectReceiveAlert":"받을 알림을 선택하세요",
+  "aIalert":"AI 분석 알림 받기",
+  "gimpAlert":"김프 알림 받기",
+  "turnOffAlert":"알림 끄기",
+  "unFilled":"미체결"
 }

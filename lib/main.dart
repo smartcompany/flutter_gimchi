@@ -1411,8 +1411,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Text(
-            '받을 알림을 선택하세요',
+          title: Text(
+            l10n(context).selectReceiveAlert,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 20,
@@ -1427,19 +1427,19 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 context,
                 TodayCommentAlarmType.ai,
                 _todayCommentAlarmType,
-                'AI 분석 알림 받기',
+                l10n(context).aIalert,
               ),
               _buildAlarmOptionTile(
                 context,
                 TodayCommentAlarmType.kimchi,
                 _todayCommentAlarmType,
-                '김프 알림 받기',
+                l10n(context).gimpAlert,
               ),
               _buildAlarmOptionTile(
                 context,
                 TodayCommentAlarmType.off,
                 _todayCommentAlarmType,
-                '알림 끄기',
+                l10n(context).turnOffAlert,
               ),
             ],
           ),

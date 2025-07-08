@@ -91,5 +91,10 @@
   "onboardingImageDesc4": "Asset change visualization by date",
   "previous": "Previous",
   "start": "Get Started",
-  "next": "Next"
+  "next": "Next",
+  "selectReceiveAlert": "Select alert to receive",
+  "aIalert": "AI Alert",
+  "gimpAlert": "K-Premium Alert",
+  "turnOffAlert": "Turn off alert",
+  "unFilled": "Unfilled"
 }

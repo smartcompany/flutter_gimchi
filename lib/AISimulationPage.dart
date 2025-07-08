@@ -787,7 +787,7 @@ class _AISimulationPageState extends State<AISimulationPage>
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        '매수→${r.buyDate?.toCustomString()}\n매도→${r.sellDate?.toCustomString() ?? "미체결"}',
+                                        '${l10n(context).buy}→${r.buyDate?.toCustomString()}\n${l10n(context).sell}→${r.sellDate?.toCustomString() ?? l10n(context).unFilled}',
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 15,

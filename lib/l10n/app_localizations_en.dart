@@ -263,4 +263,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get next => 'Next';
+
+  @override
+  String get selectReceiveAlert => 'Select alert to receive';
+
+  @override
+  String get aIalert => 'AI Alert';
+
+  @override
+  String get gimpAlert => 'K-Premium Alert';
+
+  @override
+  String get turnOffAlert => 'Turn off alert';
+
+  @override
+  String get unFilled => 'Unfilled';
 }

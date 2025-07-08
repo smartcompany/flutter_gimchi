@@ -258,4 +258,19 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get next => '다음';
+
+  @override
+  String get selectReceiveAlert => '받을 알림을 선택하세요';
+
+  @override
+  String get aIalert => 'AI 분석 알림 받기';
+
+  @override
+  String get gimpAlert => '김프 알림 받기';
+
+  @override
+  String get turnOffAlert => '알림 끄기';
+
+  @override
+  String get unFilled => '미체결';
 }

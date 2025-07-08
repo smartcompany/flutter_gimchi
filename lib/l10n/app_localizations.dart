@@ -585,6 +585,36 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'다음'**
   String get next;
+
+  /// No description provided for @selectReceiveAlert.
+  ///
+  /// In ko, this message translates to:
+  /// **'받을 알림을 선택하세요'**
+  String get selectReceiveAlert;
+
+  /// No description provided for @aIalert.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 분석 알림 받기'**
+  String get aIalert;
+
+  /// No description provided for @gimpAlert.
+  ///
+  /// In ko, this message translates to:
+  /// **'김프 알림 받기'**
+  String get gimpAlert;
+
+  /// No description provided for @turnOffAlert.
+  ///
+  /// In ko, this message translates to:
+  /// **'알림 끄기'**
+  String get turnOffAlert;
+
+  /// No description provided for @unFilled.
+  ///
+  /// In ko, this message translates to:
+  /// **'미체결'**
+  String get unFilled;
 }
 
 class _AppLocalizationsDelegate

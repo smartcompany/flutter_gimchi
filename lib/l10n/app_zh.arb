@@ -91,5 +91,10 @@
   "onboardingImageDesc4": "按日期显示资产变化",
   "previous": "上一步",
   "start": "开始使用",
-  "next": "下一步"
+  "next": "下一步",
+  "selectReceiveAlert": "选择要接收的通知",
+  "aIalert": "AI 通知",
+  "gimpAlert": "泡菜溢价通知",
+  "turnOffAlert": "关闭通知",
+  "unFilled": "未成交"
 }

@@ -257,4 +257,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get next => '下一步';
+
+  @override
+  String get selectReceiveAlert => '选择要接收的通知';
+
+  @override
+  String get aIalert => 'AI 通知';
+
+  @override
+  String get gimpAlert => '泡菜溢价通知';
+
+  @override
+  String get turnOffAlert => '关闭通知';
+
+  @override
+  String get unFilled => '未成交';
 }
