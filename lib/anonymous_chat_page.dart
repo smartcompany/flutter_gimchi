@@ -189,8 +189,10 @@ Widget USTextMessageBuilder(
   ];
 
   // authorId별로 고유한 색상 인덱스 생성
-  int colorIndex = message.authorId.hashCode % colors.length;
-  final bgColor = colors[colorIndex];
+  final bgColor =
+      isSentByMe
+          ? Colors.blue[200]
+          : colors[(getAnonNum(message.authorId) - 1) % colors.length];
 
   return Container(
     margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
