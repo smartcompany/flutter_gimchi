@@ -739,11 +739,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(l10n(context).usdt_signal),
-            SizedBox(width: 1),
-            IconButton(
-              icon: const Icon(Icons.help_outline, color: Colors.deepPurple),
-              tooltip: '앱 사용법 보기',
-              onPressed: () async {
+            InkWell(
+              onTap: () async {
                 await Navigator.of(context).push(
                   MaterialPageRoute(
                     builder:
@@ -756,8 +753,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ),
                 );
               },
-              padding: EdgeInsets.zero, // 아이콘과 텍스트 간격 최소화
-              constraints: BoxConstraints(), // 버튼 크기 최소화
+              child: Padding(
+                padding: const EdgeInsets.only(left: 2.0), // 정말 최소 간격
+                child: Icon(
+                  Icons.help_outline,
+                  color: Colors.deepPurple,
+                  size: 22,
+                ),
+              ),
+              borderRadius: BorderRadius.circular(16),
             ),
           ],
         ),
