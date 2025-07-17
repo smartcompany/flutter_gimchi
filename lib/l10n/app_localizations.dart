@@ -175,7 +175,7 @@ abstract class AppLocalizations {
   /// No description provided for @seeAdsAndStrategy.
   ///
   /// In ko, this message translates to:
-  /// **'광고 보고 전략 보기'**
+  /// **'광고 보고 매매 전략 보기'**
   String get seeAdsAndStrategy;
 
   /// No description provided for @throwTestException.
@@ -199,7 +199,7 @@ abstract class AppLocalizations {
   /// No description provided for @usdt_signal.
   ///
   /// In ko, this message translates to:
-  /// **'USDT 시그널'**
+  /// **'테더 매매 알리미'**
   String get usdt_signal;
 
   /// No description provided for @buyWin.

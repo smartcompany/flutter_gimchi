@@ -1535,7 +1535,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     );
   }
 
-  // 광고 보고 전략 보기 버튼의 onPressed 핸들러 함수 분리
+  // 광고 보고 매매 전략 보기 버튼의 onPressed 핸들러 함수 분리
   VoidCallback? _getShowStrategyButtonHandler() {
     // 버튼을 활성화 후 액션 연동
     if (_adsStatus == AdsStatus.load) {

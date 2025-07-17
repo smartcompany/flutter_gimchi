@@ -45,7 +45,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get no => '아니오';
 
   @override
-  String get seeAdsAndStrategy => '광고 보고 전략 보기';
+  String get seeAdsAndStrategy => '광고 보고 매매 전략 보기';
 
   @override
   String get throwTestException => 'throwTestException';
@@ -57,7 +57,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get usdtSignal => '테더 시그널';
 
   @override
-  String get usdt_signal => 'USDT 시그널';
+  String get usdt_signal => '테더 매매 알리미';
 
   @override
   String get buyWin => '현재 매수 유리 구간입니다';
