@@ -25,12 +25,37 @@ platform :ios do
   desc "Push a new release build to the App Store"
   lane :release do
     increment_build_number(xcodeproj: "Runner.xcodeproj")
-    build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
+    
+    # Build app with dSYM generation
+    build_app(
+      workspace: "Runner.xcworkspace", 
+      scheme: "Runner",
+      export_method: "app-store",
+      export_options: {
+        method: "app-store",
+        uploadBitcode: false,
+        uploadSymbols: true,
+        compileBitcode: false
+      }
+    )
+    
+    # Upload dSYM to Crashlytics
+    upload_symbols_to_crashlytics(
+      gsp_path: "Runner/GoogleService-Info.plist"
+    )
+    
     upload_to_app_store(
-  	skip_metadata: true,
-  	skip_screenshots: true,
-  	skip_app_version_update: true,
-  	precheck_include_in_app_purchases: false
-   	)
+      skip_metadata: true,
+      skip_screenshots: true,
+      skip_app_version_update: true,
+      precheck_include_in_app_purchases: false
+    )
+  end
+  
+  desc "Build and upload dSYM to Crashlytics"
+  lane :upload_dsym do
+    upload_symbols_to_crashlytics(
+      gsp_path: "Runner/GoogleService-Info.plist"
+    )
   end
 end
