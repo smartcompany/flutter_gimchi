@@ -711,11 +711,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
         child: Column(
           children: [
-            _buildTodayComment(usdtChartData.last),
+            _buildTodayComment(usdtChartData.safeLast),
             _buildTodayInfoCard(
-              usdtChartData.last,
-              exchangeRates.last,
-              kimchiPremium.last,
+              usdtChartData.safeLast,
+              exchangeRates.safeLast,
+              kimchiPremium.safeLast,
             ),
             const SizedBox(height: 4),
             _buildChartCard(chartHeight),

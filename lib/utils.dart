@@ -129,3 +129,8 @@ extension TodayCommentAlarmTypePrefs on TodayCommentAlarmType {
     await prefs.setString(_prefsKey, name);
   }
 }
+
+// List<T>에 대해 안전하게 마지막 원소를 반환하는 extension
+extension SafeList<T> on List<T> {
+  T? get safeLast => isNotEmpty ? last : null;
+}
