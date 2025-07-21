@@ -148,7 +148,7 @@ class _OnboardingSlideWidget extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             slide.imageDesc,
-            style: const TextStyle(fontSize: 14, color: Colors.grey),
+            style: const TextStyle(fontSize: 16, color: Colors.deepPurple),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),

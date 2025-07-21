@@ -60,10 +60,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get usdt_signal => '테더 매매 알리미';
 
   @override
-  String get buyWin => '현재 매수 유리 구간입니다';
+  String get buyWin => '현재 매수 추천 구간입니다';
 
   @override
-  String get sellWin => '현재 매수 유리 구간입니다';
+  String get sellWin => '현재 매도 추천 구간입니다';
 
   @override
   String get justSee => '현재 관망 구간입니다';
@@ -212,34 +212,34 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sellIfCurrentPrice => '현재가 매도시';
 
   @override
-  String get onboardingTitle1 => 'USDT는 단순한 달러가 아닙니다';
+  String get onboardingTitle1 => '테더(USDT)는 단순한 달러가 아닙니다';
 
   @override
   String get onboardingBody1 =>
-      '1 USDT ≒ 1 USD이지만, 거래소·시세·환율에 따라 실제 가격은 달라요. 특히 한국에서는 ‘김치 프리미엄’과 ‘환율 차이’로 시세 차이가 자주 발생합니다.';
+      '외국에서는 1 테더(USDT)가 1 달러 이지만, 한국 거래소 에서는 환율과 가격이 달라요. 특히 한국에서는 ‘김치 프리미엄’에 따라 환율과의 가격 차이가 발생 합니다.';
 
   @override
-  String get onboardingImageDesc1 => 'USDT vs 김치 프리미엄 비교 그래프';
+  String get onboardingImageDesc1 => '테더(USDT) ≒ 환율 + 김치 프리미엄';
 
   @override
-  String get onboardingTitle2 => '김치 프리미엄 + 환율 차이 = 수익의 기회';
+  String get onboardingTitle2 => '높은 김치 프리미엄일 때 테더(USDT) 매도는 수익의 기회';
 
   @override
   String get onboardingBody2 =>
-      '한국에서는 USDT가 해외보다 비싸게 거래되는 경우가 많습니다. (이걸 ‘김치 프리미엄’이라 부릅니다.) 여기에 환율까지 고려하면, 시세 차익이 더 커질 수 있습니다. 우리 앱은 AI가 김프와 환율을 분석해, 최적의 매수/매도 시점을 찾아줍니다.';
+      '한국에서는 테더(USDT)가 해외보다 비싸게 거래되는 경우가 많습니다. (이걸 ‘김치 프리미엄’이라 부릅니다.) 우리 앱은 테더(USDT)의 과거 테이타를 분석해 최적의 매수/매도 시점을 찾아줍니다.';
 
   @override
-  String get onboardingImageDesc2 => 'USDT → 저가 매수 → 고가 매도 → 안정적인 수익 구조';
+  String get onboardingImageDesc2 => '테더(USDT) → 저가 매수 → 고가 매도 → 안정적인 수익 구조';
 
   @override
   String get onboardingTitle3 => '매수/매도 타이밍? 우리가 알려드려요';
 
   @override
   String get onboardingBody3 =>
-      '김치 프리미엄, 환율, 해외 시세를 실시간 분석해서 “지금 사세요 / 지금 파세요”를 AI가 시그널로 알려줍니다.';
+      '김치 프리미엄의 매매 기준, AI 분석을 통해 매수와 매도 시점을 알림으로 알려 줍니다. 본인의 판단에 따라 맞는 방법을 참고 하시면 됩니다.';
 
   @override
-  String get onboardingImageDesc3 => '실제 앱 화면 캡처 예시 (매수 시그널 알림)';
+  String get onboardingImageDesc3 => '실시간 테더(USDT) 가격을 확인 후 매수/매도 알림';
 
   @override
   String get onboardingTitle4 => '만약 100만원으로 시작했다면?';
@@ -248,7 +248,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get onboardingBody4 => '실제 과거 데이터를 기반으로, 우리 전략을 썼을 때 수익률 보여드릴게요.';
 
   @override
-  String get onboardingImageDesc4 => '날짜별 자산 변화 시각화';
+  String get onboardingImageDesc4 => '과거 데이타를 통한 수익율 시각화';
 
   @override
   String get previous => '이전';

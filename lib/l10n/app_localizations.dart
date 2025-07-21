@@ -205,13 +205,13 @@ abstract class AppLocalizations {
   /// No description provided for @buyWin.
   ///
   /// In ko, this message translates to:
-  /// **'현재 매수 유리 구간입니다'**
+  /// **'현재 매수 추천 구간입니다'**
   String get buyWin;
 
   /// No description provided for @sellWin.
   ///
   /// In ko, this message translates to:
-  /// **'현재 매수 유리 구간입니다'**
+  /// **'현재 매도 추천 구간입니다'**
   String get sellWin;
 
   /// No description provided for @justSee.
@@ -499,37 +499,37 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingTitle1.
   ///
   /// In ko, this message translates to:
-  /// **'USDT는 단순한 달러가 아닙니다'**
+  /// **'테더(USDT)는 단순한 달러가 아닙니다'**
   String get onboardingTitle1;
 
   /// No description provided for @onboardingBody1.
   ///
   /// In ko, this message translates to:
-  /// **'1 USDT ≒ 1 USD이지만, 거래소·시세·환율에 따라 실제 가격은 달라요. 특히 한국에서는 ‘김치 프리미엄’과 ‘환율 차이’로 시세 차이가 자주 발생합니다.'**
+  /// **'외국에서는 1 테더(USDT)가 1 달러 이지만, 한국 거래소 에서는 환율과 가격이 달라요. 특히 한국에서는 ‘김치 프리미엄’에 따라 환율과의 가격 차이가 발생 합니다.'**
   String get onboardingBody1;
 
   /// No description provided for @onboardingImageDesc1.
   ///
   /// In ko, this message translates to:
-  /// **'USDT vs 김치 프리미엄 비교 그래프'**
+  /// **'테더(USDT) ≒ 환율 + 김치 프리미엄'**
   String get onboardingImageDesc1;
 
   /// No description provided for @onboardingTitle2.
   ///
   /// In ko, this message translates to:
-  /// **'김치 프리미엄 + 환율 차이 = 수익의 기회'**
+  /// **'높은 김치 프리미엄일 때 테더(USDT) 매도는 수익의 기회'**
   String get onboardingTitle2;
 
   /// No description provided for @onboardingBody2.
   ///
   /// In ko, this message translates to:
-  /// **'한국에서는 USDT가 해외보다 비싸게 거래되는 경우가 많습니다. (이걸 ‘김치 프리미엄’이라 부릅니다.) 여기에 환율까지 고려하면, 시세 차익이 더 커질 수 있습니다. 우리 앱은 AI가 김프와 환율을 분석해, 최적의 매수/매도 시점을 찾아줍니다.'**
+  /// **'한국에서는 테더(USDT)가 해외보다 비싸게 거래되는 경우가 많습니다. (이걸 ‘김치 프리미엄’이라 부릅니다.) 우리 앱은 테더(USDT)의 과거 테이타를 분석해 최적의 매수/매도 시점을 찾아줍니다.'**
   String get onboardingBody2;
 
   /// No description provided for @onboardingImageDesc2.
   ///
   /// In ko, this message translates to:
-  /// **'USDT → 저가 매수 → 고가 매도 → 안정적인 수익 구조'**
+  /// **'테더(USDT) → 저가 매수 → 고가 매도 → 안정적인 수익 구조'**
   String get onboardingImageDesc2;
 
   /// No description provided for @onboardingTitle3.
@@ -541,13 +541,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingBody3.
   ///
   /// In ko, this message translates to:
-  /// **'김치 프리미엄, 환율, 해외 시세를 실시간 분석해서 “지금 사세요 / 지금 파세요”를 AI가 시그널로 알려줍니다.'**
+  /// **'김치 프리미엄의 매매 기준, AI 분석을 통해 매수와 매도 시점을 알림으로 알려 줍니다. 본인의 판단에 따라 맞는 방법을 참고 하시면 됩니다.'**
   String get onboardingBody3;
 
   /// No description provided for @onboardingImageDesc3.
   ///
   /// In ko, this message translates to:
-  /// **'실제 앱 화면 캡처 예시 (매수 시그널 알림)'**
+  /// **'실시간 테더(USDT) 가격을 확인 후 매수/매도 알림'**
   String get onboardingImageDesc3;
 
   /// No description provided for @onboardingTitle4.
@@ -565,7 +565,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingImageDesc4.
   ///
   /// In ko, this message translates to:
-  /// **'날짜별 자산 변화 시각화'**
+  /// **'과거 데이타를 통한 수익율 시각화'**
   String get onboardingImageDesc4;
 
   /// No description provided for @previous.
