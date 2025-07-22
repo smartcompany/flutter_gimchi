@@ -70,9 +70,9 @@ class SimulationCondition {
   SimulationCondition._internal();
   static final SimulationCondition instance = SimulationCondition._internal();
 
-  double _kimchiBuyThreshold = 1.0;
+  double _kimchiBuyThreshold = 0.5;
   double get kimchiBuyThreshold => _kimchiBuyThreshold;
-  double _kimchiSellThreshold = 3.0;
+  double _kimchiSellThreshold = 2.5;
   double get kimchiSellThreshold => _kimchiSellThreshold;
   bool _matchSameDatesAsAI = false;
   bool get matchSameDatesAsAI => _matchSameDatesAsAI;
