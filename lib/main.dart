@@ -1199,7 +1199,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 300,
+                height: 250,
                 child: TabBarView(
                   physics: const NeverScrollableScrollPhysics(), // ← 이 줄 추가!
                   children: [_buildAiStrategyTab(), _buildGimchiStrategyTab()],
@@ -1258,8 +1258,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             : '-';
 
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        side: BorderSide.none,
+        borderRadius: BorderRadius.zero,
+      ),
       color: Colors.white,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
       child: Padding(
