@@ -24,7 +24,7 @@ class USDTChartData {
 class ApiService {
   static const int days = 200;
   static const String upbitUsdtUrl =
-      "https://rate-history.vercel.app/api/usdt-history?days=$days";
+      "https://rate-history.vercel.app/api/usdt-history?days=all";
   static const String rateHistoryUrl =
       "https://rate-history.vercel.app/api/rate-history?days=$days";
   static const String gimchHistoryUrl =
