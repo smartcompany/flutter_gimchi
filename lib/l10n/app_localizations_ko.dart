@@ -81,10 +81,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sell => '매도';
 
   @override
-  String get gain => '수익율';
+  String get gain => '수익률';
 
   @override
-  String get runSimulation => '시뮬레이션 해보기';
+  String get runSimulation => '수익률 시뮬레이션';
 
   @override
   String get seeStrategy => '전략 보기';
@@ -248,7 +248,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get onboardingBody4 => '실제 과거 데이터를 기반으로, 우리 전략을 썼을 때 수익률 보여드릴게요.';
 
   @override
-  String get onboardingImageDesc4 => '과거 데이타를 통한 수익율 시각화';
+  String get onboardingImageDesc4 => '과거 데이타를 통한 수익률 시각화';
 
   @override
   String get previous => '이전';

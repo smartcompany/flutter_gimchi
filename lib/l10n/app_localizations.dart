@@ -247,13 +247,13 @@ abstract class AppLocalizations {
   /// No description provided for @gain.
   ///
   /// In ko, this message translates to:
-  /// **'수익율'**
+  /// **'수익률'**
   String get gain;
 
   /// No description provided for @runSimulation.
   ///
   /// In ko, this message translates to:
-  /// **'시뮬레이션 해보기'**
+  /// **'수익률 시뮬레이션'**
   String get runSimulation;
 
   /// No description provided for @seeStrategy.
@@ -565,7 +565,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingImageDesc4.
   ///
   /// In ko, this message translates to:
-  /// **'과거 데이타를 통한 수익율 시각화'**
+  /// **'과거 데이타를 통한 수익률 시각화'**
   String get onboardingImageDesc4;
 
   /// No description provided for @previous.
