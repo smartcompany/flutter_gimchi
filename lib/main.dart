@@ -736,7 +736,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(l10n(context).usdt_signal),
+            Text(
+              l10n(context).usdt_signal,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             InkWell(
               onTap: () async {
                 await Navigator.of(context).push(
@@ -803,19 +806,42 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               (1 + SimulationCondition.instance.kimchiSellThreshold / 100));
     }
 
+    // 디자인 강조: 배경색, 아이콘, 컬러 분기
+    Color bgColor;
+    IconData icon;
+    Color iconColor;
+
     // 오늘 날짜에 대한 코멘트 생성
     if (usdtPrice <= buyPrice) {
-      comment = '⚠️ ${l10n(context).buyWin}';
+      comment = l10n(context).buyWin;
+      bgColor = Colors.green.shade50;
+      icon = Icons.trending_up;
+      iconColor = Colors.green;
     } else if (usdtPrice > sellPrice) {
-      comment = '⚠️ ${l10n(context).sellWin}';
+      comment = l10n(context).sellWin;
+      bgColor = Colors.red.shade50;
+      icon = Icons.trending_down;
+      iconColor = Colors.red;
     } else {
-      comment = '⚠️ ${l10n(context).justSee}';
+      comment = l10n(context).justSee;
+      // 관망 구간
+      bgColor = Colors.yellow.shade50;
+      icon = Icons.remove_red_eye;
+      iconColor = Colors.orange;
     }
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6.0),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6.0),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: bgColor.withOpacity(0.7)),
+      ),
       child: Row(
         children: [
+          Icon(icon, color: iconColor, size: 28),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               comment,
@@ -834,9 +860,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ? Icons.notifications_active
                   : Icons.notifications_off,
               color:
-                  _todayCommentAlarmType == TodayCommentAlarmType.off
-                      ? Colors.grey
-                      : Colors.deepPurple,
+                  _todayCommentAlarmType == TodayCommentAlarmType.kimchi
+                      ? Colors
+                          .orange // 김프 알림이면 오렌지색
+                      : _todayCommentAlarmType == TodayCommentAlarmType.ai
+                      ? Colors
+                          .deepPurple // AI 알림이면 딥퍼플
+                      : Colors.grey, // OFF면 회색
             ),
             tooltip: '알림 설정',
             onPressed: () async {
