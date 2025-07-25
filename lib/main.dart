@@ -208,8 +208,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       final usdt = await api.fetchLatestUSDTData();
       if (usdt != null && usdtChartData.isNotEmpty) {
         setState(() {
-          usdtChartData.last.close = usdt;
-          final key = usdtChartData.last.time; // 시간 문자열로 변환
+          usdtChartData.safeLast?.close = usdt;
+          final key = usdtChartData.safeLast?.time; // 시간 문자열로 변환
           if (usdtMap.containsKey(key)) {
             usdtMap[key]?.close = usdt;
           }
@@ -217,17 +217,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       }
 
       final exchangeRate = await api.fetchLatestExchangeRate();
-      if (exchangeRate != null && exchangeRates.isNotEmpty) {
-        exchangeRates.last.value = exchangeRate;
+      if (exchangeRate != null) {
+        exchangeRates.safeLast?.value = exchangeRate;
       }
 
       setState(() {
-        if (kimchiPremium.isNotEmpty) {
-          kimchiPremium.last.value = gimchiPremium(
-            usdtChartData.last.close,
-            exchangeRates.last.value,
-          );
-        }
+        kimchiPremium.safeLast?.value = gimchiPremium(
+          usdtChartData.safeLast?.close ?? 0,
+          exchangeRates.safeLast?.value ?? 0,
+        );
       });
     });
   }
@@ -342,7 +340,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
       final exchangeRate = await api.fetchLatestExchangeRate();
       if (exchangeRate != null) {
-        exchangeRates.last.value = exchangeRate;
+        exchangeRates.safeLast?.value = exchangeRate;
       }
 
       // usdtChartData 등 기존 파싱 로직은 필요시 추가
@@ -356,9 +354,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       });
       usdtChartData.sort((a, b) => a.time.compareTo(b.time));
 
-      kimchiPremium.last.value = gimchiPremium(
-        usdtChartData.last.close,
-        exchangeRates.last.value,
+      kimchiPremium.safeLast?.value = gimchiPremium(
+        usdtChartData.safeLast?.close ?? 0,
+        exchangeRates.safeLast?.value ?? 0,
       );
 
       setState(() {
@@ -791,7 +789,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     double buyPrice = 0.0;
     double sellPrice = 0.0;
     String comment = '';
-    double exchangeRateValue = exchangeRates.last.value;
+    double exchangeRateValue = exchangeRates.safeLast?.value ?? 0;
 
     if (_selectedStrategyTabIndex == 0) {
       buyPrice = latestStrategy?['buy_price'] ?? 0;
@@ -1539,11 +1537,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   Widget _buildGimchiStrategyTab() {
+    final exchangeRateValue = exchangeRates.safeLast?.value ?? 0;
     final buyPrice =
-        (exchangeRates.last.value *
+        (exchangeRateValue *
             (1 + SimulationCondition.instance.kimchiBuyThreshold / 100));
     final sellPrice =
-        (exchangeRates.last.value *
+        (exchangeRateValue *
             (1 + SimulationCondition.instance.kimchiSellThreshold / 100));
 
     final profitRate =
