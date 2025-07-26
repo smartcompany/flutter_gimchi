@@ -60,10 +60,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get usdt_signal => '테더 매매 알리미';
 
   @override
-  String get buyWin => '현재 매수 추천 구간입니다';
+  String get buyWin => '현재 매수 구간입니다';
 
   @override
-  String get sellWin => '현재 매도 추천 구간입니다';
+  String get sellWin => '현재 매도 구간입니다';
 
   @override
   String get justSee => '현재 관망 구간입니다';

@@ -205,13 +205,13 @@ abstract class AppLocalizations {
   /// No description provided for @buyWin.
   ///
   /// In ko, this message translates to:
-  /// **'현재 매수 추천 구간입니다'**
+  /// **'현재 매수 구간입니다'**
   String get buyWin;
 
   /// No description provided for @sellWin.
   ///
   /// In ko, this message translates to:
-  /// **'현재 매도 추천 구간입니다'**
+  /// **'현재 매도 구간입니다'**
   String get sellWin;
 
   /// No description provided for @justSee.
