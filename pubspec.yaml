@@ -54,6 +54,7 @@ dependencies:
   permission_handler: ^12.0.0+1
   flutter_chat_ui: ^2.5.2
   flutter_chat_core: ^2.6.1
+  url_launcher: ^6.2.5
   
   flutter_localizations:
     sdk: flutter

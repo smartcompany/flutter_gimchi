@@ -273,4 +273,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get unFilled => '미체결';
+
+  @override
+  String get coinInfoSite => '코인 정보 사이트';
 }

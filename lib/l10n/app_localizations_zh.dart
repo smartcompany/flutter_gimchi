@@ -272,4 +272,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get unFilled => '未成交';
+
+  @override
+  String get coinInfoSite => '币种信息网站';
 }

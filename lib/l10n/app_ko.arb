@@ -96,5 +96,6 @@
   "aIalert":"AI 분석 알림 받기",
   "gimpAlert":"김프 알림 받기",
   "turnOffAlert":"알림 끄기",
-  "unFilled":"미체결"
+  "unFilled":"미체결",
+  "coinInfoSite": "코인 정보 사이트"
 }

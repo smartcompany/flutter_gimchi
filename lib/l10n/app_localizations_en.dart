@@ -278,4 +278,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unFilled => 'Unfilled';
+
+  @override
+  String get coinInfoSite => 'Coin Info Site';
 }

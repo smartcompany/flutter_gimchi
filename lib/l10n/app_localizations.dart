@@ -615,6 +615,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'미체결'**
   String get unFilled;
+
+  /// No description provided for @coinInfoSite.
+  ///
+  /// In ko, this message translates to:
+  /// **'코인 정보 사이트'**
+  String get coinInfoSite;
 }
 
 class _AppLocalizationsDelegate

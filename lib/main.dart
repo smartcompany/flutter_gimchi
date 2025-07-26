@@ -22,6 +22,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'anonymous_chat_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart'; // url_launcher 패키지 import
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -1227,7 +1228,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 250,
+                height: 280,
                 child: TabBarView(
                   physics: const NeverScrollableScrollPhysics(), // ← 이 줄 추가!
                   children: [_buildAiStrategyTab(), _buildGimchiStrategyTab()],
@@ -1451,6 +1452,32 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             ),
                           );
                         },
+              ),
+            ),
+            const SizedBox(height: 8),
+            // 코인 정보 사이트 링크 추가
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                icon: const Icon(Icons.link, color: Colors.blue),
+                label: Text(
+                  l10n(context).coinInfoSite,
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                  ),
+                ),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  foregroundColor: Colors.blue,
+                ),
+                onPressed: () async {
+                  final url = Uri.parse('http://coinpang.org');
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                  }
+                },
               ),
             ),
           ],
