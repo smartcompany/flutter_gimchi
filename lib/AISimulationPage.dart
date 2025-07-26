@@ -870,34 +870,34 @@ class _AISimulationPageState extends State<AISimulationPage>
             ),
             color: Colors.white,
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // === 매매기간 ===
                   Row(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.center, // ← 여기서 center로 맞춰줌
                     children: [
                       Text(
                         l10n(context).tradingPerioid,
-                        style: TextStyle(
-                          fontSize: 16,
+                        style: const TextStyle(
+                          fontSize: 17,
                           fontWeight: FontWeight.bold,
                         ),
-                        textAlign: TextAlign.left,
                       ),
                       const Spacer(),
-                      // 차트로 보기 버튼 추가
                       OutlinedButton.icon(
                         icon: const Icon(
                           Icons.show_chart,
                           color: Colors.deepPurple,
+                          size: 18,
                         ),
                         label: Text(
                           l10n(context).seeWithChart,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.deepPurple,
                             fontWeight: FontWeight.bold,
+                            fontSize: 13,
                           ),
                         ),
                         style: OutlinedButton.styleFrom(
@@ -909,9 +909,8 @@ class _AISimulationPageState extends State<AISimulationPage>
                             horizontal: 10,
                             vertical: 6,
                           ),
-                          minimumSize: const Size(0, 36), // ← 버튼 높이 고정
-                          tapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap, // ← 여백 최소화
+                          minimumSize: const Size(0, 32),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         onPressed: () {
                           Navigator.of(context).push(
@@ -933,46 +932,34 @@ class _AISimulationPageState extends State<AISimulationPage>
                       ),
                     ],
                   ),
-                  const SizedBox(width: 12),
-                  // 시작일과 종료일 표시
-                  Row(
-                    children: [
-                      Builder(
-                        builder: (context) {
-                          // 시작일은 첫 번째 결과의 buyDate, 종료일은 마지막 결과에서 sellDate 가 있으면 그 값, 없으면 buyDate
-                          if (results.isEmpty) return const Text('-');
-                          final startDate =
-                              results.first.buyDate?.toCustomString();
-                          final endDate =
-                              results.last.analysisDate.toCustomString();
-                          final text =
-                              results.isEmpty
-                                  ? '-'
-                                  : '${startDate} ~ ${endDate}';
-
-                          return Text(
-                            text,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.deepPurple,
-                            ),
-                            softWrap: true,
-                            maxLines: 2,
-                            overflow: TextOverflow.visible,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
                   const SizedBox(height: 4),
+                  Builder(
+                    builder: (context) {
+                      if (results.isEmpty) return const Text('-');
+                      final startDate = results.first.buyDate?.toCustomString();
+                      final endDate =
+                          results.last.analysisDate.toCustomString();
+                      final text = '${startDate} ~ ${endDate}';
+
+                      return Text(
+                        text,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple,
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // === 누적 최종 원화 ===
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         l10n(context).stackedFinalKRW,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -987,66 +974,102 @@ class _AISimulationPageState extends State<AISimulationPage>
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 16),
+
+                  // === 구분선 ===
+                  const Divider(height: 1, thickness: 1, color: Colors.grey),
+                  const SizedBox(height: 16),
+
+                  // === 총 수익률/연 수익률 강조 ===
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        l10n(context).totalGain,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple,
-                        ),
-                      ),
-                    ],
-                  ),
-                  // === 추정 연 수익률 ===
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        l10n(context).extimatedYearGain,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Builder(
-                        builder: (context) {
-                          if (results.isEmpty) return const Text('-');
-                          final firstDate = results.first.buyDate;
-                          final lastDate = results.last.analysisDate;
-                          final start = firstDate;
-                          final end = lastDate;
-                          if (start == null || end == null)
-                            return const Text('-');
-                          final days = end.difference(start).inDays;
-                          if (days < 1) return const Text('-');
-                          final years = days / 365.0;
-                          final totalReturn = results.last.finalKRW / 1000000;
-                          // 연복리 수익률 공식: (최종/초기)^(1/years) - 1
-                          final annualYield =
-                              (years > 0)
-                                  ? (pow(totalReturn, 1 / years) - 1) * 100
-                                  : 0.0;
-                          return Text(
-                            '${annualYield.isNaN || annualYield.isInfinite ? 0 : annualYield.toStringAsFixed(2)}%',
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n(context).totalGain,
                             style: const TextStyle(
-                              fontSize: 16,
                               fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
                               color: Colors.deepPurple,
                             ),
-                          );
-                        },
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            l10n(context).extimatedYearGain,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Builder(
+                            builder: (context) {
+                              if (results.isEmpty) {
+                                return const Text(
+                                  '-',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.deepPurple,
+                                  ),
+                                );
+                              }
+                              final firstDate = results.first.buyDate;
+                              final lastDate = results.last.analysisDate;
+                              if (firstDate == null || lastDate == null) {
+                                return const Text(
+                                  '-',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.deepPurple,
+                                  ),
+                                );
+                              }
+                              final days =
+                                  lastDate.difference(firstDate).inDays;
+                              if (days < 1) {
+                                return const Text(
+                                  '-',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.deepPurple,
+                                  ),
+                                );
+                              }
+                              final years = days / 365.0;
+                              final totalReturn =
+                                  results.last.finalKRW / 1000000;
+                              final annualYield =
+                                  (years > 0)
+                                      ? (pow(totalReturn, 1 / years) - 1) * 100
+                                      : 0.0;
+                              return Text(
+                                '${annualYield.isNaN || annualYield.isInfinite ? 0 : annualYield.toStringAsFixed(2)}%',
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.deepPurple,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
