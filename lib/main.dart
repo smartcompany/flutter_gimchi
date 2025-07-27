@@ -14,6 +14,8 @@ import 'package:shared_preferences/shared_preferences.dart'; // 이미 import �
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'api_service.dart';
 import 'utils.dart';
 import 'widgets.dart';
@@ -32,10 +34,47 @@ void main() async {
     // Crashlytics 에러 자동 수집 활성화
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 
+    // Analytics 초기화 및 사용자 식별
+    await _initializeAnalytics();
+
     await printIDFA();
   }
 
   runApp(const MyApp());
+}
+
+Future<void> _initializeAnalytics() async {
+  try {
+    final analytics = FirebaseAnalytics.instance;
+
+    // Analytics 수집 활성화
+    await analytics.setAnalyticsCollectionEnabled(true);
+
+    // 사용자 ID 설정 (익명 사용자도 추적 가능)
+    final userId = await getOrCreateUserId();
+    await analytics.setUserId(id: userId);
+
+    // 앱 버전 정보 가져오기
+    final packageInfo = await PackageInfo.fromPlatform();
+    final appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
+
+    // 사용자 속성 설정
+    await analytics.setUserProperty(
+      name: 'platform',
+      value: Platform.isIOS ? 'ios' : 'android',
+    );
+    await analytics.setUserProperty(name: 'app_version', value: appVersion);
+    await analytics.setUserProperty(
+      name: 'app_name',
+      value: packageInfo.appName,
+    );
+
+    print(
+      'Firebase Analytics 초기화 완료 - User ID: $userId, App Version: $appVersion',
+    );
+  } catch (e) {
+    print('Firebase Analytics 초기화 실패: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -87,6 +126,15 @@ class _OnboardingLauncherState extends State<OnboardingLauncher> {
   Future<void> _finishOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('onboarding_done', true);
+
+    // 온보딩 완료 이벤트 로깅
+    if (!kIsWeb) {
+      await FirebaseAnalytics.instance.logEvent(
+        name: 'onboarding_completed',
+        parameters: {'timestamp': DateTime.now().millisecondsSinceEpoch},
+      );
+    }
+
     setState(() {
       _onboardingDone = true;
     });
@@ -170,6 +218,28 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     SimulationCondition.instance.load();
     _initAll();
     _startPolling();
+
+    // 앱 시작 이벤트 로깅
+    if (!kIsWeb) {
+      _logAppStart();
+    }
+  }
+
+  Future<void> _logAppStart() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final onboardingDone = prefs.getBool('onboarding_done') ?? false;
+
+      await FirebaseAnalytics.instance.logEvent(
+        name: 'app_start',
+        parameters: {
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+          'is_first_launch': onboardingDone ? 'false' : 'true',
+        },
+      );
+    } catch (e) {
+      print('앱 시작 이벤트 로깅 실패: $e');
+    }
   }
 
   Future<void> _initAll() async {
@@ -649,6 +719,16 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     if (kIsWeb) return; // 웹에서는 앱 라이프사이클 이벤트를 처리하지 않음
 
     if (state == AppLifecycleState.resumed) {
+      // 앱 포그라운드 복귀 이벤트 로깅
+      try {
+        await FirebaseAnalytics.instance.logEvent(
+          name: 'app_resumed',
+          parameters: {'timestamp': DateTime.now().millisecondsSinceEpoch},
+        );
+      } catch (e) {
+        print('앱 복귀 이벤트 로깅 실패: $e');
+      }
+
       bool hasPermission = await _hasNotificationPermission();
       if (!hasPermission &&
           _todayCommentAlarmType != TodayCommentAlarmType.off) {
@@ -772,6 +852,16 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             IconButton(
               icon: const Icon(Icons.chat_outlined, color: Colors.deepPurple),
               onPressed: () async {
+                // 채팅 시작 이벤트 로깅
+                if (!kIsWeb) {
+                  await FirebaseAnalytics.instance.logEvent(
+                    name: 'chat_started',
+                    parameters: {
+                      'timestamp': DateTime.now().millisecondsSinceEpoch,
+                    },
+                  );
+                }
+
                 // 채팅봇 페이지로 네비게이트
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -1228,7 +1318,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 280,
+                height: 300,
                 child: TabBarView(
                   physics: const NeverScrollableScrollPhysics(), // ← 이 줄 추가!
                   children: [_buildAiStrategyTab(), _buildGimchiStrategyTab()],
@@ -1437,7 +1527,20 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 onPressed:
                     latestStrategy == null
                         ? null
-                        : () {
+                        : () async {
+                          // 시뮬레이션 시작 이벤트 로깅
+                          if (!kIsWeb) {
+                            await FirebaseAnalytics.instance.logEvent(
+                              name: 'simulation_started',
+                              parameters: {
+                                'type':
+                                    type == SimulationType.ai ? 'ai' : 'kimchi',
+                                'timestamp':
+                                    DateTime.now().millisecondsSinceEpoch,
+                              },
+                            );
+                          }
+
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder:
