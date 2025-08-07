@@ -1204,7 +1204,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               icon: const Icon(Icons.open_in_full, color: Colors.deepPurple),
               tooltip: '차트 확대',
               onPressed: () {
-                // ChartOnlyPage로 전달
+                if (chartOnlyPageModel == null) return;
+
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder:
