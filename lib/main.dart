@@ -159,7 +159,8 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
+class _MyHomePageState extends State<MyHomePage>
+    with WidgetsBindingObserver, TickerProviderStateMixin {
   final ApiService api = ApiService();
   final GlobalKey chartKey = GlobalKey();
   final ZoomPanBehavior _zoomPanBehavior = ZoomPanBehavior(
@@ -211,11 +212,29 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   TodayCommentAlarmType _todayCommentAlarmType =
       TodayCommentAlarmType.off; // enum으로 변경
 
+  // 마커 애니메이션 컨트롤러
+  late AnimationController _markerAnimationController;
+  late Animation<double> _markerAnimation;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     SimulationCondition.instance.load();
+
+    // 마커 애니메이션 초기화
+    _markerAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    _markerAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _markerAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+    _markerAnimationController.repeat(reverse: true);
+
     _initAll();
     _startPolling();
 
@@ -304,6 +323,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _markerAnimationController.dispose();
     super.dispose();
   }
 
@@ -1132,169 +1152,192 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: SfCartesianChart(
-              onTooltipRender: (TooltipArgs args) {
-                final clickedPoint =
-                    args.dataPoints?[(args.pointIndex ?? 0) as int];
+            child: AnimatedBuilder(
+              animation: _markerAnimation,
+              builder: (context, child) {
+                return SfCartesianChart(
+                  onTooltipRender: (TooltipArgs args) {
+                    final clickedPoint =
+                        args.dataPoints?[(args.pointIndex ?? 0) as int];
 
-                // Date로 부터 환율 정보를 얻는다.
-                final exchangeRate = getExchangeRate(clickedPoint.x);
-                // Date로 부터 USDT 정보를 얻는다.
-                final usdtValue = getUsdtValue(clickedPoint.x);
-                // 김치 프리미엄 계산은 USDT 값과 환율을 이용
-                double kimchiPremiumValue =
-                    ((usdtValue - exchangeRate) / exchangeRate * 100);
+                    // Date로 부터 환율 정보를 얻는다.
+                    final exchangeRate = getExchangeRate(clickedPoint.x);
+                    // Date로 부터 USDT 정보를 얻는다.
+                    final usdtValue = getUsdtValue(clickedPoint.x);
+                    // 김치 프리미엄 계산은 USDT 값과 환율을 이용
+                    double kimchiPremiumValue =
+                        ((usdtValue - exchangeRate) / exchangeRate * 100);
 
-                // 툴팁 텍스트를 기존 텍스트에 김치 프리미엄 값을 추가
-                args.text =
-                    '${args.text}\n'
-                    'Gimchi: ${kimchiPremiumValue.toStringAsFixed(2)}%';
+                    // 툴팁 텍스트를 기존 텍스트에 김치 프리미엄 값을 추가
+                    args.text =
+                        '${args.text}\n'
+                        'Gimchi: ${kimchiPremiumValue.toStringAsFixed(2)}%';
+                  },
+
+                  legend: const Legend(
+                    isVisible: true,
+                    position: LegendPosition.bottom,
+                  ),
+                  margin: const EdgeInsets.all(10),
+                  primaryXAxis: DateTimeAxis(
+                    edgeLabelPlacement: EdgeLabelPlacement.shift,
+                    intervalType: DateTimeIntervalType.days,
+                    dateFormat: DateFormat.yMd(),
+                    rangePadding: ChartRangePadding.additionalEnd,
+                    initialZoomFactor: 0.9,
+                    initialZoomPosition: 0.8,
+                    plotBands: kimchiPlotBands,
+                  ),
+                  primaryYAxis: NumericAxis(
+                    rangePadding: ChartRangePadding.auto,
+                    labelFormat: '{value}',
+                    numberFormat: NumberFormat("###,##0.0"),
+                    minimum: getUsdtMin(usdtChartData),
+                    maximum: getUsdtMax(usdtChartData),
+                  ),
+                  axes: <ChartAxis>[
+                    if (showKimchiPremium)
+                      NumericAxis(
+                        name: 'kimchiAxis',
+                        opposedPosition: true,
+                        labelFormat: '{value}%',
+                        numberFormat: NumberFormat("##0.0"),
+                        majorTickLines: const MajorTickLines(
+                          size: 2,
+                          color: Colors.red,
+                        ),
+                        rangePadding: ChartRangePadding.round,
+                        minimum: kimchiMin - 0.5,
+                        maximum: kimchiMax + 0.5,
+                      ),
+                  ],
+                  zoomPanBehavior: _zoomPanBehavior,
+                  tooltipBehavior: TooltipBehavior(enable: true),
+                  series: <CartesianSeries>[
+                    if (!(showAITrading || showGimchiTrading)) ...[
+                      // 일반 라인 차트 (USDT) - 마커 없이 라인만
+                      LineSeries<USDTChartData, DateTime>(
+                        name: l10n(context).usdt,
+                        dataSource: usdtChartData,
+                        xValueMapper: (USDTChartData data, _) => data.time,
+                        yValueMapper: (USDTChartData data, _) => data.close,
+                        color: Colors.blue,
+                        animationDuration: 0,
+                        markerSettings: MarkerSettings(isVisible: false),
+                      ),
+                      // 마지막 포인트만 마커로 표시 (깜빡이는 애니메이션)
+                      if (usdtChartData.isNotEmpty)
+                        LineSeries<USDTChartData, DateTime>(
+                          name: '${l10n(context).usdt}_marker',
+                          dataSource: [usdtChartData.last],
+                          xValueMapper: (USDTChartData data, _) => data.time,
+                          yValueMapper: (USDTChartData data, _) => data.close,
+                          color: Colors.transparent,
+                          animationDuration: 0,
+                          markerSettings: MarkerSettings(
+                            isVisible: true,
+                            shape: DataMarkerType.circle,
+                            borderWidth: 2,
+                            borderColor: Colors.blue.withOpacity(
+                              0.6 + (_markerAnimation.value * 0.4),
+                            ),
+                            color: Colors.white.withOpacity(
+                              0.6 + (_markerAnimation.value * 0.4),
+                            ),
+                            width: 6.0 + (_markerAnimation.value * 4.0),
+                            height: 6.0 + (_markerAnimation.value * 4.0),
+                          ),
+                        ),
+                    ] else
+                      // 기존 캔들 차트
+                      CandleSeries<USDTChartData, DateTime>(
+                        name: l10n(context).usdt,
+                        dataSource: usdtChartData,
+                        xValueMapper: (USDTChartData data, _) => data.time,
+                        lowValueMapper: (USDTChartData data, _) => data.low,
+                        highValueMapper: (USDTChartData data, _) => data.high,
+                        openValueMapper: (USDTChartData data, _) => data.open,
+                        closeValueMapper: (USDTChartData data, _) => data.close,
+                        bearColor: Colors.blue,
+                        bullColor: Colors.red,
+                        animationDuration: 0,
+                      ),
+                    // 환율 그래프를 showExchangeRate가 true일 때만 표시
+                    if (showExchangeRate) ...[
+                      // 환율 라인 (마커 없음)
+                      LineSeries<ChartData, DateTime>(
+                        name: l10n(context).exchangeRate,
+                        dataSource: exchangeRates,
+                        xValueMapper: (ChartData data, _) => data.time,
+                        yValueMapper: (ChartData data, _) => data.value,
+                        color: Colors.green,
+                        animationDuration: 0,
+                        markerSettings: MarkerSettings(isVisible: false),
+                      ),
+                      // 환율 마지막 포인트만 마커로 표시 (깜빡이는 애니메이션)
+                      if (exchangeRates.isNotEmpty)
+                        LineSeries<ChartData, DateTime>(
+                          name: '${l10n(context).exchangeRate}_marker',
+                          dataSource: [exchangeRates.last],
+                          xValueMapper: (ChartData data, _) => data.time,
+                          yValueMapper: (ChartData data, _) => data.value,
+                          color: Colors.transparent,
+                          animationDuration: 0,
+                          markerSettings: MarkerSettings(
+                            isVisible: true,
+                            shape: DataMarkerType.circle,
+                            borderWidth: 2,
+                            borderColor: Colors.green.withOpacity(
+                              0.6 + (_markerAnimation.value * 0.4),
+                            ),
+                            color: Colors.white.withOpacity(
+                              0.6 + (_markerAnimation.value * 0.4),
+                            ),
+                            width: 6.0 + (_markerAnimation.value * 4.0),
+                            height: 6.0 + (_markerAnimation.value * 4.0),
+                          ),
+                        ),
+                    ],
+                    if (showKimchiPremium) ...[
+                      // 김치프리미엄 라인 (마커 없음)
+                      LineSeries<ChartData, DateTime>(
+                        name: '${l10n(context).gimchiPremiem}(%)',
+                        dataSource: kimchiPremium,
+                        xValueMapper: (ChartData data, _) => data.time,
+                        yValueMapper: (ChartData data, _) => data.value,
+                        color: Colors.orange,
+                        yAxisName: 'kimchiAxis',
+                        animationDuration: 0,
+                        markerSettings: MarkerSettings(isVisible: false),
+                      ),
+                      // 김치프리미엄 마지막 포인트만 마커로 표시 (깜빡이는 애니메이션)
+                      if (kimchiPremium.isNotEmpty)
+                        LineSeries<ChartData, DateTime>(
+                          name: '${l10n(context).gimchiPremiem}_marker',
+                          dataSource: [kimchiPremium.last],
+                          xValueMapper: (ChartData data, _) => data.time,
+                          yValueMapper: (ChartData data, _) => data.value,
+                          color: Colors.transparent,
+                          yAxisName: 'kimchiAxis',
+                          animationDuration: 0,
+                          markerSettings: MarkerSettings(
+                            isVisible: true,
+                            shape: DataMarkerType.circle,
+                            borderWidth: 2,
+                            borderColor: Colors.orange.withOpacity(
+                              0.6 + (_markerAnimation.value * 0.4),
+                            ),
+                            color: Colors.white.withOpacity(
+                              0.6 + (_markerAnimation.value * 0.4),
+                            ),
+                            width: 6.0 + (_markerAnimation.value * 4.0),
+                            height: 6.0 + (_markerAnimation.value * 4.0),
+                          ),
+                        ),
+                    ],
+                  ],
+                );
               },
-
-              legend: const Legend(
-                isVisible: true,
-                position: LegendPosition.bottom,
-              ),
-              margin: const EdgeInsets.all(10),
-              primaryXAxis: DateTimeAxis(
-                edgeLabelPlacement: EdgeLabelPlacement.shift,
-                intervalType: DateTimeIntervalType.days,
-                dateFormat: DateFormat.yMd(),
-                rangePadding: ChartRangePadding.additionalEnd,
-                initialZoomFactor: 0.9,
-                initialZoomPosition: 0.8,
-                plotBands: kimchiPlotBands,
-              ),
-              primaryYAxis: NumericAxis(
-                rangePadding: ChartRangePadding.auto,
-                labelFormat: '{value}',
-                numberFormat: NumberFormat("###,##0.0"),
-                minimum: getUsdtMin(usdtChartData),
-                maximum: getUsdtMax(usdtChartData),
-              ),
-              axes: <ChartAxis>[
-                if (showKimchiPremium)
-                  NumericAxis(
-                    name: 'kimchiAxis',
-                    opposedPosition: true,
-                    labelFormat: '{value}%',
-                    numberFormat: NumberFormat("##0.0"),
-                    majorTickLines: const MajorTickLines(
-                      size: 2,
-                      color: Colors.red,
-                    ),
-                    rangePadding: ChartRangePadding.round,
-                    minimum: kimchiMin - 0.5,
-                    maximum: kimchiMax + 0.5,
-                  ),
-              ],
-              zoomPanBehavior: _zoomPanBehavior,
-              tooltipBehavior: TooltipBehavior(enable: true),
-              series: <CartesianSeries>[
-                if (!(showAITrading || showGimchiTrading)) ...[
-                  // 일반 라인 차트 (USDT) - 마커 없이 라인만
-                  LineSeries<USDTChartData, DateTime>(
-                    name: l10n(context).usdt,
-                    dataSource: usdtChartData,
-                    xValueMapper: (USDTChartData data, _) => data.time,
-                    yValueMapper: (USDTChartData data, _) => data.close,
-                    color: Colors.blue,
-                    animationDuration: 0,
-                    markerSettings: MarkerSettings(isVisible: false),
-                  ),
-                  // 마지막 포인트만 마커로 표시
-                  if (usdtChartData.isNotEmpty)
-                    LineSeries<USDTChartData, DateTime>(
-                      name: '${l10n(context).usdt}_marker',
-                      dataSource: [usdtChartData.last],
-                      xValueMapper: (USDTChartData data, _) => data.time,
-                      yValueMapper: (USDTChartData data, _) => data.close,
-                      color: Colors.transparent,
-                      animationDuration: 0,
-                      markerSettings: MarkerSettings(
-                        isVisible: true,
-                        shape: DataMarkerType.circle,
-                        borderWidth: 2,
-                        borderColor: Colors.blue,
-                        color: Colors.white,
-                      ),
-                    ),
-                ] else
-                  // 기존 캔들 차트
-                  CandleSeries<USDTChartData, DateTime>(
-                    name: l10n(context).usdt,
-                    dataSource: usdtChartData,
-                    xValueMapper: (USDTChartData data, _) => data.time,
-                    lowValueMapper: (USDTChartData data, _) => data.low,
-                    highValueMapper: (USDTChartData data, _) => data.high,
-                    openValueMapper: (USDTChartData data, _) => data.open,
-                    closeValueMapper: (USDTChartData data, _) => data.close,
-                    bearColor: Colors.blue,
-                    bullColor: Colors.red,
-                    animationDuration: 0,
-                  ),
-                // 환율 그래프를 showExchangeRate가 true일 때만 표시
-                if (showExchangeRate) ...[
-                  // 환율 라인 (마커 없음)
-                  LineSeries<ChartData, DateTime>(
-                    name: l10n(context).exchangeRate,
-                    dataSource: exchangeRates,
-                    xValueMapper: (ChartData data, _) => data.time,
-                    yValueMapper: (ChartData data, _) => data.value,
-                    color: Colors.green,
-                    animationDuration: 0,
-                    markerSettings: MarkerSettings(isVisible: false),
-                  ),
-                  // 환율 마지막 포인트만 마커로 표시
-                  if (exchangeRates.isNotEmpty)
-                    LineSeries<ChartData, DateTime>(
-                      name: '${l10n(context).exchangeRate}_marker',
-                      dataSource: [exchangeRates.last],
-                      xValueMapper: (ChartData data, _) => data.time,
-                      yValueMapper: (ChartData data, _) => data.value,
-                      color: Colors.transparent,
-                      animationDuration: 0,
-                      markerSettings: MarkerSettings(
-                        isVisible: true,
-                        shape: DataMarkerType.circle,
-                        borderWidth: 2,
-                        borderColor: Colors.green,
-                        color: Colors.white,
-                      ),
-                    ),
-                ],
-                if (showKimchiPremium) ...[
-                  // 김치프리미엄 라인 (마커 없음)
-                  LineSeries<ChartData, DateTime>(
-                    name: '${l10n(context).gimchiPremiem}(%)',
-                    dataSource: kimchiPremium,
-                    xValueMapper: (ChartData data, _) => data.time,
-                    yValueMapper: (ChartData data, _) => data.value,
-                    color: Colors.orange,
-                    yAxisName: 'kimchiAxis',
-                    animationDuration: 0,
-                    markerSettings: MarkerSettings(isVisible: false),
-                  ),
-                  // 김치프리미엄 마지막 포인트만 마커로 표시
-                  if (kimchiPremium.isNotEmpty)
-                    LineSeries<ChartData, DateTime>(
-                      name: '${l10n(context).gimchiPremiem}_marker',
-                      dataSource: [kimchiPremium.last],
-                      xValueMapper: (ChartData data, _) => data.time,
-                      yValueMapper: (ChartData data, _) => data.value,
-                      color: Colors.transparent,
-                      yAxisName: 'kimchiAxis',
-                      animationDuration: 0,
-                      markerSettings: MarkerSettings(
-                        isVisible: true,
-                        shape: DataMarkerType.circle,
-                        borderWidth: 2,
-                        borderColor: Colors.orange,
-                        color: Colors.white,
-                      ),
-                    ),
-                ],
-              ],
             ),
           ),
         ),
