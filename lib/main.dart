@@ -1191,8 +1191,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               zoomPanBehavior: _zoomPanBehavior,
               tooltipBehavior: TooltipBehavior(enable: true),
               series: <CartesianSeries>[
-                if (!(showAITrading || showGimchiTrading))
-                  // 일반 라인 차트 (USDT)
+                if (!(showAITrading || showGimchiTrading)) ...[
+                  // 일반 라인 차트 (USDT) - 마커 없이 라인만
                   LineSeries<USDTChartData, DateTime>(
                     name: l10n(context).usdt,
                     dataSource: usdtChartData,
@@ -1200,8 +1200,26 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     yValueMapper: (USDTChartData data, _) => data.close,
                     color: Colors.blue,
                     animationDuration: 0,
-                  )
-                else
+                    markerSettings: MarkerSettings(isVisible: false),
+                  ),
+                  // 마지막 포인트만 마커로 표시
+                  if (usdtChartData.isNotEmpty)
+                    LineSeries<USDTChartData, DateTime>(
+                      name: '${l10n(context).usdt}_marker',
+                      dataSource: [usdtChartData.last],
+                      xValueMapper: (USDTChartData data, _) => data.time,
+                      yValueMapper: (USDTChartData data, _) => data.close,
+                      color: Colors.transparent,
+                      animationDuration: 0,
+                      markerSettings: MarkerSettings(
+                        isVisible: true,
+                        shape: DataMarkerType.circle,
+                        borderWidth: 2,
+                        borderColor: Colors.blue,
+                        color: Colors.white,
+                      ),
+                    ),
+                ] else
                   // 기존 캔들 차트
                   CandleSeries<USDTChartData, DateTime>(
                     name: l10n(context).usdt,
@@ -1216,7 +1234,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     animationDuration: 0,
                   ),
                 // 환율 그래프를 showExchangeRate가 true일 때만 표시
-                if (showExchangeRate)
+                if (showExchangeRate) ...[
+                  // 환율 라인 (마커 없음)
                   LineSeries<ChartData, DateTime>(
                     name: l10n(context).exchangeRate,
                     dataSource: exchangeRates,
@@ -1224,8 +1243,28 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     yValueMapper: (ChartData data, _) => data.value,
                     color: Colors.green,
                     animationDuration: 0,
+                    markerSettings: MarkerSettings(isVisible: false),
                   ),
-                if (showKimchiPremium)
+                  // 환율 마지막 포인트만 마커로 표시
+                  if (exchangeRates.isNotEmpty)
+                    LineSeries<ChartData, DateTime>(
+                      name: '${l10n(context).exchangeRate}_marker',
+                      dataSource: [exchangeRates.last],
+                      xValueMapper: (ChartData data, _) => data.time,
+                      yValueMapper: (ChartData data, _) => data.value,
+                      color: Colors.transparent,
+                      animationDuration: 0,
+                      markerSettings: MarkerSettings(
+                        isVisible: true,
+                        shape: DataMarkerType.circle,
+                        borderWidth: 2,
+                        borderColor: Colors.green,
+                        color: Colors.white,
+                      ),
+                    ),
+                ],
+                if (showKimchiPremium) ...[
+                  // 김치프리미엄 라인 (마커 없음)
                   LineSeries<ChartData, DateTime>(
                     name: '${l10n(context).gimchiPremiem}(%)',
                     dataSource: kimchiPremium,
@@ -1234,7 +1273,27 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     color: Colors.orange,
                     yAxisName: 'kimchiAxis',
                     animationDuration: 0,
+                    markerSettings: MarkerSettings(isVisible: false),
                   ),
+                  // 김치프리미엄 마지막 포인트만 마커로 표시
+                  if (kimchiPremium.isNotEmpty)
+                    LineSeries<ChartData, DateTime>(
+                      name: '${l10n(context).gimchiPremiem}_marker',
+                      dataSource: [kimchiPremium.last],
+                      xValueMapper: (ChartData data, _) => data.time,
+                      yValueMapper: (ChartData data, _) => data.value,
+                      color: Colors.transparent,
+                      yAxisName: 'kimchiAxis',
+                      animationDuration: 0,
+                      markerSettings: MarkerSettings(
+                        isVisible: true,
+                        shape: DataMarkerType.circle,
+                        borderWidth: 2,
+                        borderColor: Colors.orange,
+                        color: Colors.white,
+                      ),
+                    ),
+                ],
               ],
             ),
           ),
