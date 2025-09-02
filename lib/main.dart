@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -23,7 +24,6 @@ import 'package:app_tracking_transparency/app_tracking_transparency.dart'; // AT
 import 'package:permission_handler/permission_handler.dart';
 import 'anonymous_chat_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart'; // url_launcher 패키지 import
 
 void main() async {
@@ -397,24 +397,26 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     });
 
     try {
-      final results = await Future.wait([
+      // 0단계: 캐시된 전략 데이터 먼저 로드
+      await _loadCachedStrategy();
+
+      // 1단계: 빠른 데이터만 먼저 로드 (AI 전략 제외)
+      final fastResults = await Future.wait([
         api.fetchExchangeRateData(),
         api.fetchUSDTData(),
         api.fetchKimchiPremiumData(),
-        api.fetchStrategy(),
       ]);
 
-      exchangeRates = results[0] as List<ChartData>;
-      usdtMap = results[1] as Map<DateTime, USDTChartData>;
-      kimchiPremium = results[2] as List<ChartData>;
-      strategyList = results[3] as List<StrategyMap>;
+      exchangeRates = fastResults[0] as List<ChartData>;
+      usdtMap = fastResults[1] as Map<DateTime, USDTChartData>;
+      kimchiPremium = fastResults[2] as List<ChartData>;
 
       final exchangeRate = await api.fetchLatestExchangeRate();
       if (exchangeRate != null) {
         exchangeRates.safeLast?.value = exchangeRate;
       }
 
-      // usdtChartData 등 기존 파싱 로직은 필요시 추가
+      // usdtChartData 파싱
       usdtChartData = [];
       usdtMap.forEach((key, value) {
         final close = value.close;
@@ -430,9 +432,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         exchangeRates.safeLast?.value ?? 0,
       );
 
+      // 2단계: UI 먼저 표시 (캐시된 전략 포함)
       setState(() {
-        latestStrategy = strategyList.first as StrategyMap?;
-
         kimchiMin = kimchiPremium
             .map((e) => e.value)
             .reduce((a, b) => a < b ? a : b);
@@ -443,16 +444,19 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         chartOnlyPageModel = ChartOnlyPageModel(
           exchangeRates: exchangeRates,
           kimchiPremium: kimchiPremium,
-          strategyList: strategyList,
+          strategyList: strategyList, // 캐시된 전략 또는 빈 리스트
           usdtMap: usdtMap,
           usdtChartData: usdtChartData,
           kimchiMin: kimchiMin,
           kimchiMax: kimchiMax,
         );
 
-        _loading = false;
+        _loading = false; // UI 즉시 표시
         _loadError = null;
       });
+
+      // 3단계: AI 전략은 백그라운드에서 로드 (캐시가 있어도 최신 데이터 확인)
+      _loadStrategyInBackground();
     } catch (e) {
       setState(() {
         _loading = false;
@@ -461,6 +465,72 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       if (context.mounted) {
         _showRetryDialog();
       }
+    }
+  }
+
+  // 캐시된 전략 데이터를 로드하는 함수
+  Future<void> _loadCachedStrategy() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedStrategyJson = prefs.getString('cached_strategy');
+
+      if (cachedStrategyJson != null) {
+        final cachedData = jsonDecode(cachedStrategyJson);
+        if (cachedData is List && cachedData.isNotEmpty) {
+          strategyList =
+              cachedData
+                  .map((item) => Map<String, dynamic>.from(item))
+                  .toList();
+          latestStrategy = strategyList.isNotEmpty ? strategyList.first : null;
+          print('📱 캐시된 전략 데이터 로드 완료: ${strategyList.length}개');
+        }
+      }
+    } catch (e) {
+      print('❌ 캐시된 전략 데이터 로드 실패: $e');
+    }
+  }
+
+  // 전략 데이터를 캐시에 저장하는 함수
+  Future<void> _saveStrategyToCache(List<StrategyMap> strategies) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('cached_strategy', jsonEncode(strategies));
+      print('💾 전략 데이터 캐시 저장 완료');
+    } catch (e) {
+      print('❌ 전략 데이터 캐시 저장 실패: $e');
+    }
+  }
+
+  // AI 전략을 백그라운드에서 로드하는 함수
+  Future<void> _loadStrategyInBackground() async {
+    try {
+      print('🔄 AI 전략 백그라운드 로딩 시작...');
+      final strategyData = await api.fetchStrategy();
+
+      if (strategyData != null && mounted) {
+        setState(() {
+          strategyList = strategyData;
+          latestStrategy = strategyList.isNotEmpty ? strategyList.first : null;
+
+          // chartOnlyPageModel 업데이트
+          chartOnlyPageModel = ChartOnlyPageModel(
+            exchangeRates: exchangeRates,
+            kimchiPremium: kimchiPremium,
+            strategyList: strategyList,
+            usdtMap: usdtMap,
+            usdtChartData: usdtChartData,
+            kimchiMin: kimchiMin,
+            kimchiMax: kimchiMax,
+          );
+        });
+
+        // 새로운 전략 데이터를 캐시에 저장
+        await _saveStrategyToCache(strategyData);
+        print('✅ AI 전략 백그라운드 로딩 완료');
+      }
+    } catch (e) {
+      print('❌ AI 전략 백그라운드 로딩 실패: $e');
+      // 전략 로딩 실패해도 앱은 계속 동작
     }
   }
 
@@ -774,7 +844,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
     // 오늘 날짜 데이터 추출
     DateTime today = DateTime.now();
-    String todayStr = DateFormat('yyyy-MM-dd').format(today);
 
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
@@ -1290,6 +1359,40 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       return adUnlockButton; // 광고 시청 버튼이 있다면 바로 반환
     }
 
+    // AI 전략이 아직 로드되지 않은 경우 로딩 표시
+    if (strategyList.isEmpty) {
+      return Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        color: Colors.white,
+        margin: const EdgeInsets.only(bottom: 10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16),
+          child: Column(
+            children: [
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'AI 전략을 분석 중입니다...',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '잠시만 기다려주세요',
+                style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return DefaultTabController(
       length: 2,
       initialIndex: _selectedStrategyTabIndex, // 초기 선택 탭 적용
@@ -1591,9 +1694,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   // 알림 설정 다이얼로그 함수 분리
-  Future<TodayCommentAlarmType?> showAlarmSettingDialog(
-    BuildContext context,
-  ) async {
+  Future<void> showAlarmSettingDialog(BuildContext context) async {
     final prevType = _todayCommentAlarmType;
     final updatedType = await showDialog<TodayCommentAlarmType>(
       context: context,
@@ -1641,7 +1742,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
     if (updatedType == null) {
       // 다이얼로그가 취소되거나 닫힌 경우
-      return null;
+      return;
     }
 
     if (updatedType != prevType) {
@@ -1675,7 +1776,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             await openAppSettings();
           }
           // 권한 허용 전까지는 알림 상태를 변경하지 않음
-          return null;
+          return;
         }
       }
 
