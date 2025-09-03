@@ -216,7 +216,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     SimulationCondition.instance.load();
-    _initAll();
+
+    if (!kIsWeb) {
+      MobileAds.instance.initialize();
+      _requestAppTracking();
+      _setupFCMPushSettings();
+    }
+
+    _initAPIs();
     _startPolling();
 
     // 앱 시작 이벤트 로깅
@@ -242,11 +249,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _initAll() async {
+  Future<void> _initAPIs() async {
     if (!kIsWeb) {
-      await _requestATT();
-      _setupFCMPushSettings();
-      await MobileAds.instance.initialize();
       _loadRewardedAd();
     }
 
@@ -308,7 +312,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   // ATT 권한 요청 함수 추가
-  Future<void> _requestATT() async {
+  Future<void> _requestAppTracking() async {
     if (Platform.isIOS) {
       final status = await AppTrackingTransparency.trackingAuthorizationStatus;
       if (status == TrackingStatus.notDetermined) {
@@ -401,13 +405,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         api.fetchExchangeRateData(),
         api.fetchUSDTData(),
         api.fetchKimchiPremiumData(),
-        api.fetchStrategy(),
       ]);
 
       exchangeRates = results[0] as List<ChartData>;
       usdtMap = results[1] as Map<DateTime, USDTChartData>;
       kimchiPremium = results[2] as List<ChartData>;
-      strategyList = results[3] as List<StrategyMap>;
 
       final exchangeRate = await api.fetchLatestExchangeRate();
       if (exchangeRate != null) {
@@ -431,8 +433,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       );
 
       setState(() {
-        latestStrategy = strategyList.first as StrategyMap?;
-
         kimchiMin = kimchiPremium
             .map((e) => e.value)
             .reduce((a, b) => a < b ? a : b);
@@ -453,6 +453,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         _loading = false;
         _loadError = null;
       });
+
+      // 메인 화면 로딩 완료 후 백그라운드에서 전략 데이터 로딩
+      _loadStrategyInBackground();
     } catch (e) {
       setState(() {
         _loading = false;
@@ -683,6 +686,34 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         ),
       ),
     );
+  }
+
+  // 백그라운드에서 전략 데이터 로딩
+  Future<void> _loadStrategyInBackground() async {
+    try {
+      final strategies = await api.fetchStrategy();
+
+      if (mounted && strategies != null) {
+        setState(() {
+          strategyList = strategies;
+          latestStrategy = strategyList.isNotEmpty ? strategyList.first : null;
+
+          // chartOnlyPageModel 업데이트
+          chartOnlyPageModel = ChartOnlyPageModel(
+            exchangeRates: exchangeRates,
+            kimchiPremium: kimchiPremium,
+            strategyList: strategyList,
+            usdtMap: usdtMap,
+            usdtChartData: usdtChartData,
+            kimchiMin: kimchiMin,
+            kimchiMax: kimchiMax,
+          );
+        });
+      }
+    } catch (e) {
+      print('전략 데이터 로딩 실패: $e');
+      // 전략 데이터 로딩 실패는 메인 화면에 영향을 주지 않음
+    }
   }
 
   void _showRetryDialog() {
