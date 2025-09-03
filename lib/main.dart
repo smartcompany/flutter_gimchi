@@ -432,6 +432,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         exchangeRates.safeLast?.value ?? 0,
       );
 
+      // 메인 화면 로딩 완료 후 백그라운드에서 전략 데이터 로딩
+      _loadStrategyInBackground();
+
       setState(() {
         kimchiMin = kimchiPremium
             .map((e) => e.value)
@@ -439,23 +442,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         kimchiMax = kimchiPremium
             .map((e) => e.value)
             .reduce((a, b) => a > b ? a : b);
-
-        chartOnlyPageModel = ChartOnlyPageModel(
-          exchangeRates: exchangeRates,
-          kimchiPremium: kimchiPremium,
-          strategyList: strategyList,
-          usdtMap: usdtMap,
-          usdtChartData: usdtChartData,
-          kimchiMin: kimchiMin,
-          kimchiMax: kimchiMax,
-        );
-
         _loading = false;
         _loadError = null;
       });
-
-      // 메인 화면 로딩 완료 후 백그라운드에서 전략 데이터 로딩
-      _loadStrategyInBackground();
     } catch (e) {
       setState(() {
         _loading = false;
@@ -711,6 +700,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         });
       }
     } catch (e) {
+      chartOnlyPageModel = null;
       print('전략 데이터 로딩 실패: $e');
       // 전략 데이터 로딩 실패는 메인 화면에 영향을 주지 않음
     }
@@ -1234,16 +1224,21 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             child: IconButton(
               icon: const Icon(Icons.open_in_full, color: Colors.deepPurple),
               tooltip: '차트 확대',
-              onPressed: () {
-                // ChartOnlyPage로 전달
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder:
-                        (_) => ChartOnlyPage.fromModel(chartOnlyPageModel!),
-                    fullscreenDialog: true,
-                  ),
-                );
-              },
+              onPressed:
+                  chartOnlyPageModel == null
+                      ? null
+                      : () {
+                        // ChartOnlyPage로 전달
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder:
+                                (_) => ChartOnlyPage.fromModel(
+                                  chartOnlyPageModel!,
+                                ),
+                            fullscreenDialog: true,
+                          ),
+                        );
+                      },
             ),
           ),
         ),
