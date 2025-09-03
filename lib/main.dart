@@ -1222,8 +1222,23 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
             ),
             child: IconButton(
-              icon: const Icon(Icons.open_in_full, color: Colors.deepPurple),
-              tooltip: '차트 확대',
+              icon:
+                  chartOnlyPageModel == null
+                      ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.deepPurple,
+                          ),
+                        ),
+                      )
+                      : const Icon(
+                        Icons.open_in_full,
+                        color: Colors.deepPurple,
+                      ),
+              tooltip: chartOnlyPageModel == null ? '차트 데이터 로딩 중...' : '차트 확대',
               onPressed:
                   chartOnlyPageModel == null
                       ? null
