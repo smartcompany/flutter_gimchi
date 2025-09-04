@@ -185,11 +185,15 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white, // 원하는 배경색
-              borderRadius: BorderRadius.circular(8), // 모서리 둥글게(선택)
+              borderRadius: BorderRadius.circular(18), // 완전한 원형
               boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
             ),
             child: IconButton(
-              icon: const Icon(Icons.refresh, color: Colors.deepPurple),
+              icon: const Icon(
+                Icons.refresh,
+                color: Colors.deepPurple,
+                size: 18,
+              ),
               tooltip: l10n.resetChart,
               onPressed: () {
                 setState(() {
@@ -202,17 +206,18 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         // 확대 버튼 (오른쪽 상단)
         Positioned(
           top: 10,
-          right: 10,
+          right: 3,
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white, // 원하는 배경색
-              borderRadius: BorderRadius.circular(8), // 모서리 둥글게(선택)
+              borderRadius: BorderRadius.circular(18), // 완전한 원형
               boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
             ),
             child: IconButton(
               icon: const Icon(
                 Icons.close_fullscreen,
                 color: Colors.deepPurple,
+                size: 18,
               ),
               tooltip: l10n.backToPreviousChart,
               onPressed: () {
