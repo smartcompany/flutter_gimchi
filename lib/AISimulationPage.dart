@@ -51,6 +51,87 @@ class AISimulationPage extends StatefulWidget {
     );
   }
 
+  // results를 입력으로 받아 annualYield를 리턴하는 static 함수
+  static double calculateAnnualYield(List<SimulationResult> results) {
+    if (results.isEmpty) return 0.0;
+
+    final firstDate = results.first.buyDate;
+    final lastDate = results.last.analysisDate;
+    if (firstDate == null || lastDate == null) return 0.0;
+
+    final days = lastDate.difference(firstDate).inDays;
+    if (days < 1) return 0.0;
+
+    final years = days / 365.0;
+    final totalReturn = results.last.finalKRW / 1000000;
+    final annualYield =
+        (years > 0) ? (pow(totalReturn, 1 / years) - 1) * 100 : 0.0;
+
+    return (annualYield.isNaN || annualYield.isInfinite ? 0.0 : annualYield)
+        .toDouble();
+  }
+
+  static SimulationYieldData getYieldForAISimulation(
+    List<ChartData> usdExchangeRates,
+    List<StrategyMap> strategyList,
+    Map<DateTime, USDTChartData> usdtMap,
+  ) {
+    final results = _AISimulationPageState.simulateResults(
+      usdExchangeRates,
+      strategyList,
+      usdtMap,
+    );
+    return _calculateYieldData(results);
+  }
+
+  static SimulationYieldData getYieldForGimchiSimulation(
+    List<ChartData> usdExchangeRates,
+    List<StrategyMap> strategyList,
+    Map<DateTime, USDTChartData> usdtMap,
+  ) {
+    final results = _AISimulationPageState.gimchiSimulateResults(
+      usdExchangeRates,
+      strategyList,
+      usdtMap,
+    );
+    return _calculateYieldData(results);
+  }
+
+  // 시뮬레이션 결과를 기반으로 수익률 데이터를 계산하는 내부 함수
+  static SimulationYieldData _calculateYieldData(
+    List<SimulationResult> results,
+  ) {
+    if (results.isEmpty) {
+      return SimulationYieldData(
+        totalReturn: 0.0,
+        tradingDays: 0,
+        annualYield: 0.0,
+      );
+    }
+
+    final firstDate = results.first.buyDate;
+    final lastDate = results.last.analysisDate;
+
+    if (firstDate == null || lastDate == null) {
+      return SimulationYieldData(
+        totalReturn: 0.0,
+        tradingDays: 0,
+        annualYield: 0.0,
+      );
+    }
+
+    final days = lastDate.difference(firstDate).inDays;
+    final totalReturn =
+        (results.last.finalKRW / 1000000 - 1) * 100; // 총 수익률 (%)
+    final annualYield = calculateAnnualYield(results);
+
+    return SimulationYieldData(
+      totalReturn: totalReturn,
+      tradingDays: days,
+      annualYield: annualYield,
+    );
+  }
+
   static Future<bool> showKimchiStrategyUpdatePopup(
     BuildContext context, {
     bool showSameDatesAsAI = false,
@@ -1102,6 +1183,18 @@ class _AISimulationPageState extends State<AISimulationPage>
   }
 
   /// 김치 프리미엄 시뮬레이션 함수
+}
+
+class SimulationYieldData {
+  final double totalReturn; // 총 수익률 (%)
+  final int tradingDays; // 거래 기간 (일)
+  final double annualYield; // 연수익률 (%)
+
+  SimulationYieldData({
+    required this.totalReturn,
+    required this.tradingDays,
+    required this.annualYield,
+  });
 }
 
 class SimulationResult {

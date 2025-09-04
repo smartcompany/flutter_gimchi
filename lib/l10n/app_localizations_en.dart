@@ -52,6 +52,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Check Today\'s Trading Strategy (After Watching Ad)';
 
   @override
+  String get aiReturn => 'AI Trading Return';
+
+  @override
+  String get gimchiReturn => 'Kimchi Premium Trading Return';
+
+  @override
   String get throwTestException => 'Throw Test Exception';
 
   @override

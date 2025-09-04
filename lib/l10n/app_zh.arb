@@ -13,6 +13,8 @@
   "no": "否",
   "seeAdsAndStrategy": "观看广告后查看策略",
   "todayStrategyAfterAds": "查看今日交易策略（观看广告后）",
+  "aiReturn": "AI交易收益率",
+  "gimchiReturn": "泡菜溢价交易收益率",
   "throwTestException": "抛出测试异常",
   "throw_test_exception": "抛出测试异常",
   "usdtSignal": "USDT 信号",

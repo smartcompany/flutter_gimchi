@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -189,6 +190,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   double kimchiMin = 0;
   double kimchiMax = 0;
+  SimulationYieldData? aiYieldData;
+  SimulationYieldData? gimchiYieldData;
 
   ChartOnlyPageModel? chartOnlyPageModel;
 
@@ -655,25 +658,148 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       margin: const EdgeInsets.only(bottom: 24),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16),
-        child: Center(
-          child: ElevatedButton.icon(
-            onPressed: _getShowStrategyButtonHandler(),
-            icon: const Icon(Icons.ondemand_video, color: Colors.white),
-            label: Text(l10n(context).todayStrategyAfterAds),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
-              foregroundColor: Colors.white,
-              textStyle: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+        child: Column(
+          children: [
+            // 연 수익률 표시 (광고 버튼과 함께 숨겨짐)
+            if (_adsStatus == AdsStatus.load) ...[
+              // AI 매매 연 수익률
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n(context).aiReturn,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text:
+                                '${aiYieldData?.totalReturn.toStringAsFixed(2)}%',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.deepPurple,
+                            ),
+                          ),
+                          TextSpan(
+                            text: ' (📆 ${aiYieldData?.tradingDays}일)',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+
+              const SizedBox(height: 8),
+
+              // 김프 기준 매매 연 수익률
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n(context).gimchiReturn,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text:
+                                '${gimchiYieldData?.totalReturn.toStringAsFixed(2)}%',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.deepPurple,
+                            ),
+                          ),
+                          TextSpan(
+                            text: ' (📆 ${gimchiYieldData?.tradingDays}일)',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              elevation: 2,
+
+              const SizedBox(height: 20),
+            ],
+
+            // 광고 버튼
+            ElevatedButton.icon(
+              onPressed: _getShowStrategyButtonHandler(),
+              icon: const Icon(Icons.ondemand_video, color: Colors.white),
+              label: Text(l10n(context).todayStrategyAfterAds),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                elevation: 2,
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -688,6 +814,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         setState(() {
           strategyList = strategies;
           latestStrategy = strategyList.isNotEmpty ? strategyList.first : null;
+
+          aiYieldData = AISimulationPage.getYieldForAISimulation(
+            exchangeRates,
+            strategyList,
+            usdtMap,
+          );
+
+          gimchiYieldData = AISimulationPage.getYieldForGimchiSimulation(
+            exchangeRates,
+            strategyList,
+            usdtMap,
+          );
 
           // chartOnlyPageModel 업데이트
           chartOnlyPageModel = ChartOnlyPageModel(

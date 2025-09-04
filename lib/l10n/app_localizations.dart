@@ -184,6 +184,18 @@ abstract class AppLocalizations {
   /// **'오늘의 매매 전략 확인 (광고 시청 후)'**
   String get todayStrategyAfterAds;
 
+  /// No description provided for @aiReturn.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 매매 수익률'**
+  String get aiReturn;
+
+  /// No description provided for @gimchiReturn.
+  ///
+  /// In ko, this message translates to:
+  /// **'김프 기준 매매 수익률'**
+  String get gimchiReturn;
+
   /// No description provided for @throwTestException.
   ///
   /// In ko, this message translates to:

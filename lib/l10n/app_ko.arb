@@ -13,6 +13,8 @@
   "no": "아니오",
   "seeAdsAndStrategy": "광고 보고 매매 전략 보기",
   "todayStrategyAfterAds": "오늘의 매매 전략 확인 (광고 시청 후)",
+  "aiReturn": "AI 매매 수익률",
+  "gimchiReturn": "김프 기준 매매 수익률",
   "throwTestException": "throwTestException",
   "throw_test_exception": "테스트 예외 발생",
   "usdtSignal": "테더 시그널",

@@ -51,6 +51,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get todayStrategyAfterAds => '오늘의 매매 전략 확인 (광고 시청 후)';
 
   @override
+  String get aiReturn => 'AI 매매 수익률';
+
+  @override
+  String get gimchiReturn => '김프 기준 매매 수익률';
+
+  @override
   String get throwTestException => 'throwTestException';
 
   @override

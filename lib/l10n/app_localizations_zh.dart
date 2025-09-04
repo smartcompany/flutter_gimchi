@@ -51,6 +51,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get todayStrategyAfterAds => '查看今日交易策略（观看广告后）';
 
   @override
+  String get aiReturn => 'AI交易收益率';
+
+  @override
+  String get gimchiReturn => '泡菜溢价交易收益率';
+
+  @override
   String get throwTestException => '抛出测试异常';
 
   @override
