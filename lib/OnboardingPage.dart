@@ -15,126 +15,143 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<_OnboardingSlide> slides = [
-      _OnboardingSlide(
-        title: l10n(context).onboardingTitle1,
-        body: l10n(context).onboardingBody1,
-        image: Icons.show_chart, // 실제 앱에서는 이미지로 교체
-        imageDesc: l10n(context).onboardingImageDesc1,
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(
+        textScaleFactor: 1.0, // 시스템 폰트 크기 설정을 무시하고 고정
       ),
-      _OnboardingSlide(
-        title: l10n(context).onboardingTitle2,
-        body: l10n(context).onboardingBody2,
-        image: Icons.swap_horiz,
-        imageDesc: l10n(context).onboardingImageDesc2,
-      ),
-      _OnboardingSlide(
-        title: l10n(context).onboardingTitle3,
-        body: l10n(context).onboardingBody3,
-        image: Icons.notifications_active,
-        imageDesc: l10n(context).onboardingImageDesc3,
-      ),
-      _OnboardingSlide(
-        title: l10n(context).onboardingTitle4,
-        body: l10n(context).onboardingBody4,
-        image: Icons.show_chart,
-        imageDesc: l10n(context).onboardingImageDesc4,
-      ),
-    ];
+      child: Builder(
+        builder: (context) {
+          final List<_OnboardingSlide> slides = [
+            _OnboardingSlide(
+              title: l10n(context).onboardingTitle1,
+              body: l10n(context).onboardingBody1,
+              image: Icons.show_chart, // 실제 앱에서는 이미지로 교체
+              imageDesc: l10n(context).onboardingImageDesc1,
+            ),
+            _OnboardingSlide(
+              title: l10n(context).onboardingTitle2,
+              body: l10n(context).onboardingBody2,
+              image: Icons.swap_horiz,
+              imageDesc: l10n(context).onboardingImageDesc2,
+            ),
+            _OnboardingSlide(
+              title: l10n(context).onboardingTitle3,
+              body: l10n(context).onboardingBody3,
+              image: Icons.notifications_active,
+              imageDesc: l10n(context).onboardingImageDesc3,
+            ),
+            _OnboardingSlide(
+              title: l10n(context).onboardingTitle4,
+              body: l10n(context).onboardingBody4,
+              image: Icons.show_chart,
+              imageDesc: l10n(context).onboardingImageDesc4,
+            ),
+          ];
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        automaticallyImplyLeading: false, // 왼쪽 뒤로가기 버튼 제거
-        actions: [
-          Container(
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey[200],
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.black87, size: 20),
-              onPressed: () {
-                widget.onFinish?.call(); // 온보딩 종료
-              },
-            ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: PageView.builder(
-                controller: _controller,
-                itemCount: slides.length,
-                onPageChanged: (i) => setState(() => _currentPage = i),
-                itemBuilder:
-                    (context, i) => _OnboardingSlideWidget(slide: slides[i]),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                slides.length,
-                (i) => Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 16,
-                  ),
-                  width: 10,
-                  height: 10,
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              automaticallyImplyLeading: false, // 왼쪽 뒤로가기 버튼 제거
+              actions: [
+                Container(
+                  margin: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color:
-                        _currentPage == i
-                            ? Colors.deepPurple
-                            : Colors.grey[300],
+                    color: Colors.grey[200],
+                  ),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      color: Colors.black87,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      widget.onFinish?.call(); // 온보딩 종료
+                    },
                   ),
                 ),
-              ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            body: SafeArea(
+              child: Column(
                 children: [
-                  if (_currentPage > 0)
-                    TextButton(
-                      onPressed: () {
-                        _controller.previousPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.ease,
-                        );
-                      },
-                      child: Text(l10n(context).previous),
-                    )
-                  else
-                    const SizedBox(width: 60),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_currentPage < slides.length - 1) {
-                        _controller.nextPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.ease,
-                        );
-                      } else {
-                        widget.onFinish?.call(); // 온보딩 종료 콜백
-                      }
-                    },
-                    child: Text(
-                      _currentPage == slides.length - 1
-                          ? l10n(context).start
-                          : l10n(context).next,
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _controller,
+                      itemCount: slides.length,
+                      onPageChanged: (i) => setState(() => _currentPage = i),
+                      itemBuilder:
+                          (context, i) =>
+                              _OnboardingSlideWidget(slide: slides[i]),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      slides.length,
+                      (i) => Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 16,
+                        ),
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color:
+                              _currentPage == i
+                                  ? Colors.deepPurple
+                                  : Colors.grey[300],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (_currentPage > 0)
+                          TextButton(
+                            onPressed: () {
+                              _controller.previousPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.ease,
+                              );
+                            },
+                            child: Text(l10n(context).previous),
+                          )
+                        else
+                          const SizedBox(width: 60),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (_currentPage < slides.length - 1) {
+                              _controller.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.ease,
+                              );
+                            } else {
+                              widget.onFinish?.call(); // 온보딩 종료 콜백
+                            }
+                          },
+                          child: Text(
+                            _currentPage == slides.length - 1
+                                ? l10n(context).start
+                                : l10n(context).next,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

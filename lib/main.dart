@@ -143,13 +143,24 @@ class _OnboardingLauncherState extends State<OnboardingLauncher> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    if (_onboardingDone) {
-      return const MyHomePage();
-    }
-    return OnboardingPage(onFinish: _finishOnboarding);
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(
+        textScaleFactor: 1.0, // 시스템 폰트 크기 설정을 무시하고 고정
+      ),
+      child: Builder(
+        builder: (context) {
+          if (_loading) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (_onboardingDone) {
+            return const MyHomePage();
+          }
+          return OnboardingPage(onFinish: _finishOnboarding);
+        },
+      ),
+    );
   }
 }
 
@@ -781,12 +792,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             ElevatedButton.icon(
               onPressed: _getShowStrategyButtonHandler(),
               icon: const Icon(Icons.ondemand_video, color: Colors.white),
-              label: Text(l10n(context).todayStrategyAfterAds),
+              label: Text(
+                l10n(context).todayStrategyAfterAds,
+                textAlign: TextAlign.center,
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepPurple,
                 foregroundColor: Colors.white,
                 textStyle: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
                 padding: const EdgeInsets.symmetric(
@@ -1624,7 +1638,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   '${l10n(context).gain}: $profitRateStr',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 18,
                   ),
                 ),
                 // 라운드 버튼으로 요약
@@ -1636,7 +1650,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                       title,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 18,
                         color: Colors.deepPurple,
                       ),
                     ),

@@ -181,7 +181,7 @@ abstract class AppLocalizations {
   /// No description provided for @todayStrategyAfterAds.
   ///
   /// In ko, this message translates to:
-  /// **'오늘의 매매 전략 확인 (광고 시청 후)'**
+  /// **'오늘의 매매 전략 확인\n(광고 시청 후)'**
   String get todayStrategyAfterAds;
 
   /// No description provided for @aiReturn.
