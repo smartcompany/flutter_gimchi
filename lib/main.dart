@@ -407,6 +407,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         api.fetchKimchiPremiumData(),
       ]);
 
+      print("api들 로딩 완료");
+
       exchangeRates = results[0] as List<ChartData>;
       usdtMap = results[1] as Map<DateTime, USDTChartData>;
       kimchiPremium = results[2] as List<ChartData>;
@@ -697,6 +699,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             kimchiMin: kimchiMin,
             kimchiMax: kimchiMax,
           );
+
+          print('전략 데이터 로딩 완료');
         });
       }
     } catch (e) {
