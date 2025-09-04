@@ -984,54 +984,74 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               l10n(context).usdt_signal,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            InkWell(
-              onTap: () async {
-                await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder:
-                        (context) => OnboardingPage(
-                          onFinish: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                    fullscreenDialog: true,
-                  ),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(left: 2.0), // 정말 최소 간격
-                child: Icon(
-                  Icons.help_outline,
-                  color: Colors.deepPurple,
-                  size: 22,
-                ),
+            Container(
+              margin: const EdgeInsets.only(left: 8.0),
+              decoration: BoxDecoration(
+                color: Colors.deepPurple.shade50,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.deepPurple.shade200, width: 1),
               ),
-              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                onTap: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder:
+                          (context) => OnboardingPage(
+                            onFinish: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                      fullscreenDialog: true,
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: Icon(
+                    Icons.help_outline,
+                    color: Colors.deepPurple,
+                    size: 20,
+                  ),
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
           ],
         ),
         actions: [
           if (!kIsWeb)
-            IconButton(
-              icon: const Icon(Icons.chat_outlined, color: Colors.deepPurple),
-              onPressed: () async {
-                // 채팅 시작 이벤트 로깅
-                if (!kIsWeb) {
-                  await FirebaseAnalytics.instance.logEvent(
-                    name: 'chat_started',
-                    parameters: {
-                      'timestamp': DateTime.now().millisecondsSinceEpoch,
-                    },
-                  );
-                }
+            Container(
+              margin: const EdgeInsets.only(right: 8.0),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.blue.shade200, width: 1),
+              ),
+              child: IconButton(
+                icon: const Icon(
+                  Icons.support_agent,
+                  color: Colors.blue,
+                  size: 20,
+                ),
+                onPressed: () async {
+                  // 채팅 시작 이벤트 로깅
+                  if (!kIsWeb) {
+                    await FirebaseAnalytics.instance.logEvent(
+                      name: 'chat_started',
+                      parameters: {
+                        'timestamp': DateTime.now().millisecondsSinceEpoch,
+                      },
+                    );
+                  }
 
-                // 채팅봇 페이지로 네비게이트
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const AnonymousChatPage(),
-                  ),
-                );
-              },
+                  // 채팅봇 페이지로 네비게이트
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AnonymousChatPage(),
+                    ),
+                  );
+                },
+              ),
             ),
         ],
       ),
