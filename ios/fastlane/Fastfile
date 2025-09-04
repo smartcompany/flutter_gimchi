@@ -24,6 +24,10 @@ default_platform(:ios)
 platform :ios do
   desc "Push a new release build to the App Store"
   lane :release do
+    sh <<-SHELL
+      pod install
+    SHELL
+
     increment_build_number(xcodeproj: "Runner.xcodeproj")
     
     # Build app with dSYM generation
@@ -49,13 +53,6 @@ platform :ios do
   	skip_screenshots: true,
   	skip_app_version_update: true,
   	precheck_include_in_app_purchases: false
-   	)
-  end
-  
-  desc "Build and upload dSYM to Crashlytics"
-  lane :upload_dsym do
-    upload_symbols_to_crashlytics(
-      gsp_path: "Runner/GoogleService-Info.plist"
-    )
+     )
   end
 end
