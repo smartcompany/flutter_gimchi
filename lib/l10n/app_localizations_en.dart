@@ -55,7 +55,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiReturn => 'AI Trading Return';
 
   @override
-  String get gimchiReturn => 'Kimchi Premium Trading Return';
+  String get gimchiReturn => 'K-Premium Trading Return';
 
   @override
   String get throwTestException => 'Throw Test Exception';
@@ -227,18 +227,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingBody1 =>
-      '1 USDT ≈ 1 USD, but the actual price varies depending on the exchange, market price, and exchange rate. Especially in Korea, price differences often occur due to the \'Kimchi Premium\' and \'exchange rate differences\'.';
+      '1 USDT ≈ 1 USD, but the actual price varies depending on the exchange, market price, and exchange rate. Especially in Korea, price differences often occur due to the \'K-Premium\' and \'exchange rate differences\'.';
 
   @override
-  String get onboardingImageDesc1 => 'USDT vs. Kimchi Premium comparison graph';
+  String get onboardingImageDesc1 => 'USDT vs. K-Premium comparison graph';
 
   @override
   String get onboardingTitle2 =>
-      'Kimchi Premium + Exchange Rate Difference = Opportunity for Profit';
+      'K-Premium + Exchange Rate Difference = Opportunity for Profit';
 
   @override
   String get onboardingBody2 =>
-      'In Korea, USDT is often traded at a higher price than abroad (this is called the \'Kimchi Premium\'). When you also consider the exchange rate, the price difference can be even greater. Our app\'s AI analyzes the Kimchi Premium and exchange rate to find the optimal buying/selling points.';
+      'In Korea, USDT is often traded at a higher price than abroad (this is called the \'K-Premium\'). When you also consider the exchange rate, the price difference can be even greater. Our app\'s AI analyzes the K-Premium and exchange rate to find the optimal buying/selling points.';
 
   @override
   String get onboardingImageDesc2 =>
@@ -249,7 +249,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingBody3 =>
-      'Our AI analyzes the Kimchi Premium, exchange rate, and overseas market prices in real-time to give you signals like \'Buy Now / Sell Now\'.';
+      'Our AI analyzes the K-Premium, exchange rate, and overseas market prices in real-time to give you signals like \'Buy Now / Sell Now\'.';
 
   @override
   String get onboardingImageDesc3 =>
