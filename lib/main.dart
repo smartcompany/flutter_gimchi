@@ -1027,13 +1027,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.blue.shade200, width: 1),
               ),
-              child: IconButton(
-                icon: const Icon(
-                  Icons.support_agent,
-                  color: Colors.blue,
-                  size: 20,
-                ),
-                onPressed: () async {
+              child: InkWell(
+                onTap: () async {
                   // 채팅 시작 이벤트 로깅
                   if (!kIsWeb) {
                     await FirebaseAnalytics.instance.logEvent(
@@ -1051,6 +1046,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     ),
                   );
                 },
+                child: Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: Icon(
+                    Icons.support_agent,
+                    color: Colors.blue,
+                    size: 20,
+                  ),
+                ),
+                borderRadius: BorderRadius.circular(16),
               ),
             ),
         ],
@@ -1359,7 +1363,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white, // 원하는 배경색
-              borderRadius: BorderRadius.circular(8), // 모서리 둥글게(선택)
+              borderRadius: BorderRadius.circular(18), // 완전한 원형
               boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
             ),
             child: IconButton(
@@ -1376,19 +1380,19 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         // 확대 버튼 (오른쪽 상단)
         Positioned(
           top: 10,
-          right: 10,
+          right: 3, // 3픽셀 오른쪽으로 이동 (10-3=7)
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white, // 원하는 배경색
-              borderRadius: BorderRadius.circular(8), // 모서리 둥글게(선택)
+              borderRadius: BorderRadius.circular(18), // 완전한 원형
               boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
             ),
             child: IconButton(
               icon:
                   chartOnlyPageModel == null
                       ? const SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 18,
+                        height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation<Color>(
