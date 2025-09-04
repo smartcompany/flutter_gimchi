@@ -12,6 +12,7 @@
   "needPermission": "需要通知权限",
   "no": "否",
   "seeAdsAndStrategy": "观看广告后查看策略",
+  "todayStrategyAfterAds": "查看今日交易策略（观看广告后）",
   "throwTestException": "抛出测试异常",
   "throw_test_exception": "抛出测试异常",
   "usdtSignal": "USDT 信号",

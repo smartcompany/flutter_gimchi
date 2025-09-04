@@ -659,7 +659,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           child: ElevatedButton.icon(
             onPressed: _getShowStrategyButtonHandler(),
             icon: const Icon(Icons.ondemand_video, color: Colors.white),
-            label: Text(l10n(context).seeAdsAndStrategy),
+            label: Text(l10n(context).todayStrategyAfterAds),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.deepPurple,
               foregroundColor: Colors.white,

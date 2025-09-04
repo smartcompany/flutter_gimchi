@@ -48,6 +48,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get seeAdsAndStrategy => '观看广告后查看策略';
 
   @override
+  String get todayStrategyAfterAds => '查看今日交易策略（观看广告后）';
+
+  @override
   String get throwTestException => '抛出测试异常';
 
   @override

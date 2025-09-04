@@ -48,6 +48,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get seeAdsAndStrategy => '광고 보고 매매 전략 보기';
 
   @override
+  String get todayStrategyAfterAds => '오늘의 매매 전략 확인 (광고 시청 후)';
+
+  @override
   String get throwTestException => 'throwTestException';
 
   @override

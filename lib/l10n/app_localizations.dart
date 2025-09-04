@@ -178,6 +178,12 @@ abstract class AppLocalizations {
   /// **'광고 보고 매매 전략 보기'**
   String get seeAdsAndStrategy;
 
+  /// No description provided for @todayStrategyAfterAds.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 매매 전략 확인 (광고 시청 후)'**
+  String get todayStrategyAfterAds;
+
   /// No description provided for @throwTestException.
   ///
   /// In ko, this message translates to:

@@ -48,6 +48,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seeAdsAndStrategy => 'Watch ad to view strategy';
 
   @override
+  String get todayStrategyAfterAds =>
+      'Check Today\'s Trading Strategy (After Watching Ad)';
+
+  @override
   String get throwTestException => 'Throw Test Exception';
 
   @override

@@ -12,6 +12,7 @@
   "needPermission": "Permission required",
   "no": "No",
   "seeAdsAndStrategy": "Watch ad to view strategy",
+  "todayStrategyAfterAds": "Check Today's Trading Strategy (After Watching Ad)",
   "throwTestException": "Throw Test Exception",
   "throw_test_exception": "Throw Test Exception",
   "usdtSignal": "USDT Signal",
