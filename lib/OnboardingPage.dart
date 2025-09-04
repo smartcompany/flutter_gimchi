@@ -43,6 +43,26 @@ class _OnboardingPageState extends State<OnboardingPage> {
     ];
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false, // 왼쪽 뒤로가기 버튼 제거
+        actions: [
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey[200],
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.black87, size: 20),
+              onPressed: () {
+                widget.onFinish?.call(); // 온보딩 종료
+              },
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
