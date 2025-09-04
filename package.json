@@ -1,0 +1,11 @@
+{
+  "name": "usdt-signal",
+  "version": "1.0.0",
+  "scripts": {
+    "build:android": "./scripts/build_with_version.sh",
+    "build:ios": "flutter build ios --release",
+    "build:web": "flutter build web --release",
+    "version:bump": "./scripts/bump_version.sh"
+  },
+  "description": "USDT Signal App build scripts"
+}
