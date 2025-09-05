@@ -291,4 +291,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coinInfoSite => 'Coin Info Site';
+
+  @override
+  String get adClickInstruction => 'Click X to check buy/sell signals';
 }

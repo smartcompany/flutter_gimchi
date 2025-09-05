@@ -639,6 +639,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'코인 정보 사이트'**
   String get coinInfoSite;
+
+  /// No description provided for @adClickInstruction.
+  ///
+  /// In ko, this message translates to:
+  /// **'X 클릭 후 매수/매도 시그널 확인'**
+  String get adClickInstruction;
 }
 
 class _AppLocalizationsDelegate

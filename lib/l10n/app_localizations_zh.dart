@@ -284,4 +284,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get coinInfoSite => '币种信息网站';
+
+  @override
+  String get adClickInstruction => 'X 클릭 후 매수/매도 시그널 확인';
 }

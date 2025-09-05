@@ -100,5 +100,6 @@
   "gimpAlert": "K-Premium Alert",
   "turnOffAlert": "Turn off alert",
   "unFilled": "Unfilled",
-  "coinInfoSite": "Coin Info Site"
+  "coinInfoSite": "Coin Info Site",
+  "adClickInstruction": "Click X to check buy/sell signals"
 }

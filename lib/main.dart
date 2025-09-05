@@ -1255,7 +1255,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     children: [
                       Expanded(
                         child: Text(
-                          'X 클릭 후 매수/매도 시그널 확인',
+                          l10n(context).adClickInstruction,
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.blue.shade700,

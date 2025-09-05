@@ -1230,12 +1230,19 @@ class _AISimulationPageState extends State<AISimulationPage>
                                                         size: 16,
                                                       ),
                                                       const SizedBox(width: 8),
-                                                      Text(
-                                                        '${l10n(context).sellIfCurrentPrice}:',
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 14,
+                                                      Flexible(
+                                                        child: Text(
+                                                          '${l10n(context).sellIfCurrentPrice}:',
+                                                          style:
+                                                              const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 12,
+                                                              ),
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
                                                         ),
                                                       ),
                                                     ],
