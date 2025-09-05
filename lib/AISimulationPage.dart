@@ -836,49 +836,165 @@ class _AISimulationPageState extends State<AISimulationPage>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              SimulationType.ai == widget.simulationType
-                                  ? AppLocalizations.of(
-                                    context,
-                                  )!.aiTradingSimulation
-                                  : AppLocalizations.of(
-                                    context,
-                                  )!.gimchTradingSimulation,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [
+                                    Colors.deepPurple.withOpacity(0.05),
+                                    Colors.deepPurple.withOpacity(0.02),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.deepPurple.withOpacity(0.2),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    SimulationType.ai == widget.simulationType
+                                        ? Icons.psychology
+                                        : Icons.trending_up,
+                                    color: Colors.deepPurple,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      SimulationType.ai == widget.simulationType
+                                          ? AppLocalizations.of(
+                                            context,
+                                          )!.aiTradingSimulation
+                                          : AppLocalizations.of(
+                                            context,
+                                          )!.gimchTradingSimulation,
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.deepPurple,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             const SizedBox(height: 12),
                             ...results.map(
-                              (r) => Card(
-                                elevation: 1,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                color: Colors.grey[50],
+                              (r) => Container(
                                 margin: const EdgeInsets.symmetric(vertical: 8),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [Colors.white, Colors.grey[100]!],
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.08),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                    BoxShadow(
+                                      color: Colors.deepPurple.withOpacity(
+                                        0.05,
+                                      ),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                  border: Border.all(
+                                    color: Colors.deepPurple.withOpacity(0.1),
+                                    width: 1,
+                                  ),
+                                ),
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                    horizontal: 12,
+                                    vertical: 16,
+                                    horizontal: 16,
                                   ),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        '${l10n(context).buy}→${r.buyDate?.toCustomString()}\n${l10n(context).sell}→${r.sellDate?.toCustomString() ?? l10n(context).unFilled}',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15,
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.deepPurple.withOpacity(
+                                            0.03,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          border: Border.all(
+                                            color: Colors.deepPurple
+                                                .withOpacity(0.1),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          '${l10n(context).buy}→${r.buyDate?.toCustomString()}\n${l10n(context).sell}→${r.sellDate?.toCustomString() ?? l10n(context).unFilled}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                            color: Colors.deepPurple,
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(height: 2), // ← 간격 줄이기
+                                      const SizedBox(height: 12),
                                       Row(
                                         children: [
-                                          Text(
-                                            '${l10n(context).buy}: ${krwFormat.format(r.buyPrice)}',
+                                          Expanded(
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 8,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.green.withOpacity(
+                                                  0.1,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                border: Border.all(
+                                                  color: Colors.green
+                                                      .withOpacity(0.3),
+                                                  width: 1,
+                                                ),
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.trending_up,
+                                                    color: Colors.green,
+                                                    size: 16,
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      '${l10n(context).buy}: ${krwFormat.format(r.buyPrice)}',
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.green,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
                                           ),
                                           const SizedBox(width: 8),
                                           setupStretegyButton(
@@ -888,10 +1004,49 @@ class _AISimulationPageState extends State<AISimulationPage>
                                         ],
                                       ),
                                       if (r.sellDate != null) ...[
+                                        const SizedBox(height: 8),
                                         Row(
                                           children: [
-                                            Text(
-                                              '${l10n(context).sell}: ${krwFormat.format(r.sellPrice!)}',
+                                            Expanded(
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 8,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.red.withOpacity(
+                                                    0.1,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  border: Border.all(
+                                                    color: Colors.red
+                                                        .withOpacity(0.3),
+                                                    width: 1,
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.trending_down,
+                                                      color: Colors.red,
+                                                      size: 16,
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(
+                                                        '${l10n(context).sell}: ${krwFormat.format(r.sellPrice!)}',
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.red,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
                                             ),
                                             const SizedBox(width: 8),
                                             setupStretegyButton(
@@ -900,30 +1055,203 @@ class _AISimulationPageState extends State<AISimulationPage>
                                             ),
                                           ],
                                         ),
-                                        const SizedBox(height: 2), // ← 간격 줄이기
-                                        Text(
-                                          '${l10n(context).gain}: ${krwFormat.format(r.profit.round())} (${r.profitRate.toStringAsFixed(2)})%',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
+                                        const SizedBox(height: 12),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 12,
                                           ),
-                                        ),
-                                        Text(
-                                          '${l10n(context).finalKRW}: ${krwFormat.format(r.finalKRW.round())}',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                Colors.deepPurple.withOpacity(
+                                                  0.1,
+                                                ),
+                                                Colors.deepPurple.withOpacity(
+                                                  0.05,
+                                                ),
+                                              ],
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.deepPurple
+                                                  .withOpacity(0.2),
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    '${l10n(context).gain}:',
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '${krwFormat.format(r.profit.round())} (${r.profitRate.toStringAsFixed(2)})%',
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 16,
+                                                      color: Colors.deepPurple,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    '${l10n(context).finalKRW}:',
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '${krwFormat.format(r.finalKRW.round())}',
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 16,
+                                                      color: Colors.deepPurple,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ] else if (r.finalUSDT != null) ...[
-                                        Text(
-                                          '${l10n(context).usdt}: ${r.finalUSDT?.toStringAsFixed(4)} USDT',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
+                                        const SizedBox(height: 12),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 12,
                                           ),
-                                        ),
-                                        Text(
-                                          '${l10n(context).sellIfCurrentPrice}: ${krwFormat.format(r.finalKRW.round())}',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                Colors.orange.withOpacity(0.05),
+                                                Colors.orange.withOpacity(0.02),
+                                              ],
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.orange.withOpacity(
+                                                0.3,
+                                              ),
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.schedule,
+                                                    color: Colors.orange,
+                                                    size: 20,
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    '미체결 상태',
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 16,
+                                                      color: Colors.orange,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 12),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons
+                                                            .account_balance_wallet,
+                                                        color: Colors.blue,
+                                                        size: 16,
+                                                      ),
+                                                      const SizedBox(width: 8),
+                                                      Text(
+                                                        '${l10n(context).usdt}:',
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Text(
+                                                    '${r.finalUSDT?.toStringAsFixed(4)} USDT',
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 16,
+                                                      color: Colors.blue,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons.trending_up,
+                                                        color: Colors.green,
+                                                        size: 16,
+                                                      ),
+                                                      const SizedBox(width: 8),
+                                                      Text(
+                                                        '${l10n(context).sellIfCurrentPrice}:',
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Text(
+                                                    '${krwFormat.format(r.finalKRW.round())}',
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 16,
+                                                      color: Colors.green,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ],
@@ -943,15 +1271,34 @@ class _AISimulationPageState extends State<AISimulationPage>
       bottomNavigationBar: SafeArea(
         child: SlideTransition(
           position: _bottomBarOffset,
-          child: Card(
-            elevation: 2,
-            margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, Colors.grey[50]!],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+                BoxShadow(
+                  color: Colors.deepPurple.withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              border: Border.all(
+                color: Colors.deepPurple.withOpacity(0.15),
+                width: 1.5,
+              ),
             ),
-            color: Colors.white,
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1058,8 +1405,19 @@ class _AISimulationPageState extends State<AISimulationPage>
                   const SizedBox(height: 16),
 
                   // === 구분선 ===
-                  const Divider(height: 1, thickness: 1, color: Colors.grey),
-                  const SizedBox(height: 16),
+                  Container(
+                    height: 1,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Colors.deepPurple.withOpacity(0.3),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
 
                   // === 총 수익률/연 수익률 강조 ===
                   Row(
@@ -1076,12 +1434,31 @@ class _AISimulationPageState extends State<AISimulationPage>
                             ),
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 22,
-                              color: Colors.deepPurple,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.deepPurple.withOpacity(0.05),
+                                  Colors.deepPurple.withOpacity(0.02),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.deepPurple.withOpacity(0.2),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 22,
+                                color: Colors.deepPurple,
+                              ),
                             ),
                           ),
                         ],
@@ -1140,12 +1517,31 @@ class _AISimulationPageState extends State<AISimulationPage>
                                   (years > 0)
                                       ? (pow(totalReturn, 1 / years) - 1) * 100
                                       : 0.0;
-                              return Text(
-                                '${annualYield.isNaN || annualYield.isInfinite ? 0 : annualYield.toStringAsFixed(2)}%',
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.deepPurple,
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.deepPurple.withOpacity(0.05),
+                                      Colors.deepPurple.withOpacity(0.02),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.deepPurple.withOpacity(0.2),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  '${annualYield.isNaN || annualYield.isInfinite ? 0 : annualYield.toStringAsFixed(2)}%',
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.deepPurple,
+                                  ),
                                 ),
                               );
                             },
