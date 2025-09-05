@@ -54,7 +54,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get aiReturn => 'AI 매매 수익률';
 
   @override
-  String get gimchiReturn => '김프 기준 매매 수익률';
+  String get gimchiReturn => '김프 매매 수익률';
 
   @override
   String get throwTestException => 'throwTestException';

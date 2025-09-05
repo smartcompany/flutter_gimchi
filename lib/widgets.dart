@@ -18,7 +18,7 @@ class InfoItem extends StatelessWidget {
           label,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 15,
+            fontSize: 18,
             color: color,
           ),
         ),
@@ -33,7 +33,7 @@ class InfoItem extends StatelessWidget {
               child: Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 22,
                   fontWeight: FontWeight.w600,
                 ),
               ),

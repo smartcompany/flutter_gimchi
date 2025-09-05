@@ -193,7 +193,7 @@ abstract class AppLocalizations {
   /// No description provided for @gimchiReturn.
   ///
   /// In ko, this message translates to:
-  /// **'김프 기준 매매 수익률'**
+  /// **'김프 매매 수익률'**
   String get gimchiReturn;
 
   /// No description provided for @throwTestException.

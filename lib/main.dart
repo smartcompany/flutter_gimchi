@@ -666,9 +666,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       color: Colors.white,
-      margin: const EdgeInsets.only(bottom: 24),
+      margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16),
         child: Column(
           children: [
             // 연 수익률 표시 (광고 버튼과 함께 숨겨짐)
@@ -691,7 +691,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     Text(
                       l10n(context).aiReturn,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
@@ -703,7 +703,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             text:
                                 '${aiYieldData?.totalReturn.toStringAsFixed(2)}%',
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 17,
                               fontWeight: FontWeight.bold,
                               color: Colors.deepPurple,
                             ),
@@ -711,7 +711,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                           TextSpan(
                             text: ' (📆 ${aiYieldData?.tradingDays}일)',
                             style: const TextStyle(
-                              fontSize: 14,
+                              fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: Colors.black87,
                             ),
@@ -719,7 +719,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         ],
                       ),
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 17,
                         fontWeight: FontWeight.bold,
                         color: Colors.deepPurple,
                       ),
@@ -728,7 +728,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 ),
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
 
               // 김프 기준 매매 연 수익률
               Container(
@@ -748,7 +748,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     Text(
                       l10n(context).gimchiReturn,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
@@ -760,7 +760,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                             text:
                                 '${gimchiYieldData?.totalReturn.toStringAsFixed(2)}%',
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 17,
                               fontWeight: FontWeight.bold,
                               color: Colors.deepPurple,
                             ),
@@ -768,7 +768,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                           TextSpan(
                             text: ' (📆 ${gimchiYieldData?.tradingDays}일)',
                             style: const TextStyle(
-                              fontSize: 14,
+                              fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: Colors.black87,
                             ),
@@ -776,7 +776,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         ],
                       ),
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 17,
                         fontWeight: FontWeight.bold,
                         color: Colors.deepPurple,
                       ),
@@ -789,10 +789,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             ],
 
             // 광고 버튼
-            ElevatedButton.icon(
+            ElevatedButton(
               onPressed: _getShowStrategyButtonHandler(),
-              icon: const Icon(Icons.ondemand_video, color: Colors.white),
-              label: Text(
+              child: Text(
                 l10n(context).todayStrategyAfterAds,
                 textAlign: TextAlign.center,
               ),
@@ -1123,8 +1122,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 6.0),
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      margin: const EdgeInsets.only(bottom: 2.0),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(14),
@@ -1138,7 +1137,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             child: Text(
               comment,
               style: const TextStyle(
-                fontSize: 20,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -1194,7 +1193,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 text,
                 style: TextStyle(
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 18,
+                  fontSize: 20,
                   color: Colors.black87,
                 ),
               ),
@@ -1527,6 +1526,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 labelColor: Colors.deepPurple,
                 unselectedLabelColor: Colors.black54,
                 indicatorColor: Colors.deepPurple,
+                labelStyle: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.normal,
+                ),
                 onTap: (idx) {
                   setState(() {
                     _selectedStrategyTabIndex = idx;
@@ -1539,7 +1546,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 300,
+                height: 230,
                 child: TabBarView(
                   physics: const NeverScrollableScrollPhysics(), // ← 이 줄 추가!
                   children: [_buildAiStrategyTab(), _buildGimchiStrategyTab()],
@@ -1606,11 +1613,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       color: Colors.white,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 1.0, horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 18),
+            const SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -1618,14 +1625,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   '${l10n(context).buy}: $buyPriceStr',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 18,
                   ),
                 ),
                 Text(
                   '${l10n(context).sell}: $sellPriceStr',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 18,
                   ),
                 ),
               ],
