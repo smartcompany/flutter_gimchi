@@ -195,8 +195,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   List<StrategyMap> strategyList = [];
 
   AdsStatus _adsStatus = AdsStatus.unload; // 광고 상태 관리
+  bool _showAdOverlay = true; // 광고 오버레이 표시 여부
 
   RewardedAd? _rewardedAd;
+  BannerAd? _bannerAd;
   InterstitialAd? _interstitialAd;
 
   double kimchiMin = 0;
@@ -266,6 +268,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   Future<void> _initAPIs() async {
     if (!kIsWeb) {
       _loadRewardedAd();
+      _loadBannerAd();
     }
 
     await _loadAllApis();
@@ -319,9 +322,56 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     });
   }
 
+  // 배너 광고 로드
+  void _loadBannerAd() async {
+    try {
+      MapEntry<String, String>? adUnitEntry;
+
+      if (kDebugMode) {
+        if (Platform.isIOS) {
+          adUnitEntry = await ApiService.fetchBannerAdUnitId();
+        } else if (Platform.isAndroid) {
+          adUnitEntry = await ApiService.fetchBannerAdUnitId();
+        }
+      } else {
+        adUnitEntry = await ApiService.fetchBannerAdUnitId();
+      }
+
+      if (adUnitEntry == null || adUnitEntry.value.isEmpty) {
+        print('배너 광고 ID를 받아오지 못했습니다.');
+        return;
+      }
+
+      // 적응형 배너 크기 가져오기
+      final AdSize? adSize =
+          await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+            MediaQuery.of(context).size.width.truncate(),
+          );
+
+      _bannerAd = BannerAd(
+        adUnitId: adUnitEntry.value,
+        size: adSize ?? AdSize.banner, // adSize가 null이면 기본 배너
+        request: const AdRequest(),
+        listener: BannerAdListener(
+          onAdLoaded: (ad) {
+            print('Banner ad loaded');
+          },
+          onAdFailedToLoad: (ad, error) {
+            print('Banner ad failed to load: $error');
+            ad.dispose();
+          },
+        ),
+      );
+      _bannerAd?.load();
+    } catch (e) {
+      print('배너 광고 로드 실패: $e');
+    }
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _bannerAd?.dispose();
     super.dispose();
   }
 
@@ -1121,51 +1171,127 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       iconColor = Colors.orange;
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 2.0),
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: bgColor.withOpacity(0.7)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: iconColor, size: 28),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              comment,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+    return Stack(
+      children: [
+        // 원래 알림 카드
+        Container(
+          margin: const EdgeInsets.only(bottom: 2.0),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: bgColor.withOpacity(0.7)),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: iconColor, size: 28),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  comment,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
               ),
-            ),
-          ),
-          IconButton(
-            iconSize: 30,
-            icon: Icon(
-              _todayCommentAlarmType == TodayCommentAlarmType.ai ||
+              IconButton(
+                iconSize: 30,
+                icon: Icon(
+                  _todayCommentAlarmType == TodayCommentAlarmType.ai ||
+                          _todayCommentAlarmType == TodayCommentAlarmType.kimchi
+                      ? Icons.notifications_active
+                      : Icons.notifications_off,
+                  color:
                       _todayCommentAlarmType == TodayCommentAlarmType.kimchi
-                  ? Icons.notifications_active
-                  : Icons.notifications_off,
-              color:
-                  _todayCommentAlarmType == TodayCommentAlarmType.kimchi
-                      ? Colors
-                          .orange // 김프 알림이면 오렌지색
-                      : _todayCommentAlarmType == TodayCommentAlarmType.ai
-                      ? Colors
-                          .deepPurple // AI 알림이면 딥퍼플
-                      : Colors.grey, // OFF면 회색
-            ),
-            tooltip: '알림 설정',
-            onPressed: () async {
-              await showAlarmSettingDialog(context);
-            },
+                          ? Colors
+                              .orange // 김프 알림이면 오렌지색
+                          : _todayCommentAlarmType == TodayCommentAlarmType.ai
+                          ? Colors
+                              .deepPurple // AI 알림이면 딥퍼플
+                          : Colors.grey, // OFF면 회색
+                ),
+                tooltip: '알림 설정',
+                onPressed: () async {
+                  await showAlarmSettingDialog(context);
+                },
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        // 광고 오버레이 (관망 구간일 때만)
+        if (comment == l10n(context).justSee &&
+            _showAdOverlay &&
+            _bannerAd != null)
+          Container(
+            width: double.infinity,
+            height: 100, // 충분한 높이 확보
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.grey.withOpacity(0.3)),
+            ),
+            child: Column(
+              children: [
+                // 배너 광고
+                Expanded(child: Center(child: AdWidget(ad: _bannerAd!))),
+                // 툴팁 메시지
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 4,
+                    horizontal: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(14),
+                      bottomRight: Radius.circular(14),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'X 클릭 후 매수/매도 시그널 확인',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.blue.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      // X 버튼
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _showAdOverlay = false;
+                          });
+                        },
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade600,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 

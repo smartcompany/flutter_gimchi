@@ -213,6 +213,39 @@ class ApiService {
     return null;
   }
 
+  static Future<MapEntry<String, String>?> fetchBannerAdUnitId() async {
+    try {
+      final response = await http.get(Uri.parse(settingsUrl));
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        if (Platform.isIOS) {
+          final key = json['ios_banner_ad'] as String?;
+          final iosRef = json['ref']?['ios'] as Map<String, dynamic>?;
+          if (key != null && iosRef != null && iosRef.containsKey(key)) {
+            final value = iosRef[key] as String?;
+            if (value != null) {
+              return MapEntry(key, value);
+            }
+          }
+        } else if (Platform.isAndroid) {
+          final key = json['android_banner_ad'] as String?;
+          final androidRef = json['ref']?['android'] as Map<String, dynamic>?;
+          if (key != null &&
+              androidRef != null &&
+              androidRef.containsKey(key)) {
+            final value = androidRef[key] as String?;
+            if (value != null) {
+              return MapEntry(key, value);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print('배너 광고 ID fetch 실패: $e');
+    }
+    return null;
+  }
+
   static Future<bool> saveAndSyncUserData(
     Map<UserDataKey, dynamic> newUserData,
   ) async {
