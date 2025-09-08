@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:usdt_signal/AISimulationPage.dart';
+import 'package:usdt_signal/simulation_page.dart';
 import 'package:usdt_signal/widgets.dart';
 import 'package:usdt_signal/l10n/app_localizations.dart';
 import 'api_service.dart';
 import 'utils.dart';
+import 'simulation_model.dart';
 
 class ChartOnlyPage extends StatefulWidget {
   final List<ChartData> exchangeRates;
@@ -89,7 +90,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
       showGimchiTrading = false;
       showKimchiPremium = false;
       showExchangeRate = false;
-      aiTradeResults = AISimulationPage.simulateResults(
+      aiTradeResults = SimulationModel.simulateResults(
         widget.exchangeRates,
         widget.strategyList,
         widget.usdtMap,
@@ -101,7 +102,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
       showAITrading = false;
       showKimchiPremium = false;
       showExchangeRate = false;
-      aiTradeResults = AISimulationPage.gimchiSimulateResults(
+      aiTradeResults = SimulationModel.gimchiSimulateResults(
         widget.exchangeRates,
         widget.strategyList,
         widget.usdtMap,
@@ -544,7 +545,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                     showKimchiPremium = false; // AI 매매가 켜지면 김치 프리미엄은 꺼짐
                     showExchangeRate = false; // AI 매매가 켜지면 환율은 꺼짐
 
-                    aiTradeResults = AISimulationPage.simulateResults(
+                    aiTradeResults = SimulationModel.simulateResults(
                       widget.exchangeRates,
                       widget.strategyList,
                       widget.usdtMap,
@@ -571,7 +572,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                     showExchangeRate = false; // 김프 매매가 켜지면 환율은 꺼짐
                   });
 
-                  final results = AISimulationPage.gimchiSimulateResults(
+                  final results = SimulationModel.gimchiSimulateResults(
                     widget.exchangeRates,
                     widget.strategyList,
                     widget.usdtMap,

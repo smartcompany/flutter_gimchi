@@ -1,12 +1,12 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 import 'package:usdt_signal/l10n/app_localizations.dart';
 import 'ChartOnlyPage.dart';
-import 'AISimulationPage.dart';
+import 'simulation_page.dart';
+import 'simulation_model.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart'; // kIsWeb을 사용하기 위해 import
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -24,7 +24,6 @@ import 'package:app_tracking_transparency/app_tracking_transparency.dart'; // AT
 import 'package:permission_handler/permission_handler.dart';
 import 'anonymous_chat_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart'; // url_launcher 패키지 import
 
 void main() async {
@@ -218,7 +217,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   );
 
   bool _loading = true;
-  String? _loadError;
   ScrollController _scrollController = ScrollController();
 
   // PlotBand 표시 여부 상태 추가
@@ -461,7 +459,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   Future<void> _loadAllApis() async {
     setState(() {
       _loading = true;
-      _loadError = null;
     });
 
     try {
@@ -509,12 +506,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             .map((e) => e.value)
             .reduce((a, b) => a > b ? a : b);
         _loading = false;
-        _loadError = null;
       });
     } catch (e) {
       setState(() {
         _loading = false;
-        _loadError = '데이터를 불러오는데 실패했습니다.';
       });
       if (context.mounted) {
         _showRetryDialog();
@@ -678,7 +673,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         setState(() {
           _adsStatus = AdsStatus.shown; // 광고가 성공적으로 표시되면 상태 변경
         });
-        ad?.dispose();
+        ad.dispose();
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (scrollController.hasClients) {
@@ -878,13 +873,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           strategyList = strategies;
           latestStrategy = strategyList.isNotEmpty ? strategyList.first : null;
 
-          aiYieldData = AISimulationPage.getYieldForAISimulation(
+          aiYieldData = SimulationModel.getYieldForAISimulation(
             exchangeRates,
             strategyList,
             usdtMap,
           );
 
-          gimchiYieldData = AISimulationPage.getYieldForGimchiSimulation(
+          gimchiYieldData = SimulationModel.getYieldForGimchiSimulation(
             exchangeRates,
             strategyList,
             usdtMap,
@@ -998,10 +993,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       print('USDT 마지막 날짜: ${usdtChartData.last.time}');
     }
 
-    // 오늘 날짜 데이터 추출
-    DateTime today = DateTime.now();
-    String todayStr = DateFormat('yyyy-MM-dd').format(today);
-
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
     final double chartHeight =
@@ -1026,11 +1017,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             _buildChartCard(chartHeight),
             const SizedBox(height: 8),
             _buildStrategySection(),
-            if (kDebugMode)
+            if (kDebugMode) ...[
               TextButton(
                 onPressed: () => throw Exception(),
                 child: Text(l10n(context).throw_test_exception),
               ),
+              TextButton(
+                onPressed: () {
+                  SimulationModel.testGeneratePremiumTrends();
+                },
+                child: Text('김치 전략 테스트'),
+              ),
+            ],
           ],
         ),
       ),
@@ -1139,12 +1137,27 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       buyPrice = latestStrategy?['buy_price'] ?? 0;
       sellPrice = latestStrategy?['sell_price'] ?? 0;
     } else {
-      buyPrice =
-          (exchangeRateValue *
-              (1 + SimulationCondition.instance.kimchiBuyThreshold / 100));
-      sellPrice =
-          (exchangeRateValue *
-              (1 + SimulationCondition.instance.kimchiSellThreshold / 100));
+      if (SimulationCondition.instance.useTrend) {
+        final trendData = SimulationModel.generatePremiumTrends(
+          exchangeRates,
+          usdtMap,
+          SimulationCondition.instance.kimchiBuyThreshold,
+          SimulationCondition.instance.kimchiSellThreshold,
+        );
+
+        final todayTrendData = trendData?[todayUsdt?.time];
+        final buyThreshold = todayTrendData?['buy_threshold'] ?? 0;
+        final sellThreshold = todayTrendData?['sell_threshold'] ?? 0;
+        buyPrice = exchangeRateValue * (1 + buyThreshold / 100);
+        sellPrice = exchangeRateValue * (1 + sellThreshold / 100);
+      } else {
+        buyPrice =
+            (exchangeRateValue *
+                (1 + SimulationCondition.instance.kimchiBuyThreshold / 100));
+        sellPrice =
+            (exchangeRateValue *
+                (1 + SimulationCondition.instance.kimchiSellThreshold / 100));
+      }
     }
 
     // 디자인 강조: 배경색, 아이콘, 컬러 분기
@@ -1833,8 +1846,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                                   TextButton(
                                     onPressed: () async {
                                       Navigator.of(context).pop();
-                                      await AISimulationPage.showKimchiStrategyUpdatePopup(
+                                      await SimulationPage.showKimchiStrategyUpdatePopup(
                                         context,
+                                        showUseTrend: true,
                                       );
                                     },
                                     child: Text(
@@ -1896,7 +1910,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder:
-                                  (_) => AISimulationPage(
+                                  (_) => SimulationPage(
                                     simulationType: type,
                                     usdtMap: usdtMap,
                                     strategyList: strategyList,
@@ -2046,6 +2060,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         );
       }
     }
+    return updatedType;
   }
 
   Widget _buildGimchiStrategyTab() {

@@ -76,6 +76,8 @@ class SimulationCondition {
   double get kimchiSellThreshold => _kimchiSellThreshold;
   bool _matchSameDatesAsAI = false;
   bool get matchSameDatesAsAI => _matchSameDatesAsAI;
+  bool _useTrend = false;
+  bool get useTrend => _useTrend;
 
   void load() {
     SharedPreferences.getInstance().then((prefs) {
@@ -85,6 +87,7 @@ class SimulationCondition {
           prefs.getDouble('kimchiSellThreshold') ?? 3.0;
       instance._matchSameDatesAsAI =
           prefs.getBool('matchSameDatesAsAI') ?? false;
+      instance._useTrend = prefs.getBool('useTrend') ?? false;
     });
   }
 
@@ -104,6 +107,12 @@ class SimulationCondition {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('matchSameDatesAsAI', value);
     _matchSameDatesAsAI = value;
+  }
+
+  Future<void> saveUseTrend(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('useTrend', value);
+    _useTrend = value;
   }
 }
 
