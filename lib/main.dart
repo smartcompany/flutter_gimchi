@@ -1137,27 +1137,20 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       buyPrice = latestStrategy?['buy_price'] ?? 0;
       sellPrice = latestStrategy?['sell_price'] ?? 0;
     } else {
+      Map<DateTime, Map<String, double>>? premiumTrends;
       if (SimulationCondition.instance.useTrend) {
-        final trendData = SimulationModel.generatePremiumTrends(
+        premiumTrends = SimulationModel.generatePremiumTrends(
           exchangeRates,
           usdtMap,
-          SimulationCondition.instance.kimchiBuyThreshold,
-          SimulationCondition.instance.kimchiSellThreshold,
         );
-
-        final todayTrendData = trendData?[todayUsdt?.time];
-        final buyThreshold = todayTrendData?['buy_threshold'] ?? 0;
-        final sellThreshold = todayTrendData?['sell_threshold'] ?? 0;
-        buyPrice = exchangeRateValue * (1 + buyThreshold / 100);
-        sellPrice = exchangeRateValue * (1 + sellThreshold / 100);
-      } else {
-        buyPrice =
-            (exchangeRateValue *
-                (1 + SimulationCondition.instance.kimchiBuyThreshold / 100));
-        sellPrice =
-            (exchangeRateValue *
-                (1 + SimulationCondition.instance.kimchiSellThreshold / 100));
       }
+
+      final (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
+        trendData: premiumTrends?[todayUsdt?.time],
+      );
+
+      buyPrice = exchangeRateValue * (1 + buyThreshold / 100);
+      sellPrice = exchangeRateValue * (1 + sellThreshold / 100);
     }
 
     // 디자인 강조: 배경색, 아이콘, 컬러 분기
@@ -2065,23 +2058,31 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   Widget _buildGimchiStrategyTab() {
     final exchangeRateValue = exchangeRates.safeLast?.value ?? 0;
-    final buyPrice =
-        (exchangeRateValue *
-            (1 + SimulationCondition.instance.kimchiBuyThreshold / 100));
-    final sellPrice =
-        (exchangeRateValue *
-            (1 + SimulationCondition.instance.kimchiSellThreshold / 100));
 
-    final profitRate =
-        SimulationCondition.instance.kimchiSellThreshold -
-        SimulationCondition.instance.kimchiBuyThreshold;
+    Map<DateTime, Map<String, double>>? premiumTrends;
+    if (SimulationCondition.instance.useTrend) {
+      premiumTrends = SimulationModel.generatePremiumTrends(
+        exchangeRates,
+        usdtMap,
+      );
+    }
+
+    final todayDate = exchangeRates.safeLast?.time;
+    final (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
+      trendData: premiumTrends?[todayDate],
+    );
+
+    final buyPrice = (exchangeRateValue * (1 + buyThreshold / 100));
+    final sellPrice = (exchangeRateValue * (1 + sellThreshold / 100));
+
+    final profitRate = sellThreshold - buyThreshold;
 
     final buyPriceStr = buyPrice.toStringAsFixed(1);
     final sellPriceStr = sellPrice.toStringAsFixed(1);
 
     final strategy =
-        'USDT가 $buyPriceStr(${SimulationCondition.instance.kimchiBuyThreshold}%) 이하일 때 ${l10n(context).buy}, '
-        '$sellPriceStr(${SimulationCondition.instance.kimchiSellThreshold}%) 이상일 때 ${l10n(context).sell}';
+        'USDT가 $buyPriceStr(${buyThreshold.toStringAsFixed(1)}%) 이하일 때 ${l10n(context).buy}, '
+        '$sellPriceStr(${sellThreshold.toStringAsFixed(1)}%) 이상일 때 ${l10n(context).sell}';
     final profitRateStr = '+${profitRate.toStringAsFixed(1)}%';
 
     return makeStrategyTab(

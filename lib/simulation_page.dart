@@ -366,6 +366,22 @@ class _SimulationPageState extends State<SimulationPage>
       orElse: () => {},
     );
 
+    var (buyThreshold, sellThreshold) = (
+      SimulationCondition.instance.kimchiBuyThreshold,
+      SimulationCondition.instance.kimchiSellThreshold,
+    );
+
+    if (widget.simulationType == SimulationType.kimchi) {
+      final trendes = SimulationModel.generatePremiumTrends(
+        widget.usdExchangeRates,
+        widget.usdtMap,
+      );
+
+      (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
+        trendData: trendes?[date], // 현재는 기본값 사용, 필요시 추세 데이터 전달
+      );
+    }
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -425,10 +441,9 @@ class _SimulationPageState extends State<SimulationPage>
                 ] else ...[
                   Text(
                     widget.simulationType == SimulationType.kimchi
-                        ? l10n(context).kimchiStrategyComment(
-                          SimulationCondition.instance.kimchiBuyThreshold,
-                          SimulationCondition.instance.kimchiSellThreshold,
-                        )
+                        ? l10n(
+                          context,
+                        ).kimchiStrategyComment(buyThreshold, sellThreshold)
                         : '해당 날짜에 대한 전략이 없습니다.',
                   ),
                 ],

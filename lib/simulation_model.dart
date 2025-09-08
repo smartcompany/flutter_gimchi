@@ -194,8 +194,6 @@ class SimulationModel {
   static Map<DateTime, Map<String, double>> generatePremiumTrends(
     List<ChartData> usdExchangeRates,
     Map<DateTime, USDTChartData> usdtMap,
-    double baseBuyThreshold, // 기본 매수 기준 (예: 0.5)
-    double baseSellThreshold, // 기본 매도 기준 (예: 2.0)
   ) {
     Map<DateTime, Map<String, double>> strategies = {};
 
@@ -239,15 +237,16 @@ class SimulationModel {
 
       // 추세를 기반으로 매수/매도 임계값 계산 (kimchiMA5도 고려)
       final adjustedBuyThreshold = _calculateAdjustedThreshold(
-        baseBuyThreshold,
+        SimulationCondition.instance.kimchiBuyThreshold,
         kimchiTrend,
         exchangeRateTrend,
         usdtTrend,
         true, // 매수 임계값
         kimchiMA5, // 5일 이동평균 추가
       );
+
       final adjustedSellThreshold = _calculateAdjustedThreshold(
-        baseSellThreshold,
+        SimulationCondition.instance.kimchiSellThreshold,
         kimchiTrend,
         exchangeRateTrend,
         usdtTrend,
@@ -481,12 +480,7 @@ class SimulationModel {
       ),
     };
 
-    final strategies = generatePremiumTrends(
-      exchangeRates,
-      usdtMap,
-      0.5, // 기본 매수 기준
-      2.0, // 기본 매도 기준
-    );
+    final strategies = generatePremiumTrends(exchangeRates, usdtMap);
 
     print('생성된 전략 수: ${strategies.length}');
     print('기본 매수 기준: 0.5%, 기본 매도 기준: 2.0%');
@@ -511,6 +505,27 @@ class SimulationModel {
     return ((usdtPrice - exchangeRate) / exchangeRate * 100);
   }
 
+  static (double, double) getKimchiThresholds({
+    required Map<String, double>? trendData,
+  }) {
+    double buyThreshold;
+    double sellThreshold;
+    if (SimulationCondition.instance.useTrend) {
+      buyThreshold =
+          trendData?['buy_threshold'] ??
+          SimulationCondition.instance.kimchiBuyThreshold;
+      sellThreshold =
+          trendData?['sell_threshold'] ??
+          SimulationCondition.instance.kimchiSellThreshold;
+    } else {
+      buyThreshold = SimulationCondition.instance.kimchiBuyThreshold;
+      sellThreshold = SimulationCondition.instance.kimchiSellThreshold;
+    }
+
+    return (buyThreshold, sellThreshold);
+  }
+
+  // 김치 시뮬레이션 결과 계산
   static List<SimulationResult> gimchiSimulateResults(
     List<ChartData> usdExchangeRates,
     List<StrategyMap> strategyList,
@@ -526,16 +541,6 @@ class SimulationModel {
     DateTime? buyDate;
     double? buyPrice;
     double? sellPrice;
-    Map<DateTime, Map<String, double>>? premiumTrends;
-
-    if (useTrend) {
-      premiumTrends = SimulationModel.generatePremiumTrends(
-        usdExchangeRates,
-        usdtMap,
-        SimulationCondition.instance.kimchiBuyThreshold,
-        SimulationCondition.instance.kimchiSellThreshold,
-      );
-    }
 
     // 날짜 오름차순 정렬
     final sortedDates = usdtMap.keys.toList()..sort();
@@ -559,6 +564,14 @@ class SimulationModel {
       for (var rate in usdExchangeRates) rate.time: rate.value,
     };
 
+    Map<DateTime, Map<String, double>>? premiumTrends;
+    if (SimulationCondition.instance.useTrend) {
+      premiumTrends = SimulationModel.generatePremiumTrends(
+        usdExchangeRates,
+        usdtMap,
+      );
+    }
+
     for (final date in sortedDates) {
       final usdtDay = usdtMap[date];
       final usdExchangeRate = usdExchangeRatesMap[date] ?? 0.0;
@@ -568,27 +581,12 @@ class SimulationModel {
       double buyTargetPrice = 0.0;
       double sellTargetPrice = 0.0;
 
-      if (useTrend) {
-        final trendData = premiumTrends?[date];
-        final buyThreshold =
-            trendData?['buy_threshold'] ??
-            SimulationCondition.instance.kimchiBuyThreshold;
-        final sellThreshold =
-            trendData?['sell_threshold'] ??
-            SimulationCondition.instance.kimchiSellThreshold;
-        buyTargetPrice = usdExchangeRate * (1 + buyThreshold / 100);
-        sellTargetPrice = usdExchangeRate * (1 + sellThreshold / 100);
-        print(
-          'Trend data: $date buyThreshold=$buyThreshold, sellThreshold=$sellThreshold, kimchiTrend=${trendData?['kimchi_trend']?.toStringAsFixed(2)}, kimchiMA5=${trendData?['kimchi_ma5']?.toStringAsFixed(2)}',
-        );
-      } else {
-        buyTargetPrice =
-            usdExchangeRate *
-            (1 + SimulationCondition.instance.kimchiBuyThreshold / 100);
-        sellTargetPrice =
-            usdExchangeRate *
-            (1 + SimulationCondition.instance.kimchiSellThreshold / 100);
-      }
+      final (buyThreshold, sellThreshold) = getKimchiThresholds(
+        trendData: premiumTrends?[date],
+      );
+
+      buyTargetPrice = usdExchangeRate * (1 + buyThreshold / 100);
+      sellTargetPrice = usdExchangeRate * (1 + sellThreshold / 100);
 
       // 매수 조건: 프리미엄 buyThreshold% 미만, 아직 매수 안한 상태
       if (buyPrice == null) {

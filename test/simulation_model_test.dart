@@ -28,8 +28,6 @@ void main() {
             final strategies = SimulationModel.generatePremiumTrends(
               recentExchangeRates,
               recentUsdtMap,
-              0.5, // 기본 매수 기준
-              2.0, // 기본 매도 기준
             );
 
             print('\n=== 실제 데이터로 생성된 전략 ===');
@@ -40,17 +38,18 @@ void main() {
             final sortedDates = strategies.keys.toList()..sort();
             for (final date in sortedDates) {
               final strategy = strategies[date]!;
-              print('\n=== ${date.toIso8601String().split('T')[0]} ===');
-              print('매수 기준: ${strategy['buy_threshold']?.toStringAsFixed(2)}%');
+              final dateStr = date.toIso8601String().split('T')[0];
+              print('\n=== $dateStr ===');
+              print('매수 기준: ${strategy['buy_threshold']?.toStringAsFixed(1)}%');
               print(
-                '매도 기준: ${strategy['sell_threshold']?.toStringAsFixed(2)}%',
+                '매도 기준: ${strategy['sell_threshold']?.toStringAsFixed(1)}%',
               );
-              print('김치 추세: ${strategy['kimchi_trend']?.toStringAsFixed(3)}');
+              print('김치 추세: ${strategy['kimchi_trend']?.toStringAsFixed(1)}');
               print(
-                '환율 추세: ${strategy['exchange_rate_trend']?.toStringAsFixed(3)}',
+                '환율 추세: ${strategy['exchange_rate_trend']?.toStringAsFixed(1)}',
               );
-              print('USDT 추세: ${strategy['usdt_trend']?.toStringAsFixed(3)}');
-              print('김치 MA5: ${strategy['kimchi_ma5']?.toStringAsFixed(3)}%');
+              print('USDT 추세: ${strategy['usdt_trend']?.toStringAsFixed(1)}');
+              print('김치 MA5: ${strategy['kimchi_ma5']?.toStringAsFixed(1)}%');
             }
 
             // 기본 검증
@@ -111,8 +110,6 @@ void main() {
             final dynamicStrategies = SimulationModel.generatePremiumTrends(
               recentExchangeRates,
               recentUsdtMap,
-              0.5, // 기본 매수 기준
-              2.0, // 기본 매도 기준
             );
 
             // 고정 전략 (모든 날짜에 동일한 기준)
