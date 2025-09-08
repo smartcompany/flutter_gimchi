@@ -1220,10 +1220,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             ],
           ),
         ),
-        // 광고 오버레이 (관망 구간일 때만)
-        if (comment == l10n(context).justSee &&
-            _showAdOverlay &&
-            _bannerAd != null)
+        // 광고 오버레이 (항상 표시)
+        if (_showAdOverlay && _bannerAd != null)
           Container(
             width: double.infinity,
             height: 100, // 충분한 높이 확보
