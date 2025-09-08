@@ -441,9 +441,10 @@ class _SimulationPageState extends State<SimulationPage>
                 ] else ...[
                   Text(
                     widget.simulationType == SimulationType.kimchi
-                        ? l10n(
-                          context,
-                        ).kimchiStrategyComment(buyThreshold, sellThreshold)
+                        ? l10n(context).kimchiStrategyComment(
+                          double.parse(buyThreshold.toStringAsFixed(1)),
+                          double.parse(sellThreshold.toStringAsFixed(1)),
+                        )
                         : '해당 날짜에 대한 전략이 없습니다.',
                   ),
                 ],
