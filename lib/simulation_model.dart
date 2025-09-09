@@ -693,29 +693,72 @@ class SimulationModel {
     return null;
   }
 
-  // AI 시뮬레이션 수익률 계산
-  static SimulationYieldData? getYieldForAISimulation(
+  // 시뮬레이션 결과를 기반으로 수익률 데이터를 계산하는 내부 함수
+  static SimulationYieldData _calculateYieldData(
+    List<SimulationResult> results,
+  ) {
+    if (results.isEmpty) {
+      return SimulationYieldData(
+        totalReturn: 0.0,
+        tradingDays: 0,
+        annualYield: 0.0,
+      );
+    }
+
+    final firstDate = results.first.buyDate;
+    final lastDate = results.last.analysisDate;
+
+    if (firstDate == null || lastDate == null) {
+      return SimulationYieldData(
+        totalReturn: 0.0,
+        tradingDays: 0,
+        annualYield: 0.0,
+      );
+    }
+
+    final days = lastDate.difference(firstDate).inDays;
+    final totalReturn =
+        (results.last.finalKRW / 1000000 - 1) * 100; // 총 수익률 (%)
+    final annualYield = _calculateAnnualYield(results);
+
+    return SimulationYieldData(
+      totalReturn: totalReturn,
+      tradingDays: days,
+      annualYield: annualYield,
+    );
+  }
+
+  // results를 입력으로 받아 annualYield를 리턴하는 static 함수
+  static double _calculateAnnualYield(List<SimulationResult> results) {
+    if (results.isEmpty) return 0.0;
+
+    final firstDate = results.first.buyDate;
+    final lastDate = results.last.analysisDate;
+    if (firstDate == null || lastDate == null) return 0.0;
+
+    final days = lastDate.difference(firstDate).inDays;
+    if (days < 1) return 0.0;
+
+    final years = days / 365.0;
+    final totalReturn = results.last.finalKRW / 1000000;
+    final annualYield =
+        (years > 0) ? (pow(totalReturn, 1 / years) - 1) * 100 : 0.0;
+
+    return (annualYield.isNaN || annualYield.isInfinite ? 0.0 : annualYield)
+        .toDouble();
+  }
+
+  static SimulationYieldData getYieldForAISimulation(
     List<ChartData> usdExchangeRates,
     List<StrategyMap> strategyList,
     Map<DateTime, USDTChartData> usdtMap,
   ) {
-    if (strategyList.isEmpty) return null;
-
-    final simResults = simulateResults(usdExchangeRates, strategyList, usdtMap);
-    if (simResults.isEmpty) return null;
-
-    final totalReturn = simResults
-        .where((result) => result.sellDate != null)
-        .fold(0.0, (sum, result) => sum + result.profitRate);
-
-    final tradingDays =
-        simResults.where((result) => result.sellDate != null).length;
-
-    return SimulationYieldData(
-      totalReturn: totalReturn,
-      tradingDays: tradingDays,
-      annualYield: totalReturn, // 연수익률은 총 수익률과 동일
+    final results = SimulationModel.simulateResults(
+      usdExchangeRates,
+      strategyList,
+      usdtMap,
     );
+    return _calculateYieldData(results);
   }
 
   // 김치 시뮬레이션 수익률 계산
@@ -729,19 +772,7 @@ class SimulationModel {
       strategyList,
       usdtMap,
     );
-    if (simResults.isEmpty) return null;
 
-    final totalReturn = simResults
-        .where((result) => result.sellDate != null)
-        .fold(0.0, (sum, result) => sum + result.profitRate);
-
-    final tradingDays =
-        simResults.where((result) => result.sellDate != null).length;
-
-    return SimulationYieldData(
-      totalReturn: totalReturn,
-      tradingDays: tradingDays,
-      annualYield: totalReturn, // 연수익률은 총 수익률과 동일
-    );
+    return _calculateYieldData(simResults);
   }
 }
