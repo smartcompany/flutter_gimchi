@@ -5,6 +5,7 @@ import 'package:usdt_signal/ChartOnlyPage.dart'; // ChartOnlyPageModel import �
 import 'package:usdt_signal/api_service.dart';
 import 'package:usdt_signal/l10n/app_localizations.dart';
 import 'package:usdt_signal/simulation_model.dart';
+import 'package:usdt_signal/strategy_history_page.dart';
 import 'utils.dart';
 
 enum SimulationType { ai, kimchi }
@@ -1147,6 +1148,61 @@ class _SimulationPageState extends State<SimulationPage>
                         ],
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // === 전체 전략 히스토리 보기 버튼 ===
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder:
+                              (context) => DraggableScrollableSheet(
+                                initialChildSize: 0.9,
+                                minChildSize: 0.5,
+                                maxChildSize: 0.95,
+                                builder:
+                                    (context, scrollController) => Container(
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(20),
+                                          topRight: Radius.circular(20),
+                                        ),
+                                      ),
+                                      child: StrategyHistoryPage(
+                                        simulationType: widget.simulationType,
+                                        usdExchangeRates:
+                                            widget.usdExchangeRates,
+                                        usdtMap: widget.usdtMap,
+                                        strategies: widget.strategyList,
+                                      ),
+                                    ),
+                              ),
+                        );
+                      },
+                      icon: const Icon(Icons.history, color: Colors.white),
+                      label: Text(
+                        '전체 전략 히스토리 보기',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
