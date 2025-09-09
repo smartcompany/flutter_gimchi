@@ -280,11 +280,44 @@ class _SimulationPageState extends State<SimulationPage>
     }
   }
 
+  // 이전 AI 전략을 찾는 헬퍼 함수
+  StrategyMap? _findPreviousAIStrategy(DateTime targetDate) {
+    if (strategies == null || strategies!.isEmpty) return null;
+
+    // 날짜를 내림차순으로 정렬 (최신순)
+    final sortedStrategies = List<StrategyMap>.from(strategies!)..sort((a, b) {
+      final dateA = DateTime.parse(a['analysis_date']);
+      final dateB = DateTime.parse(b['analysis_date']);
+      return dateB.compareTo(dateA);
+    });
+
+    // targetDate보다 이전 날짜 중에서 가장 가까운 전략을 찾기
+    for (final strategy in sortedStrategies) {
+      final strategyDate = DateTime.parse(strategy['analysis_date']);
+      if (strategyDate.isBefore(targetDate)) {
+        return strategy;
+      }
+    }
+
+    return null; // 이전 전략이 없으면 null 반환
+  }
+
   void _showStrategyDialog(BuildContext context, DateTime date) {
-    final strategy = strategies?.firstWhere(
+    var strategy = strategies?.firstWhere(
       (s) => DateTime.parse(s['analysis_date']).isSameDate(date),
       orElse: () => {},
     );
+
+    // AI 전략에서 해당 날짜에 전략이 없으면 이전 전략을 찾아서 사용
+    DateTime displayDate = date; // 표시할 날짜 (기본값은 요청한 날짜)
+    if (widget.simulationType == SimulationType.ai &&
+        (strategy == null || strategy.isEmpty)) {
+      strategy = _findPreviousAIStrategy(date);
+      // 이전 전략을 찾았으면 그 전략의 날짜를 표시 날짜로 사용
+      if (strategy != null && strategy.isNotEmpty) {
+        displayDate = DateTime.parse(strategy['analysis_date']);
+      }
+    }
 
     var (buyThreshold, sellThreshold) = (
       SimulationCondition.instance.kimchiBuyThreshold,
@@ -298,7 +331,7 @@ class _SimulationPageState extends State<SimulationPage>
       );
 
       (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
-        trendData: trendes?[date], // 현재는 기본값 사용, 필요시 추세 데이터 전달
+        trendData: trendes[date], // 현재는 기본값 사용, 필요시 추세 데이터 전달
       );
     }
 
@@ -319,7 +352,7 @@ class _SimulationPageState extends State<SimulationPage>
                 Row(
                   children: [
                     Text(
-                      '${date.toCustomString()} ${l10n(context).strategy}',
+                      '${displayDate.toCustomString()} ${l10n(context).strategy}',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
@@ -365,6 +398,8 @@ class _SimulationPageState extends State<SimulationPage>
                           double.parse(buyThreshold.toStringAsFixed(1)),
                           double.parse(sellThreshold.toStringAsFixed(1)),
                         )
+                        : (strategy != null && strategy.isNotEmpty)
+                        ? '${strategy['summary'] ?? '전략 정보'}'
                         : '해당 날짜에 대한 전략이 없습니다.',
                   ),
                 ],

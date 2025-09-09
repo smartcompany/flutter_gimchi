@@ -198,7 +198,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    _buildKimchiStrategyInfo(context, {}, date),
+                    _buildKimchiStrategyInfo(context, date),
                   ],
                 ),
               ),
@@ -272,11 +272,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
     }
   }
 
-  Widget _buildKimchiStrategyInfo(
-    BuildContext context,
-    StrategyMap strategy,
-    DateTime date,
-  ) {
+  Widget _buildKimchiStrategyInfo(BuildContext context, DateTime date) {
     // 김프 전략 정보 표시
     var (buyThreshold, sellThreshold) = (
       SimulationCondition.instance.kimchiBuyThreshold,
@@ -440,7 +436,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                 ),
                 const SizedBox(height: 16),
                 if (widget.simulationType == SimulationType.kimchi) ...[
-                  _buildKimchiStrategyDetail(context, strategy, date),
+                  _buildKimchiStrategyDetail(context, date),
                 ] else ...[
                   _buildAIStrategyDetail(context, strategy),
                 ],
@@ -474,7 +470,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
       builder:
           (context) => AlertDialog(
             title: Text('${DateFormat('yyyy/MM/dd').format(date)} 김프 전략'),
-            content: _buildKimchiStrategyDetail(context, {}, date),
+            content: _buildKimchiStrategyDetail(context, date),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -485,11 +481,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
     );
   }
 
-  Widget _buildKimchiStrategyDetail(
-    BuildContext context,
-    StrategyMap strategy,
-    DateTime date,
-  ) {
+  Widget _buildKimchiStrategyDetail(BuildContext context, DateTime date) {
     var (buyThreshold, sellThreshold) = (
       SimulationCondition.instance.kimchiBuyThreshold,
       SimulationCondition.instance.kimchiSellThreshold,
