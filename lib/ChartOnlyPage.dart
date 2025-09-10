@@ -16,6 +16,7 @@ class ChartOnlyPage extends StatefulWidget {
   final List<USDTChartData> usdtChartData;
   final double kimchiMin;
   final double kimchiMax;
+  final Map<DateTime, Map<String, double>>? premiumTrends; // 김치 프리미엄 트렌드 데이터
 
   // AI/김프 매매 체크박스 초기값을 받을 수 있도록 파라미터 추가
   final bool initialShowAITrading;
@@ -30,6 +31,7 @@ class ChartOnlyPage extends StatefulWidget {
     required this.kimchiMin,
     required this.kimchiMax,
     required this.strategyList,
+    this.premiumTrends,
     this.initialShowAITrading = false,
     this.initialShowGimchiTrading = false,
   });
@@ -47,6 +49,7 @@ class ChartOnlyPage extends StatefulWidget {
        usdtChartData = model.usdtChartData,
        kimchiMin = model.kimchiMin,
        kimchiMax = model.kimchiMax,
+       premiumTrends = model.premiumTrends,
        super(key: key);
 
   @override
@@ -106,6 +109,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         widget.exchangeRates,
         widget.strategyList,
         widget.usdtMap,
+        widget.premiumTrends,
       );
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _autoZoomToAITrades();
@@ -576,6 +580,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                     widget.exchangeRates,
                     widget.strategyList,
                     widget.usdtMap,
+                    null, // premiumTrends는 서버에서 받아와야 함
                   );
                   setState(() {
                     aiTradeResults = results;
@@ -752,6 +757,7 @@ class ChartOnlyPageModel {
   final List<USDTChartData> usdtChartData;
   final double kimchiMin;
   final double kimchiMax;
+  final Map<DateTime, Map<String, double>>? premiumTrends;
 
   ChartOnlyPageModel({
     required this.exchangeRates,
@@ -761,5 +767,6 @@ class ChartOnlyPageModel {
     required this.usdtChartData,
     required this.kimchiMin,
     required this.kimchiMax,
+    this.premiumTrends,
   });
 }

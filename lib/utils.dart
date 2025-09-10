@@ -7,6 +7,8 @@ import 'package:advertising_id/advertising_id.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:usdt_signal/l10n/app_localizations.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'api_service.dart';
 
 AppLocalizations l10n(BuildContext context) {
   return AppLocalizations.of(context)!;
@@ -113,6 +115,24 @@ class SimulationCondition {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('useTrend', value);
     _useTrend = value;
+
+    // FCM 토큰을 서버에 업데이트 (useTrend 설정 포함)
+    try {
+      final token = await _getFcmToken();
+      if (token != null) {
+        await ApiService.saveFcmTokenToServer(token);
+      }
+    } catch (e) {
+      print('FCM 토큰 업데이트 실패: $e');
+    }
+  }
+
+  Future<String?> _getFcmToken() async {
+    try {
+      return await FirebaseMessaging.instance.getToken();
+    } catch (e) {
+      return null;
+    }
   }
 }
 

@@ -192,6 +192,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   List<USDTChartData> usdtChartData = [];
   Map<DateTime, USDTChartData> usdtMap = {};
   List<StrategyMap> strategyList = [];
+  Map<DateTime, Map<String, double>>? premiumTrends; // 서버에서 받은 김치 프리미엄 트렌드 데이터
 
   AdsStatus _adsStatus = AdsStatus.unload; // 광고 상태 관리
   bool _showAdOverlay = true; // 광고 오버레이 표시 여부
@@ -866,12 +867,36 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   // 백그라운드에서 전략 데이터 로딩
   Future<void> _loadStrategyInBackground() async {
     try {
-      final strategies = await api.fetchStrategy();
+      // 김치 프리미엄 트렌드와 함께 전략 데이터 가져오기
+      final response = await api.fetchStrategyWithKimchiTrends();
 
-      if (mounted && strategies != null) {
+      if (mounted && response != null) {
         setState(() {
-          strategyList = strategies;
+          strategyList = response['strategies'] ?? [];
           latestStrategy = strategyList.isNotEmpty ? strategyList.first : null;
+
+          // 김치 프리미엄 트렌드 데이터 설정
+          if (response['kimchiTrends'] != null) {
+            print('서버에서 받은 김치 트렌드 데이터 개수: ${response['kimchiTrends'].length}');
+            // 서버에서 받은 데이터를 DateTime 키로 변환
+            premiumTrends = <DateTime, Map<String, double>>{};
+            (response['kimchiTrends'] as Map).forEach((dateStr, trendData) {
+              try {
+                final date = DateTime.parse(dateStr.toString());
+                final Map<String, double> data = {};
+                (trendData as Map).forEach((key, value) {
+                  final stringKey = key.toString();
+                  if (value is num) {
+                    data[stringKey] = value.toDouble();
+                  }
+                });
+                premiumTrends![date] = data;
+              } catch (e) {
+                print('날짜 파싱 에러: $dateStr, $e');
+              }
+            });
+            print('변환된 premiumTrends 개수: ${premiumTrends?.length ?? 0}');
+          }
 
           aiYieldData = SimulationModel.getYieldForAISimulation(
             exchangeRates,
@@ -894,6 +919,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             usdtChartData: usdtChartData,
             kimchiMin: kimchiMin,
             kimchiMax: kimchiMax,
+            premiumTrends: premiumTrends,
           );
 
           print('전략 데이터 로딩 완료');
@@ -1007,7 +1033,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
         child: Column(
           children: [
-            _buildTodayComment(usdtChartData.safeLast),
+            FutureBuilder<Widget>(
+              future: _buildTodayComment(usdtChartData.safeLast),
+              builder: (context, snapshot) {
+                return snapshot.data ?? const SizedBox();
+              },
+            ),
             _buildTodayInfoCard(
               usdtChartData.safeLast,
               exchangeRates.safeLast,
@@ -1021,12 +1052,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               TextButton(
                 onPressed: () => throw Exception(),
                 child: Text(l10n(context).throw_test_exception),
-              ),
-              TextButton(
-                onPressed: () {
-                  SimulationModel.testGeneratePremiumTrends();
-                },
-                child: Text('김치 전략 테스트'),
               ),
             ],
           ],
@@ -1124,7 +1149,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildTodayComment(USDTChartData? todayUsdt) {
+  Future<Widget> _buildTodayComment(USDTChartData? todayUsdt) async {
     final usdtPrice = todayUsdt?.close ?? 0.0;
 
     // AI 매매 전략 탭
@@ -1137,20 +1162,27 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       buyPrice = latestStrategy?['buy_price'] ?? 0;
       sellPrice = latestStrategy?['sell_price'] ?? 0;
     } else {
-      Map<DateTime, Map<String, double>>? premiumTrends;
       if (SimulationCondition.instance.useTrend) {
-        premiumTrends = SimulationModel.generatePremiumTrends(
-          exchangeRates,
-          usdtMap,
+        // 이미 로드된 김치 프리미엄 트렌드 데이터 사용
+        final (
+          buyThreshold,
+          sellThreshold,
+        ) = SimulationModel.getKimchiThresholds(
+          trendData: premiumTrends?[todayUsdt?.time],
         );
+
+        buyPrice = exchangeRateValue * (1 + buyThreshold / 100);
+        sellPrice = exchangeRateValue * (1 + sellThreshold / 100);
+      } else {
+        // 기본값 사용
+        final (
+          buyThreshold,
+          sellThreshold,
+        ) = SimulationModel.getKimchiThresholds(trendData: null);
+
+        buyPrice = exchangeRateValue * (1 + buyThreshold / 100);
+        sellPrice = exchangeRateValue * (1 + sellThreshold / 100);
       }
-
-      final (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
-        trendData: premiumTrends?[todayUsdt?.time],
-      );
-
-      buyPrice = exchangeRateValue * (1 + buyThreshold / 100);
-      sellPrice = exchangeRateValue * (1 + sellThreshold / 100);
     }
 
     // 디자인 강조: 배경색, 아이콘, 컬러 분기
@@ -1679,7 +1711,20 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 height: 230,
                 child: TabBarView(
                   physics: const NeverScrollableScrollPhysics(), // ← 이 줄 추가!
-                  children: [_buildAiStrategyTab(), _buildGimchiStrategyTab()],
+                  children: [
+                    FutureBuilder<Widget>(
+                      future: _buildAiStrategyTab(),
+                      builder: (context, snapshot) {
+                        return snapshot.data ?? const SizedBox();
+                      },
+                    ),
+                    FutureBuilder<Widget>(
+                      future: _buildGimchiStrategyTab(),
+                      builder: (context, snapshot) {
+                        return snapshot.data ?? const SizedBox();
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -1690,7 +1735,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   // --- 기존 AI 매매 전략 UI --- 분리된 메소드
-  Widget _buildAiStrategyTab() {
+  Future<Widget> _buildAiStrategyTab() async {
     final buyPrice = latestStrategy?['buy_price'];
     final sellPrice = latestStrategy?['sell_price'];
     final profitRate = latestStrategy?['expected_return'];
@@ -1712,14 +1757,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     );
   }
 
-  Card makeStrategyTab(
+  Future<Card> makeStrategyTab(
     SimulationType type,
     String title,
     buyPrice,
     sellPrice,
     String profitRateStr,
     strategy,
-  ) {
+  ) async {
     // 소숫점 첫째자리까지로 변환
     String buyPriceStr =
         buyPrice != null
@@ -1908,6 +1953,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                                     usdtMap: usdtMap,
                                     strategyList: strategyList,
                                     usdExchangeRates: exchangeRates,
+                                    premiumTrends: premiumTrends,
                                     chartOnlyPageModel: chartOnlyPageModel,
                                   ),
                               fullscreenDialog: true,
@@ -2056,17 +2102,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     return updatedType;
   }
 
-  Widget _buildGimchiStrategyTab() {
+  Future<Widget> _buildGimchiStrategyTab() async {
     final exchangeRateValue = exchangeRates.safeLast?.value ?? 0;
 
-    Map<DateTime, Map<String, double>>? premiumTrends;
-    if (SimulationCondition.instance.useTrend) {
-      premiumTrends = SimulationModel.generatePremiumTrends(
-        exchangeRates,
-        usdtMap,
-      );
-    }
-
+    // 이미 로드된 김치 프리미엄 트렌드 데이터 사용
     final todayDate = exchangeRates.safeLast?.time;
     final (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
       trendData: premiumTrends?[todayDate],

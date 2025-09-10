@@ -11,6 +11,7 @@ class StrategyHistoryPage extends StatefulWidget {
   final List<ChartData> usdExchangeRates;
   final Map<DateTime, USDTChartData> usdtMap;
   final List<StrategyMap>? strategies; // 전략 데이터 추가
+  final Map<DateTime, Map<String, double>>? premiumTrends; // 김치 프리미엄 트렌드 데이터
 
   const StrategyHistoryPage({
     Key? key,
@@ -18,6 +19,7 @@ class StrategyHistoryPage extends StatefulWidget {
     required this.usdExchangeRates,
     required this.usdtMap,
     this.strategies, // 선택적 파라미터
+    this.premiumTrends,
   }) : super(key: key);
 
   @override
@@ -280,12 +282,9 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
     );
 
     if (SimulationCondition.instance.useTrend) {
-      final trends = SimulationModel.generatePremiumTrends(
-        widget.usdExchangeRates,
-        widget.usdtMap,
-      );
+      // 서버에서 받은 김치 프리미엄 트렌드 데이터 사용
       (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
-        trendData: trends[date],
+        trendData: widget.premiumTrends?[date],
       );
     }
 
@@ -488,12 +487,9 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
     );
 
     if (SimulationCondition.instance.useTrend) {
-      final trends = SimulationModel.generatePremiumTrends(
-        widget.usdExchangeRates,
-        widget.usdtMap,
-      );
+      // 서버에서 받은 김치 프리미엄 트렌드 데이터 사용
       (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
-        trendData: trends[date],
+        trendData: widget.premiumTrends?[date],
       );
     }
 

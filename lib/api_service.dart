@@ -23,25 +23,17 @@ class USDTChartData {
 
 class ApiService {
   static const int days = 200;
-  static const String upbitUsdtUrl =
-      "https://rate-history.vercel.app/api/usdt-history?days=all";
-  static const String rateHistoryUrl =
-      "https://rate-history.vercel.app/api/rate-history?days=$days";
-  static const String gimchHistoryUrl =
-      "https://rate-history.vercel.app/api/gimch-history?days=$days";
-  static const String strategyUrl =
-      "https://rate-history.vercel.app/api/analyze-strategy";
-  static const String fcmTokenUrl =
-      "https://rate-history.vercel.app/api/fcm-token";
-  static const String userDataUrl =
-      "https://rate-history.vercel.app/api/user-data";
-  static const String settingsUrl =
-      "https://rate-history.vercel.app/api/settings";
+  static const String host = "https://rate-history.vercel.app";
+  static const String upbitUsdtUrl = "$host/api/usdt-history?days=all";
+  static const String rateHistoryUrl = "$host/api/rate-history?days=$days";
+  static const String gimchHistoryUrl = "$host/api/gimch-history?days=$days";
+  static const String strategyUrl = "$host/api/analyze-strategy";
+  static const String fcmTokenUrl = "$host/api/fcm-token";
+  static const String userDataUrl = "$host/api/user-data";
+  static const String settingsUrl = "$host/api/settings";
   static const String latestUsdtUrl =
       'https://api.upbit.com/v1/ticker?markets=KRW-USDT';
-  static const latestExchangeRateUrl =
-      'https://rate-history.vercel.app/api/rate-history';
-  static const String exchangeRateKey = '88918cf514aae52a57ec6b9f';
+  static const latestExchangeRateUrl = '$host/api/rate-history';
 
   Future<double?> fetchLatestUSDTData() async {
     try {
@@ -157,6 +149,43 @@ class ApiService {
     }
   }
 
+  // 전략 데이터 + 김치 프리미엄 트렌드 데이터
+  Future<Map<String, dynamic>?> fetchStrategyWithKimchiTrends() async {
+    final response = await http.get(
+      Uri.parse('$strategyUrl?includeKimchiTrends=true'),
+    );
+    if (response.statusCode == 200) {
+      final responseText = utf8.decode(response.bodyBytes);
+      try {
+        final data = json.decode(responseText);
+
+        // strategies 배열 변환
+        if (data['strategies'] != null) {
+          final strategies =
+              (data['strategies'] as List).map((item) {
+                // Map<String, dynamic>으로 안전하게 변환
+                final Map<String, dynamic> map = {};
+                (item as Map).forEach((key, value) {
+                  final stringKey = key.toString();
+                  map[stringKey] = value is int ? value.toDouble() : value;
+                });
+                return map;
+              }).toList();
+          data['strategies'] = strategies;
+        }
+
+        return data;
+      } catch (e) {
+        print('전략 + 김치 트렌드 파싱 에러: $e');
+      }
+      return null;
+    } else {
+      throw Exception(
+        "Failed to fetch strategy with kimchi trends: ${response.statusCode}",
+      );
+    }
+  }
+
   // FCM 토큰을 서버에 저장하는 함수
   static Future<void> saveFcmTokenToServer(String token) async {
     try {
@@ -168,6 +197,7 @@ class ApiService {
           'token': token,
           'platform': Platform.isIOS ? 'ios' : 'android',
           'userId': userId,
+          'useTrend': SimulationCondition.instance.useTrend,
         }),
       );
       if (response.statusCode == 200) {

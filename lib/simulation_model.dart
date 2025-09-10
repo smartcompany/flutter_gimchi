@@ -191,319 +191,6 @@ class SimulationModel {
   }
 
   // 김치 프리미엄 추세, 환율 추세, USDT 추세를 고려해 김치 프리미엄 매매 전략을 생성하는 함수
-  static Map<DateTime, Map<String, double>> generatePremiumTrends(
-    List<ChartData> usdExchangeRates,
-    Map<DateTime, USDTChartData> usdtMap,
-  ) {
-    Map<DateTime, Map<String, double>> strategies = {};
-
-    // 1. 김치 프리미엄 데이터 계산
-    List<ChartData> kimchiPremiumData = _calculateKimchiPremiumData(
-      usdExchangeRates,
-      usdtMap,
-    );
-
-    // 2. 김치 프리미엄 추세 분석
-    List<double> kimchiTrends = _calculateKimchiTrends(kimchiPremiumData);
-
-    // 3. 환율 추세 분석
-    List<double> exchangeRateTrends = _calculateExchangeRateTrends(
-      usdExchangeRates,
-    );
-
-    // 4. USDT 추세 분석
-    List<double> usdtTrends = _calculateUsdtTrends(usdtMap);
-
-    // 5. 추세를 기반으로 매수/매도 임계값 동적 조정
-    for (int i = 0; i < kimchiPremiumData.length; i++) {
-      final date = kimchiPremiumData[i].time;
-
-      // 현재 추세 값들
-      final kimchiTrend = i < kimchiTrends.length ? kimchiTrends[i] : 0.0;
-      final exchangeRateTrend =
-          i < exchangeRateTrends.length ? exchangeRateTrends[i] : 0.0;
-      final usdtTrend = i < usdtTrends.length ? usdtTrends[i] : 0.0;
-
-      // 5일 이동평균 계산
-      double kimchiMA5 = 0.0;
-      if (i >= 4) {
-        // 5일 이상의 데이터가 있을 때
-        double sum = 0.0;
-        for (int j = i - 4; j <= i; j++) {
-          sum += kimchiPremiumData[j].value;
-        }
-        kimchiMA5 = sum / 5.0;
-      }
-
-      // 추세를 기반으로 매수/매도 임계값 계산 (kimchiMA5도 고려)
-      final adjustedBuyThreshold = _calculateAdjustedThreshold(
-        SimulationCondition.instance.kimchiBuyThreshold,
-        kimchiTrend,
-        exchangeRateTrend,
-        usdtTrend,
-        true, // 매수 임계값
-        kimchiMA5, // 5일 이동평균 추가
-      );
-
-      final adjustedSellThreshold = _calculateAdjustedThreshold(
-        SimulationCondition.instance.kimchiSellThreshold,
-        kimchiTrend,
-        exchangeRateTrend,
-        usdtTrend,
-        false, // 매도 임계값
-        kimchiMA5, // 5일 이동평균 추가
-      );
-
-      // 전략 저장
-      strategies[date] = {
-        'buy_threshold': adjustedBuyThreshold,
-        'sell_threshold': adjustedSellThreshold,
-        'kimchi_trend': kimchiTrend,
-        'kimchi_ma5': kimchiMA5,
-        'exchange_rate_trend': exchangeRateTrend,
-        'usdt_trend': usdtTrend,
-      };
-    }
-
-    return strategies;
-  }
-
-  // 김치 프리미엄 데이터 계산
-  static List<ChartData> _calculateKimchiPremiumData(
-    List<ChartData> usdExchangeRates,
-    Map<DateTime, USDTChartData> usdtMap,
-  ) {
-    List<ChartData> kimchiData = [];
-
-    for (final rate in usdExchangeRates) {
-      final usdtData = usdtMap[rate.time];
-      if (usdtData != null) {
-        final kimchiPremium =
-            ((usdtData.close - rate.value) / rate.value * 100);
-        kimchiData.add(ChartData(rate.time, kimchiPremium));
-      } else {
-        // 날짜 매칭을 위해 가장 가까운 날짜 찾기
-        DateTime? closestDate;
-        double minDiff = double.infinity;
-
-        for (final usdtDate in usdtMap.keys) {
-          final diff = (rate.time.difference(usdtDate).inDays).abs();
-          if (diff < minDiff) {
-            minDiff = diff.toDouble();
-            closestDate = usdtDate;
-          }
-        }
-
-        if (closestDate != null && minDiff <= 1) {
-          // 1일 이내 차이
-          final usdtData = usdtMap[closestDate]!;
-          final kimchiPremium =
-              ((usdtData.close - rate.value) / rate.value * 100);
-          kimchiData.add(ChartData(rate.time, kimchiPremium));
-        }
-      }
-    }
-
-    return kimchiData;
-  }
-
-  // 김치 프리미엄 추세 계산 (이동평균 기반)
-  static List<double> _calculateKimchiTrends(List<ChartData> kimchiData) {
-    List<double> trends = [];
-    const int windowSize = 5; // 5일 이동평균
-
-    for (int i = 0; i < kimchiData.length; i++) {
-      if (i < windowSize - 1) {
-        trends.add(0.0); // 초기 데이터는 추세 없음
-        continue;
-      }
-
-      // 이동평균 계산
-      double sum = 0.0;
-      for (int j = i - windowSize + 1; j <= i; j++) {
-        sum += kimchiData[j].value;
-      }
-      final movingAverage = sum / windowSize;
-
-      // 추세 계산 (현재값 - 이동평균)
-      final trend = kimchiData[i].value - movingAverage;
-      trends.add(trend);
-    }
-
-    return trends;
-  }
-
-  // 환율 추세 계산
-  static List<double> _calculateExchangeRateTrends(
-    List<ChartData> exchangeRates,
-  ) {
-    List<double> trends = [];
-    const int windowSize = 5;
-
-    for (int i = 0; i < exchangeRates.length; i++) {
-      if (i < windowSize - 1) {
-        trends.add(0.0);
-        continue;
-      }
-
-      double sum = 0.0;
-      for (int j = i - windowSize + 1; j <= i; j++) {
-        sum += exchangeRates[j].value;
-      }
-      final movingAverage = sum / windowSize;
-      final trend = exchangeRates[i].value - movingAverage;
-      trends.add(trend);
-    }
-
-    return trends;
-  }
-
-  // USDT 추세 계산
-  static List<double> _calculateUsdtTrends(
-    Map<DateTime, USDTChartData> usdtMap,
-  ) {
-    List<double> trends = [];
-    final sortedDates = usdtMap.keys.toList()..sort();
-    const int windowSize = 5;
-
-    for (int i = 0; i < sortedDates.length; i++) {
-      if (i < windowSize - 1) {
-        trends.add(0.0);
-        continue;
-      }
-
-      double sum = 0.0;
-      for (int j = i - windowSize + 1; j <= i; j++) {
-        sum += usdtMap[sortedDates[j]]?.close ?? 0.0;
-      }
-      final movingAverage = sum / windowSize;
-      final currentPrice = usdtMap[sortedDates[i]]?.close ?? 0.0;
-      final trend = currentPrice - movingAverage;
-      trends.add(trend);
-    }
-
-    return trends;
-  }
-
-  // 추세에 따라 조정된 임계값 계산 (김치 프리미엄 추세와 5일 이동평균 고려)
-  static double _calculateAdjustedThreshold(
-    double baseThreshold,
-    double kimchiTrend,
-    double exchangeRateTrend, // 사용하지 않음
-    double usdtTrend, // 사용하지 않음
-    bool isBuyThreshold,
-    double kimchiMA5, // 5일 이동평균 추가
-  ) {
-    // 연속 스케일 조정: 추세와 수준을 모두 반영 (단위: %)
-    // - kimchiTrend: 현재값 - MA5 (방향/속도) → 더 크게 반응
-    // - kimchiMA5: 절대 수준 (고/저 수준) → 보조 가중치
-    final double trendCoefficient =
-        isBuyThreshold ? buyTrendCoefficient : sellTrendCoefficient;
-    final double ma5Coefficient =
-        isBuyThreshold ? buyMa5Coefficient : sellMa5Coefficient;
-
-    double adjustedThreshold =
-        baseThreshold +
-        trendCoefficient * kimchiTrend +
-        ma5Coefficient * kimchiMA5;
-
-    // 임계값 범위 제한 (기본값의 20% ~ 500%)
-    final double minThreshold = baseThreshold * 0.2;
-    final double maxThreshold = baseThreshold * 5.0;
-    return adjustedThreshold.clamp(minThreshold, maxThreshold);
-  }
-
-  // 디버그용: 김치 프리미엄 전략 생성 테스트
-  static void testGeneratePremiumTrends() {
-    print('=== 김치 프리미엄 전략 생성 테스트 ===');
-
-    // 테스트 데이터 생성
-    final exchangeRates = [
-      ChartData(DateTime(2024, 1, 1), 1300.0),
-      ChartData(DateTime(2024, 1, 2), 1310.0),
-      ChartData(DateTime(2024, 1, 3), 1320.0),
-      ChartData(DateTime(2024, 1, 4), 1315.0),
-      ChartData(DateTime(2024, 1, 5), 1330.0),
-      ChartData(DateTime(2024, 1, 6), 1325.0),
-      ChartData(DateTime(2024, 1, 7), 1340.0),
-    ];
-
-    final usdtMap = {
-      DateTime(2024, 1, 1): USDTChartData(
-        DateTime(2024, 1, 1),
-        1300.0,
-        1305.0,
-        1310.0,
-        1295.0,
-      ),
-      DateTime(2024, 1, 2): USDTChartData(
-        DateTime(2024, 1, 2),
-        1305.0,
-        1315.0,
-        1320.0,
-        1300.0,
-      ),
-      DateTime(2024, 1, 3): USDTChartData(
-        DateTime(2024, 1, 3),
-        1315.0,
-        1325.0,
-        1330.0,
-        1310.0,
-      ),
-      DateTime(2024, 1, 4): USDTChartData(
-        DateTime(2024, 1, 4),
-        1325.0,
-        1320.0,
-        1325.0,
-        1315.0,
-      ),
-      DateTime(2024, 1, 5): USDTChartData(
-        DateTime(2024, 1, 5),
-        1320.0,
-        1335.0,
-        1340.0,
-        1315.0,
-      ),
-      DateTime(2024, 1, 6): USDTChartData(
-        DateTime(2024, 1, 6),
-        1335.0,
-        1330.0,
-        1335.0,
-        1325.0,
-      ),
-      DateTime(2024, 1, 7): USDTChartData(
-        DateTime(2024, 1, 7),
-        1330.0,
-        1345.0,
-        1350.0,
-        1325.0,
-      ),
-    };
-
-    final strategies = generatePremiumTrends(exchangeRates, usdtMap);
-
-    print('생성된 전략 수: ${strategies.length}');
-    print('기본 매수 기준: 0.5%, 기본 매도 기준: 2.0%');
-    print('');
-
-    final sortedDates = strategies.keys.toList()..sort();
-    for (final date in sortedDates) {
-      final strategy = strategies[date]!;
-      print('=== ${date.toIso8601String().split('T')[0]} ===');
-      print('매수 기준: ${strategy['buy_threshold']?.toStringAsFixed(2)}%');
-      print('매도 기준: ${strategy['sell_threshold']?.toStringAsFixed(2)}%');
-      print('김치 추세: ${strategy['kimchi_trend']?.toStringAsFixed(3)}');
-      print('김치 MA5: ${strategy['kimchi_ma5']?.toStringAsFixed(3)}%');
-      print('환율 추세: ${strategy['exchange_rate_trend']?.toStringAsFixed(3)}');
-      print('USDT 추세: ${strategy['usdt_trend']?.toStringAsFixed(3)}');
-      print('');
-    }
-  }
-
-  // 김치 프리미엄 계산 헬퍼 함수
-  static double _calculateKimchiPremium(double usdtPrice, double exchangeRate) {
-    return ((usdtPrice - exchangeRate) / exchangeRate * 100);
-  }
 
   static (double, double) getKimchiThresholds({
     required Map<String, double>? trendData,
@@ -529,7 +216,8 @@ class SimulationModel {
   static List<SimulationResult> gimchiSimulateResults(
     List<ChartData> usdExchangeRates,
     List<StrategyMap> strategyList,
-    Map<DateTime, USDTChartData> usdtMap, {
+    Map<DateTime, USDTChartData> usdtMap,
+    Map<DateTime, Map<String, double>>? premiumTrends, {
     bool useTrend = true,
   }) {
     List<SimulationResult> simResults = [];
@@ -564,13 +252,7 @@ class SimulationModel {
       for (var rate in usdExchangeRates) rate.time: rate.value,
     };
 
-    Map<DateTime, Map<String, double>>? premiumTrends;
-    if (SimulationCondition.instance.useTrend) {
-      premiumTrends = SimulationModel.generatePremiumTrends(
-        usdExchangeRates,
-        usdtMap,
-      );
-    }
+    // premiumTrends는 매개변수로 받은 서버 데이터 사용
 
     for (final date in sortedDates) {
       final usdtDay = usdtMap[date];
@@ -708,7 +390,7 @@ class SimulationModel {
     final firstDate = results.first.buyDate;
     final lastDate = results.last.analysisDate;
 
-    if (firstDate == null || lastDate == null) {
+    if (firstDate == null) {
       return SimulationYieldData(
         totalReturn: 0.0,
         tradingDays: 0,
@@ -734,7 +416,7 @@ class SimulationModel {
 
     final firstDate = results.first.buyDate;
     final lastDate = results.last.analysisDate;
-    if (firstDate == null || lastDate == null) return 0.0;
+    if (firstDate == null) return 0.0;
 
     final days = lastDate.difference(firstDate).inDays;
     if (days < 1) return 0.0;
@@ -771,6 +453,7 @@ class SimulationModel {
       usdExchangeRates,
       strategyList,
       usdtMap,
+      null, // premiumTrends는 서버에서 받아와야 함
     );
 
     return _calculateYieldData(simResults);

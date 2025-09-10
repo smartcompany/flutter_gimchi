@@ -15,6 +15,7 @@ class SimulationPage extends StatefulWidget {
   final Map<DateTime, USDTChartData> usdtMap;
   final List<StrategyMap> strategyList;
   final List<ChartData> usdExchangeRates;
+  final Map<DateTime, Map<String, double>>? premiumTrends; // 김치 프리미엄 트렌드 데이터
 
   // ChartOnlyPageModel을 직접 받는 생성자 추가
   final ChartOnlyPageModel? chartOnlyPageModel;
@@ -25,6 +26,7 @@ class SimulationPage extends StatefulWidget {
     required this.usdtMap,
     required this.strategyList,
     required this.usdExchangeRates,
+    this.premiumTrends,
     this.chartOnlyPageModel,
   });
 
@@ -263,6 +265,7 @@ class _SimulationPageState extends State<SimulationPage>
           usdExchangeRates,
           strategyList,
           usdtMap,
+          widget.premiumTrends,
         );
 
         setState(() {
@@ -325,13 +328,9 @@ class _SimulationPageState extends State<SimulationPage>
     );
 
     if (widget.simulationType == SimulationType.kimchi) {
-      final trendes = SimulationModel.generatePremiumTrends(
-        widget.usdExchangeRates,
-        widget.usdtMap,
-      );
-
+      // 서버에서 받은 김치 프리미엄 트렌드 데이터 사용
       (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
-        trendData: trendes[date], // 현재는 기본값 사용, 필요시 추세 데이터 전달
+        trendData: widget.premiumTrends?[date],
       );
     }
 
@@ -1122,7 +1121,7 @@ class _SimulationPageState extends State<SimulationPage>
                               }
                               final firstDate = results.first.buyDate;
                               final lastDate = results.last.analysisDate;
-                              if (firstDate == null || lastDate == null) {
+                              if (firstDate == null) {
                                 return const Text(
                                   '-',
                                   style: TextStyle(
@@ -1215,6 +1214,7 @@ class _SimulationPageState extends State<SimulationPage>
                                             widget.usdExchangeRates,
                                         usdtMap: widget.usdtMap,
                                         strategies: widget.strategyList,
+                                        premiumTrends: widget.premiumTrends,
                                       ),
                                     ),
                               ),
