@@ -901,346 +901,346 @@ class _SimulationPageState extends State<SimulationPage>
                   ],
                 ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: SlideTransition(
-          position: _bottomBarOffset,
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.white, Colors.grey[50]!],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-                BoxShadow(
-                  color: Colors.deepPurple.withOpacity(0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-              border: Border.all(
-                color: Colors.deepPurple.withOpacity(0.15),
-                width: 1.5,
-              ),
+      bottomNavigationBar: bottomNavigationBar(context),
+    );
+  }
+
+  SafeArea bottomNavigationBar(BuildContext context) {
+    return SafeArea(
+      child: SlideTransition(
+        position: _bottomBarOffset,
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Colors.grey[50]!],
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // === 매매기간 ===
-                  Row(
-                    children: [
-                      Text(
-                        l10n(context).tradingPerioid,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Spacer(),
-                      OutlinedButton.icon(
-                        icon: const Icon(
-                          Icons.show_chart,
-                          color: Colors.deepPurple,
-                          size: 18,
-                        ),
-                        label: Text(
-                          l10n(context).seeWithChart,
-                          style: const TextStyle(
-                            color: Colors.deepPurple,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.deepPurple),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          minimumSize: const Size(0, 32),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder:
-                                  (_) => ChartOnlyPage.fromModel(
-                                    widget.chartOnlyPageModel!,
-                                    initialShowAITrading:
-                                        widget.simulationType ==
-                                        SimulationType.ai,
-                                    initialShowGimchiTrading:
-                                        widget.simulationType ==
-                                        SimulationType.kimchi,
-                                  ),
-                              fullscreenDialog: true,
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Builder(
-                    builder: (context) {
-                      if (results.isEmpty) return const Text('-');
-                      final startDate = results.first.buyDate?.toCustomString();
-                      final endDate =
-                          results.last.analysisDate.toCustomString();
-                      final text = '${startDate} ~ ${endDate}';
-
-                      return Text(
-                        text,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple,
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-
-                  // === 누적 최종 원화 ===
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        l10n(context).stackedFinalKRW,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        '${krwFormat.format(results.isNotEmpty ? results.last.finalKRW.round() : 1000000)}원',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // === 구분선 ===
-                  Container(
-                    height: 1,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          Colors.deepPurple.withOpacity(0.3),
-                          Colors.transparent,
-                        ],
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+              BoxShadow(
+                color: Colors.deepPurple.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            border: Border.all(
+              color: Colors.deepPurple.withOpacity(0.15),
+              width: 1.5,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // === 매매기간 ===
+                Row(
+                  children: [
+                    Text(
+                      l10n(context).tradingPerioid,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // === 총 수익률/연 수익률 강조 ===
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n(context).totalGain,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.deepPurple.withOpacity(0.05),
-                                  Colors.deepPurple.withOpacity(0.02),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.deepPurple.withOpacity(0.2),
-                                width: 1,
-                              ),
-                            ),
-                            child: Text(
-                              '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22,
-                                color: Colors.deepPurple,
-                              ),
-                            ),
-                          ),
-                        ],
+                    const Spacer(),
+                    OutlinedButton.icon(
+                      icon: const Icon(
+                        Icons.show_chart,
+                        color: Colors.deepPurple,
+                        size: 18,
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            l10n(context).extimatedYearGain,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Builder(
-                            builder: (context) {
-                              if (results.isEmpty) {
-                                return const Text(
-                                  '-',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.deepPurple,
-                                  ),
-                                );
-                              }
-                              final firstDate = results.first.buyDate;
-                              final lastDate = results.last.analysisDate;
-                              if (firstDate == null) {
-                                return const Text(
-                                  '-',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.deepPurple,
-                                  ),
-                                );
-                              }
-                              final days =
-                                  lastDate.difference(firstDate).inDays;
-                              if (days < 1) {
-                                return const Text(
-                                  '-',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.deepPurple,
-                                  ),
-                                );
-                              }
-                              final years = days / 365.0;
-                              final totalReturn =
-                                  results.last.finalKRW / 1000000;
-                              final annualYield =
-                                  (years > 0)
-                                      ? (pow(totalReturn, 1 / years) - 1) * 100
-                                      : 0.0;
-                              return Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.deepPurple.withOpacity(0.05),
-                                      Colors.deepPurple.withOpacity(0.02),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.deepPurple.withOpacity(0.2),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  '${annualYield.isNaN || annualYield.isInfinite ? 0 : annualYield.toStringAsFixed(2)}%',
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.deepPurple,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // === 전체 전략 히스토리 보기 버튼 ===
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder:
-                              (context) => DraggableScrollableSheet(
-                                initialChildSize: 0.9,
-                                minChildSize: 0.5,
-                                maxChildSize: 0.95,
-                                builder:
-                                    (context, scrollController) => Container(
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(20),
-                                          topRight: Radius.circular(20),
-                                        ),
-                                      ),
-                                      child: StrategyHistoryPage(
-                                        simulationType: widget.simulationType,
-                                        usdExchangeRates:
-                                            widget.usdExchangeRates,
-                                        usdtMap: widget.usdtMap,
-                                        strategies: widget.strategyList,
-                                        premiumTrends: widget.premiumTrends,
-                                      ),
-                                    ),
-                              ),
-                        );
-                      },
-                      icon: const Icon(Icons.history, color: Colors.white),
                       label: Text(
-                        '전체 전략 히스토리 보기',
+                        l10n(context).seeWithChart,
                         style: const TextStyle(
-                          fontSize: 16,
+                          color: Colors.deepPurple,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          fontSize: 13,
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.deepPurple),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        minimumSize: const Size(0, 32),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder:
+                                (_) => ChartOnlyPage.fromModel(
+                                  widget.chartOnlyPageModel!,
+                                  initialShowAITrading:
+                                      widget.simulationType ==
+                                      SimulationType.ai,
+                                  initialShowGimchiTrading:
+                                      widget.simulationType ==
+                                      SimulationType.kimchi,
+                                ),
+                            fullscreenDialog: true,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Builder(
+                  builder: (context) {
+                    if (results.isEmpty) return const Text('-');
+                    final startDate = results.first.buyDate?.toCustomString();
+                    final endDate = results.last.analysisDate.toCustomString();
+                    final text = '${startDate} ~ ${endDate}';
+
+                    return Text(
+                      text,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                // === 누적 최종 원화 ===
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n(context).stackedFinalKRW,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '${krwFormat.format(results.isNotEmpty ? results.last.finalKRW.round() : 1000000)}원',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // === 구분선 ===
+                Container(
+                  height: 1,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.transparent,
+                        Colors.deepPurple.withOpacity(0.3),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // === 총 수익률/연 수익률 강조 ===
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n(context).totalGain,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.deepPurple.withOpacity(0.05),
+                                Colors.deepPurple.withOpacity(0.02),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.deepPurple.withOpacity(0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
+                              color: Colors.deepPurple,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          l10n(context).extimatedYearGain,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Builder(
+                          builder: (context) {
+                            if (results.isEmpty) {
+                              return const Text(
+                                '-',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.deepPurple,
+                                ),
+                              );
+                            }
+                            final firstDate = results.first.buyDate;
+                            final lastDate = results.last.analysisDate;
+                            if (firstDate == null) {
+                              return const Text(
+                                '-',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.deepPurple,
+                                ),
+                              );
+                            }
+                            final days = lastDate.difference(firstDate).inDays;
+                            if (days < 1) {
+                              return const Text(
+                                '-',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.deepPurple,
+                                ),
+                              );
+                            }
+                            final years = days / 365.0;
+                            final totalReturn = results.last.finalKRW / 1000000;
+                            final annualYield =
+                                (years > 0)
+                                    ? (pow(totalReturn, 1 / years) - 1) * 100
+                                    : 0.0;
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.deepPurple.withOpacity(0.05),
+                                    Colors.deepPurple.withOpacity(0.02),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.deepPurple.withOpacity(0.2),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                '${annualYield.isNaN || annualYield.isInfinite ? 0 : annualYield.toStringAsFixed(2)}%',
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.deepPurple,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // === 전체 전략 히스토리 보기 버튼 ===
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder:
+                            (context) => DraggableScrollableSheet(
+                              initialChildSize: 0.9,
+                              minChildSize: 0.5,
+                              maxChildSize: 0.95,
+                              builder:
+                                  (context, scrollController) => Container(
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(20),
+                                        topRight: Radius.circular(20),
+                                      ),
+                                    ),
+                                    child: StrategyHistoryPage(
+                                      simulationType: widget.simulationType,
+                                      usdExchangeRates: widget.usdExchangeRates,
+                                      usdtMap: widget.usdtMap,
+                                      strategies: widget.strategyList,
+                                      premiumTrends: widget.premiumTrends,
+                                    ),
+                                  ),
+                            ),
+                      );
+                    },
+                    icon: const Icon(Icons.history, color: Colors.white),
+                    label: Text(
+                      '전체 전략 히스토리 보기',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
