@@ -196,6 +196,7 @@ class _SimulationPageState extends State<SimulationPage>
   List<SimulationResult> results = [];
   bool loading = true;
   String? error;
+  bool isCardExpanded = true; // 카드 확장/축소 상태
 
   // 소수점 4자리까지 표시하는 포맷
   final NumberFormat krwFormat = NumberFormat("#,##0.#", "ko_KR");
@@ -936,11 +937,37 @@ class _SimulationPageState extends State<SimulationPage>
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+            padding: const EdgeInsets.only(
+              top: 0,
+              left: 24,
+              right: 24,
+              bottom: 24,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // === 늘이기/줄이기 버튼 ===
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        isCardExpanded
+                            ? Icons.keyboard_arrow_down
+                            : Icons.keyboard_arrow_up,
+                        color: Colors.deepPurple,
+                        size: 36,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          isCardExpanded = !isCardExpanded;
+                        });
+                      },
+                      tooltip: isCardExpanded ? '줄이기' : '늘리기',
+                    ),
+                  ],
+                ),
                 // === 매매기간 ===
                 Row(
                   children: [
@@ -1016,230 +1043,235 @@ class _SimulationPageState extends State<SimulationPage>
                     );
                   },
                 ),
-                const SizedBox(height: 12),
+                if (isCardExpanded) ...[
+                  const SizedBox(height: 12),
 
-                // === 누적 최종 원화 ===
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      l10n(context).stackedFinalKRW,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                  // === 누적 최종 원화 ===
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n(context).stackedFinalKRW,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    Text(
-                      '${krwFormat.format(results.isNotEmpty ? results.last.finalKRW.round() : 1000000)}원',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
+                      Text(
+                        '${krwFormat.format(results.isNotEmpty ? results.last.finalKRW.round() : 1000000)}원',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
 
-                // === 구분선 ===
-                Container(
-                  height: 1,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.transparent,
-                        Colors.deepPurple.withOpacity(0.3),
-                        Colors.transparent,
-                      ],
+                  // === 구분선 ===
+                  Container(
+                    height: 1,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Colors.deepPurple.withOpacity(0.3),
+                          Colors.transparent,
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                // === 총 수익률/연 수익률 강조 ===
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n(context).totalGain,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.deepPurple.withOpacity(0.05),
-                                Colors.deepPurple.withOpacity(0.02),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.deepPurple.withOpacity(0.2),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
+                  // === 총 수익률/연 수익률 강조 ===
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n(context).totalGain,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 22,
-                              color: Colors.deepPurple,
+                              fontSize: 15,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          l10n(context).extimatedYearGain,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
+                          const SizedBox(height: 2),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.deepPurple.withOpacity(0.05),
+                                  Colors.deepPurple.withOpacity(0.02),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.deepPurple.withOpacity(0.2),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 22,
+                                color: Colors.deepPurple,
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Builder(
-                          builder: (context) {
-                            if (results.isEmpty) {
-                              return const Text(
-                                '-',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.deepPurple,
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            l10n(context).extimatedYearGain,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Builder(
+                            builder: (context) {
+                              if (results.isEmpty) {
+                                return const Text(
+                                  '-',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.deepPurple,
+                                  ),
+                                );
+                              }
+                              final firstDate = results.first.buyDate;
+                              final lastDate = results.last.analysisDate;
+                              if (firstDate == null) {
+                                return const Text(
+                                  '-',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.deepPurple,
+                                  ),
+                                );
+                              }
+                              final days =
+                                  lastDate.difference(firstDate).inDays;
+                              if (days < 1) {
+                                return const Text(
+                                  '-',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.deepPurple,
+                                  ),
+                                );
+                              }
+                              final years = days / 365.0;
+                              final totalReturn =
+                                  results.last.finalKRW / 1000000;
+                              final annualYield =
+                                  (years > 0)
+                                      ? (pow(totalReturn, 1 / years) - 1) * 100
+                                      : 0.0;
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.deepPurple.withOpacity(0.05),
+                                      Colors.deepPurple.withOpacity(0.02),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.deepPurple.withOpacity(0.2),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  '${annualYield.isNaN || annualYield.isInfinite ? 0 : annualYield.toStringAsFixed(2)}%',
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.deepPurple,
+                                  ),
                                 ),
                               );
-                            }
-                            final firstDate = results.first.buyDate;
-                            final lastDate = results.last.analysisDate;
-                            if (firstDate == null) {
-                              return const Text(
-                                '-',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.deepPurple,
-                                ),
-                              );
-                            }
-                            final days = lastDate.difference(firstDate).inDays;
-                            if (days < 1) {
-                              return const Text(
-                                '-',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.deepPurple,
-                                ),
-                              );
-                            }
-                            final years = days / 365.0;
-                            final totalReturn = results.last.finalKRW / 1000000;
-                            final annualYield =
-                                (years > 0)
-                                    ? (pow(totalReturn, 1 / years) - 1) * 100
-                                    : 0.0;
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.deepPurple.withOpacity(0.05),
-                                    Colors.deepPurple.withOpacity(0.02),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Colors.deepPurple.withOpacity(0.2),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Text(
-                                '${annualYield.isNaN || annualYield.isInfinite ? 0 : annualYield.toStringAsFixed(2)}%',
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.deepPurple,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
 
-                // === 전체 전략 히스토리 보기 버튼 ===
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder:
-                            (context) => DraggableScrollableSheet(
-                              initialChildSize: 0.9,
-                              minChildSize: 0.5,
-                              maxChildSize: 0.95,
-                              builder:
-                                  (context, scrollController) => Container(
-                                    decoration: const BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(20),
-                                        topRight: Radius.circular(20),
+                  // === 전체 전략 히스토리 보기 버튼 ===
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder:
+                              (context) => DraggableScrollableSheet(
+                                initialChildSize: 0.9,
+                                minChildSize: 0.5,
+                                maxChildSize: 0.95,
+                                builder:
+                                    (context, scrollController) => Container(
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(20),
+                                          topRight: Radius.circular(20),
+                                        ),
+                                      ),
+                                      child: StrategyHistoryPage(
+                                        simulationType: widget.simulationType,
+                                        usdExchangeRates:
+                                            widget.usdExchangeRates,
+                                        usdtMap: widget.usdtMap,
+                                        strategies: widget.strategyList,
+                                        premiumTrends: widget.premiumTrends,
                                       ),
                                     ),
-                                    child: StrategyHistoryPage(
-                                      simulationType: widget.simulationType,
-                                      usdExchangeRates: widget.usdExchangeRates,
-                                      usdtMap: widget.usdtMap,
-                                      strategies: widget.strategyList,
-                                      premiumTrends: widget.premiumTrends,
-                                    ),
-                                  ),
-                            ),
-                      );
-                    },
-                    icon: const Icon(Icons.history, color: Colors.white),
-                    label: Text(
-                      '전체 전략 히스토리 보기',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                              ),
+                        );
+                      },
+                      icon: const Icon(Icons.history, color: Colors.white),
+                      label: Text(
+                        '전체 전략 히스토리 보기',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
