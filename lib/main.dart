@@ -908,6 +908,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             exchangeRates,
             strategyList,
             usdtMap,
+            premiumTrends,
           );
 
           // chartOnlyPageModel 업데이트

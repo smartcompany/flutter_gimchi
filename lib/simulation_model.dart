@@ -217,9 +217,8 @@ class SimulationModel {
     List<ChartData> usdExchangeRates,
     List<StrategyMap> strategyList,
     Map<DateTime, USDTChartData> usdtMap,
-    Map<DateTime, Map<String, double>>? premiumTrends, {
-    bool useTrend = true,
-  }) {
+    Map<DateTime, Map<String, double>>? premiumTrends,
+  ) {
     List<SimulationResult> simResults = [];
     double initialKRW = 1000000;
     double totalKRW = initialKRW;
@@ -448,12 +447,13 @@ class SimulationModel {
     List<ChartData> usdExchangeRates,
     List<StrategyMap> strategyList,
     Map<DateTime, USDTChartData> usdtMap,
+    Map<DateTime, Map<String, double>>? premiumTrends,
   ) {
     final simResults = gimchiSimulateResults(
       usdExchangeRates,
       strategyList,
       usdtMap,
-      null, // premiumTrends는 서버에서 받아와야 함
+      premiumTrends,
     );
 
     return _calculateYieldData(simResults);
