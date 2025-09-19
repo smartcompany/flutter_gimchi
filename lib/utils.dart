@@ -84,9 +84,9 @@ class SimulationCondition {
   void load() {
     SharedPreferences.getInstance().then((prefs) {
       instance._kimchiBuyThreshold =
-          prefs.getDouble('kimchiBuyThreshold') ?? 1.0;
+          prefs.getDouble('kimchiBuyThreshold') ?? 0.5;
       instance._kimchiSellThreshold =
-          prefs.getDouble('kimchiSellThreshold') ?? 3.0;
+          prefs.getDouble('kimchiSellThreshold') ?? 2.5;
       instance._matchSameDatesAsAI =
           prefs.getBool('matchSameDatesAsAI') ?? false;
       instance._useTrend = prefs.getBool('useTrend') ?? false;
