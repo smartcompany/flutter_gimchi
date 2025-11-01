@@ -54,13 +54,18 @@ class ApiService {
   }
 
   Future<double?> fetchLatestExchangeRate() async {
-    final resut = await fetchExchangeRateData(justLatest: true);
-    if (resut.isNotEmpty) {
-      // 가장 최근의 환율 데이터 반환
-      resut.sort((a, b) => b.time.compareTo(a.time));
-      return resut.first.value;
-    } else {
-      print('환율 데이터가 비어 있습니다.');
+    try {
+      final resut = await fetchExchangeRateData(justLatest: true);
+      if (resut.isNotEmpty) {
+        // 가장 최근의 환율 데이터 반환
+        resut.sort((a, b) => b.time.compareTo(a.time));
+        return resut.first.value;
+      } else {
+        print('환율 데이터가 비어 있습니다.');
+        return null;
+      }
+    } catch (e) {
+      print('환율 데이터 가져오기 실패: $e');
       return null;
     }
   }
@@ -93,18 +98,24 @@ class ApiService {
   Future<List<ChartData>> fetchExchangeRateData({
     bool justLatest = false,
   }) async {
-    final url = justLatest ? latestExchangeRateUrl : rateHistoryUrl;
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final List<ChartData> rate = [];
-      data.forEach((key, value) {
-        rate.add(ChartData(DateTime.parse(key), value.toDouble()));
-      });
-      rate.sort((a, b) => a.time.compareTo(b.time));
-      return rate;
-    } else {
-      throw Exception("Failed to fetch data: ${response.statusCode}");
+    try {
+      final url = justLatest ? latestExchangeRateUrl : rateHistoryUrl;
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<ChartData> rate = [];
+        data.forEach((key, value) {
+          rate.add(ChartData(DateTime.parse(key), value.toDouble()));
+        });
+        rate.sort((a, b) => a.time.compareTo(b.time));
+        return rate;
+      } else {
+        print('환율 데이터 가져오기 실패: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('환율 데이터 가져오기 실패: $e');
+      return [];
     }
   }
 
