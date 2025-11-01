@@ -276,13 +276,26 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       _todayCommentAlarmType = await TodayCommentAlarmTypePrefs.loadFromPrefs();
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        final settings =
-            await FirebaseMessaging.instance.getNotificationSettings();
-        if (settings.authorizationStatus == AuthorizationStatus.notDetermined) {
-          final result = await FirebaseMessaging.instance.requestPermission();
-          if (result.authorizationStatus == AuthorizationStatus.authorized ||
-              result.authorizationStatus == AuthorizationStatus.provisional) {
-            await showAlarmSettingDialog(context);
+        if (Platform.isIOS) {
+          // iOS: Firebase Messaging 권한 요청
+          final settings =
+              await FirebaseMessaging.instance.getNotificationSettings();
+          if (settings.authorizationStatus ==
+              AuthorizationStatus.notDetermined) {
+            final result = await FirebaseMessaging.instance.requestPermission();
+            if (result.authorizationStatus == AuthorizationStatus.authorized ||
+                result.authorizationStatus == AuthorizationStatus.provisional) {
+              await showAlarmSettingDialog(context);
+            }
+          }
+        } else if (Platform.isAndroid) {
+          // Android: permission_handler 권한 요청
+          final status = await Permission.notification.status;
+          if (!status.isGranted) {
+            final result = await Permission.notification.request();
+            if (result.isGranted) {
+              await showAlarmSettingDialog(context);
+            }
           }
         }
       });
