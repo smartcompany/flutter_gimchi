@@ -31,6 +31,7 @@ class ApiService {
   static const String fcmTokenUrl = "$host/api/fcm-token";
   static const String userDataUrl = "$host/api/user-data";
   static const String settingsUrl = "$host/api/settings";
+  static const String airdropInfoUrl = "$host/api/airdrop-info";
   static const String latestUsdtUrl =
       'https://api.upbit.com/v1/ticker?markets=KRW-USDT';
   static const latestExchangeRateUrl = '$host/api/rate-history';
@@ -339,6 +340,120 @@ class ApiService {
       // 에러 발생 시 로컬에 저장하지 않음
       return false;
     }
+  }
+
+  // Air drop 정보 조회
+  static Future<AirdropInfo?> fetchAirdropInfo() async {
+    try {
+      final response = await http.get(Uri.parse(airdropInfoUrl));
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        if (json['success'] == true && json['data'] != null) {
+          return AirdropInfo.fromJson(json['data']);
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Air drop 정보 조회 실패: $e');
+      return null;
+    }
+  }
+
+  // 최신 뉴스 조회
+  static Future<NewsItem?> fetchLatestNews() async {
+    try {
+      final response = await http
+          .get(Uri.parse('https://coinpang.org/api/news?limit=1'))
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        if (json['success'] == true &&
+            json['data'] != null &&
+            json['data'].isNotEmpty) {
+          return NewsItem.fromJson(json['data'][0]);
+        }
+      }
+      return null;
+    } catch (e) {
+      print('최신 뉴스 조회 실패: $e');
+      return null;
+    }
+  }
+}
+
+// 뉴스 아이템 모델
+class NewsItem {
+  final int id;
+  final String title;
+  final String content;
+  final String author;
+  final DateTime createdAt;
+  final int views;
+  final int likes;
+
+  NewsItem({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.author,
+    required this.createdAt,
+    required this.views,
+    required this.likes,
+  });
+
+  factory NewsItem.fromJson(Map<String, dynamic> json) {
+    return NewsItem(
+      id: json['id'] ?? 0,
+      title: json['title'] ?? '',
+      content: json['content'] ?? '',
+      author: json['author'] ?? '',
+      createdAt: DateTime.parse(json['created_at']),
+      views: json['views'] ?? 0,
+      likes: json['likes'] ?? 0,
+    );
+  }
+}
+
+// Air drop 정보 모델
+class AirdropInfo {
+  final String id;
+  final String title;
+  final String description;
+  final String reward;
+  final String? link;
+  final DateTime startDate;
+  final DateTime endDate;
+  final bool isActive;
+  final int priority;
+  final String? imageUrl;
+
+  AirdropInfo({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.reward,
+    this.link,
+    required this.startDate,
+    required this.endDate,
+    required this.isActive,
+    required this.priority,
+    this.imageUrl,
+  });
+
+  factory AirdropInfo.fromJson(Map<String, dynamic> json) {
+    return AirdropInfo(
+      id: json['id'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      reward: json['reward'] ?? '',
+      link: json['link'],
+      startDate: DateTime.parse(json['startDate']),
+      endDate: DateTime.parse(json['endDate']),
+      isActive: json['isActive'] ?? true,
+      priority: json['priority'] ?? 0,
+      imageUrl: json['imageUrl'],
+    );
   }
 }
 
