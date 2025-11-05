@@ -227,10 +227,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   TodayCommentAlarmType _todayCommentAlarmType =
       TodayCommentAlarmType.off; // enum으로 변경
 
-  // Air drop 정보
-  AirdropInfo? _airdropInfo;
-  bool _showAirdropBanner = true; // 사용자가 닫았는지 여부 (로컬 저장 가능)
-
   // 뉴스 정보
   NewsItem? _latestNews;
   bool _showNewsBanner = false; // 배너 표시 여부
@@ -521,9 +517,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
       // 메인 화면 로딩 완료 후 백그라운드에서 전략 데이터 로딩
       _loadStrategyInBackground();
-
-      // Air drop 정보 로드 (비동기로 로드하여 메인 로딩에 영향 없음)
-      _loadAirdropInfo();
 
       setState(() {
         kimchiMin = kimchiPremium
@@ -890,21 +883,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     );
   }
 
-  // Air drop 정보 로드
-  Future<void> _loadAirdropInfo() async {
-    try {
-      final info = await ApiService.fetchAirdropInfo();
-      if (mounted && info != null) {
-        setState(() {
-          _airdropInfo = info;
-        });
-      }
-    } catch (e) {
-      print('Air drop 정보 로드 실패: $e');
-      // 실패해도 메인 화면에는 영향 없음
-    }
-  }
-
   // 최신 뉴스 로드 (별도로 비동기 호출)
   Future<void> _loadLatestNews() async {
     try {
@@ -948,138 +926,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     } catch (e) {
       print('뉴스 배너 닫기 실패: $e');
     }
-  }
-
-  // Air drop 배너 위젯 빌더
-  Widget _buildAirdropBanner() {
-    if (_airdropInfo == null) return const SizedBox();
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.deepPurple.shade400, Colors.purple.shade300],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.purple.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () async {
-            if (_airdropInfo?.link != null && _airdropInfo!.link!.isNotEmpty) {
-              final uri = Uri.parse(_airdropInfo!.link!);
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri, mode: LaunchMode.externalApplication);
-              }
-            }
-            // Analytics 이벤트 로깅
-            try {
-              await FirebaseAnalytics.instance.logEvent(
-                name: 'airdrop_banner_clicked',
-                parameters: {
-                  'airdrop_id': _airdropInfo!.id,
-                  'airdrop_title': _airdropInfo!.title,
-                },
-              );
-            } catch (e) {
-              print('Analytics 로깅 실패: $e');
-            }
-          },
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // 아이콘
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.card_giftcard,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                // 내용
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _airdropInfo!.title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _airdropInfo!.description,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
-                          fontSize: 14,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          _airdropInfo!.reward,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // 닫기 버튼
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _showAirdropBanner = false;
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      Icons.close,
-                      color: Colors.white.withOpacity(0.8),
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   // 백그라운드에서 전략 데이터 로딩
@@ -1252,9 +1098,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
         child: Column(
           children: [
-            // Air drop 배너 (조건부 표시)
-            if (_showAirdropBanner && _airdropInfo != null)
-              _buildAirdropBanner(),
             FutureBuilder<Widget>(
               future: _buildTodayComment(usdtChartData.safeLast),
               builder: (context, snapshot) {
