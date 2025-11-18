@@ -865,16 +865,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 foregroundColor: Colors.white,
                 textStyle: const TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700, // 더 굵게
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 14,
+                  horizontal: 28,
+                  vertical: 16, // 더 두껍게
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 2,
+                elevation: 3, // 더 확실한 그림자
+                minimumSize: const Size(double.infinity, 52), // 최소 높이 보장
               ),
             ),
           ],
@@ -1103,6 +1104,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.1),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
@@ -1121,6 +1133,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.1),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
@@ -1151,13 +1174,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         Scaffold(
           backgroundColor: const Color(0xFFF8F5FA),
           appBar: AppBar(
+            backgroundColor: const Color(0xFFF8F5FA), // Scaffold와 동일한 배경색
+            elevation: 0, // 그림자 제거
             centerTitle: true,
             title: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   l10n(context).usdt_signal,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade900, // 더 명확한 대비
+                  ),
                 ),
                 Container(
                   margin: const EdgeInsets.only(left: 8.0),
@@ -1365,7 +1393,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: bgColor.withOpacity(0.7)),
+            border: Border.all(color: Colors.grey.withOpacity(0.15), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -1374,10 +1409,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               Expanded(
                 child: Text(
                   comment,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: Colors.grey.shade900, // 더 명확한 대비
                   ),
                 ),
               ),
@@ -1392,7 +1427,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.grey.withOpacity(0.3)),
+              border: Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Column(
               children: [
@@ -1905,16 +1947,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               children: [
                 Text(
                   '${l10n(context).buy}: $buyPriceStr',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
+                    color: Colors.grey.shade900, // 더 명확한 대비
                   ),
                 ),
                 Text(
                   '${l10n(context).sell}: $sellPriceStr',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
+                    color: Colors.grey.shade900, // 더 명확한 대비
                   ),
                 ),
               ],
@@ -1925,9 +1969,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               children: [
                 Text(
                   '${l10n(context).gain}: $profitRateStr',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
+                    color: Colors.grey.shade900, // 더 명확한 대비
                   ),
                 ),
                 // 라운드 버튼으로 요약
@@ -1946,14 +1991,19 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.deepPurple.shade50, // 연보라색 배경
                       foregroundColor: Colors.deepPurple,
-                      elevation: 0,
+                      elevation: 2, // 그림자 추가
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
+                        side: BorderSide(
+                          color: Colors.deepPurple.withOpacity(0.2),
+                          width: 1,
+                        ),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 8,
+                        horizontal: 16,
+                        vertical: 12, // 더 두껍게
                       ),
+                      minimumSize: const Size(0, 44), // 최소 높이
                     ),
                     onPressed: () {
                       showDialog(
@@ -2028,12 +2078,19 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.deepPurple),
+                  side: const BorderSide(
+                    color: Colors.deepPurple,
+                    width: 1.5,
+                  ), // 더 굵은 테두리
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 20,
+                  ), // 더 두껍게
                   foregroundColor: Colors.deepPurple,
+                  minimumSize: const Size(0, 48), // 최소 높이
                 ),
                 onPressed:
                     latestStrategy == null
