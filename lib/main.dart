@@ -729,11 +729,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       color: Colors.white,
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
         child: Column(
           children: [
             // 연 수익률 표시 (광고 버튼과 함께 숨겨짐)
@@ -1090,7 +1090,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         isLandscape
             ? mediaQuery.size.height *
                 0.6 // 가로모드: 60%
-            : mediaQuery.size.height * 0.3; // 세로모드: 기존 30%
+            : mediaQuery.size.height * 0.25; // 세로모드: 기존 30%
 
     final singleChildScrollView = SingleChildScrollView(
       controller: _scrollController,
@@ -1098,22 +1098,44 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
         child: Column(
           children: [
-            FutureBuilder<Widget>(
-              future: _buildTodayComment(usdtChartData.safeLast),
-              builder: (context, snapshot) {
-                return snapshot.data ?? const SizedBox();
-              },
+            // 섹션 1: 현재 값 정보 + 차트
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  _buildTodayInfoCard(
+                    usdtChartData.safeLast,
+                    exchangeRates.safeLast,
+                    kimchiPremium.safeLast,
+                  ),
+                  _buildChartCard(chartHeight),
+                ],
+              ),
             ),
-            _buildTodayInfoCard(
-              usdtChartData.safeLast,
-              exchangeRates.safeLast,
-              kimchiPremium.safeLast,
+            const SizedBox(height: 10),
+            // 섹션 2: 현재 매수 구간 + 매매 전략
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  FutureBuilder<Widget>(
+                    future: _buildTodayComment(usdtChartData.safeLast),
+                    builder: (context, snapshot) {
+                      return snapshot.data ?? const SizedBox();
+                    },
+                  ),
+                  _buildStrategySection(),
+                ],
+              ),
             ),
-            const SizedBox(height: 4),
-            _buildChartCard(chartHeight),
-            const SizedBox(height: 8),
-            _buildStrategySection(),
             if (kDebugMode) ...[
+              const SizedBox(height: 16),
               TextButton(
                 onPressed: () => throw Exception(),
                 child: Text(l10n(context).throw_test_exception),
@@ -1175,7 +1197,56 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               ],
             ),
             actions: [
-              if (!kIsWeb)
+              if (!kIsWeb) ...[
+                // 알림 아이콘
+                Container(
+                  margin: const EdgeInsets.only(right: 8.0),
+                  decoration: BoxDecoration(
+                    color:
+                        _todayCommentAlarmType == TodayCommentAlarmType.kimchi
+                            ? Colors.orange.shade50
+                            : _todayCommentAlarmType == TodayCommentAlarmType.ai
+                            ? Colors.deepPurple.shade50
+                            : Colors.grey.shade50,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color:
+                          _todayCommentAlarmType == TodayCommentAlarmType.kimchi
+                              ? Colors.orange.shade200
+                              : _todayCommentAlarmType ==
+                                  TodayCommentAlarmType.ai
+                              ? Colors.deepPurple.shade200
+                              : Colors.grey.shade200,
+                      width: 1,
+                    ),
+                  ),
+                  child: InkWell(
+                    onTap: () async {
+                      await showAlarmSettingDialog(context);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(6.0),
+                      child: Icon(
+                        _todayCommentAlarmType == TodayCommentAlarmType.ai ||
+                                _todayCommentAlarmType ==
+                                    TodayCommentAlarmType.kimchi
+                            ? Icons.notifications_active
+                            : Icons.notifications_off,
+                        color:
+                            _todayCommentAlarmType ==
+                                    TodayCommentAlarmType.kimchi
+                                ? Colors.orange
+                                : _todayCommentAlarmType ==
+                                    TodayCommentAlarmType.ai
+                                ? Colors.deepPurple
+                                : Colors.grey,
+                        size: 20,
+                      ),
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                // 챗팅 버튼
                 Container(
                   margin: const EdgeInsets.only(right: 8.0),
                   decoration: BoxDecoration(
@@ -1213,6 +1284,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
+              ],
             ],
           ),
           body: SafeArea(child: singleChildScrollView),
@@ -1288,11 +1360,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       children: [
         // 원래 알림 카드
         Container(
-          margin: const EdgeInsets.only(bottom: 2.0),
+          margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(color: bgColor.withOpacity(0.7)),
           ),
           child: Row(
@@ -1303,32 +1375,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 child: Text(
                   comment,
                   style: const TextStyle(
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
                 ),
-              ),
-              IconButton(
-                iconSize: 30,
-                icon: Icon(
-                  _todayCommentAlarmType == TodayCommentAlarmType.ai ||
-                          _todayCommentAlarmType == TodayCommentAlarmType.kimchi
-                      ? Icons.notifications_active
-                      : Icons.notifications_off,
-                  color:
-                      _todayCommentAlarmType == TodayCommentAlarmType.kimchi
-                          ? Colors
-                              .orange // 김프 알림이면 오렌지색
-                          : _todayCommentAlarmType == TodayCommentAlarmType.ai
-                          ? Colors
-                              .deepPurple // AI 알림이면 딥퍼플
-                          : Colors.grey, // OFF면 회색
-                ),
-                tooltip: '알림 설정',
-                onPressed: () async {
-                  await showAlarmSettingDialog(context);
-                },
               ),
             ],
           ),
@@ -1448,37 +1499,30 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     ChartData? todayRate,
     ChartData? todayKimchi,
   ) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            InfoItem(
-              label: l10n(context).usdt,
-              value:
-                  todayUsdt != null ? todayUsdt.close.toStringAsFixed(1) : '-',
-              color: Colors.blue,
-            ),
-            InfoItem(
-              label: l10n(context).exchangeRate,
-              value:
-                  todayRate != null ? todayRate.value.toStringAsFixed(1) : '-',
-              color: Colors.green,
-            ),
-            InfoItem(
-              label: l10n(context).gimchiPremiem,
-              value:
-                  todayKimchi != null
-                      ? '${todayKimchi.value.toStringAsFixed(2)}%'
-                      : '-',
-              color: Colors.orange,
-            ),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(0, 10, 0, 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          InfoItem(
+            label: l10n(context).usdt,
+            value: todayUsdt != null ? todayUsdt.close.toStringAsFixed(1) : '-',
+            color: Colors.blue,
+          ),
+          InfoItem(
+            label: l10n(context).exchangeRate,
+            value: todayRate != null ? todayRate.value.toStringAsFixed(1) : '-',
+            color: Colors.green,
+          ),
+          InfoItem(
+            label: l10n(context).gimchiPremiem,
+            value:
+                todayKimchi != null
+                    ? '${todayKimchi.value.toStringAsFixed(2)}%'
+                    : '-',
+            color: Colors.orange,
+          ),
+        ],
       ),
     );
   }
@@ -1490,16 +1534,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
     return Stack(
       children: [
-        Material(
-          elevation: 2,
-          borderRadius: BorderRadius.circular(16),
+        Container(
+          height: chartHeight,
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Container(
-            height: chartHeight,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
+            decoration: BoxDecoration(color: Colors.white),
             child: SfCartesianChart(
               onTooltipRender: (TooltipArgs args) {
                 final clickedPoint =
@@ -1614,7 +1654,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             decoration: BoxDecoration(
               color: Colors.white, // 원하는 배경색
               borderRadius: BorderRadius.circular(18), // 완전한 원형
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
             ),
             child: IconButton(
               icon: const Icon(Icons.refresh, color: Colors.deepPurple),
@@ -1635,7 +1674,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             decoration: BoxDecoration(
               color: Colors.white, // 원하는 배경색
               borderRadius: BorderRadius.circular(18), // 완전한 원형
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
             ),
             child: IconButton(
               icon:
@@ -1749,61 +1787,55 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     return DefaultTabController(
       length: 2,
       initialIndex: _selectedStrategyTabIndex, // 초기 선택 탭 적용
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        color: Colors.white,
-        margin: const EdgeInsets.only(bottom: 10),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TabBar(
-                labelColor: Colors.deepPurple,
-                unselectedLabelColor: Colors.black54,
-                indicatorColor: Colors.deepPurple,
-                labelStyle: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.normal,
-                ),
-                onTap: (idx) {
-                  setState(() {
-                    _selectedStrategyTabIndex = idx;
-                  });
-                },
-                tabs: [
-                  Tab(text: l10n(context).aiStrategy),
-                  Tab(text: l10n(context).gimchiStrategy),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TabBar(
+              labelColor: Colors.deepPurple,
+              unselectedLabelColor: Colors.black54,
+              indicatorColor: Colors.deepPurple,
+              labelStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.normal,
+              ),
+              onTap: (idx) {
+                setState(() {
+                  _selectedStrategyTabIndex = idx;
+                });
+              },
+              tabs: [
+                Tab(text: l10n(context).aiStrategy),
+                Tab(text: l10n(context).gimchiStrategy),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 230,
+              child: TabBarView(
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  FutureBuilder<Widget>(
+                    future: _buildAiStrategyTab(),
+                    builder: (context, snapshot) {
+                      return snapshot.data ?? const SizedBox();
+                    },
+                  ),
+                  FutureBuilder<Widget>(
+                    future: _buildGimchiStrategyTab(),
+                    builder: (context, snapshot) {
+                      return snapshot.data ?? const SizedBox();
+                    },
+                  ),
                 ],
               ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 230,
-                child: TabBarView(
-                  physics: const NeverScrollableScrollPhysics(), // ← 이 줄 추가!
-                  children: [
-                    FutureBuilder<Widget>(
-                      future: _buildAiStrategyTab(),
-                      builder: (context, snapshot) {
-                        return snapshot.data ?? const SizedBox();
-                      },
-                    ),
-                    FutureBuilder<Widget>(
-                      future: _buildGimchiStrategyTab(),
-                      builder: (context, snapshot) {
-                        return snapshot.data ?? const SizedBox();
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

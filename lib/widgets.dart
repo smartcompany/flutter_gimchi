@@ -18,11 +18,11 @@ class InfoItem extends StatelessWidget {
           label,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 20,
             color: color,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         TweenAnimationBuilder<double>(
           key: ValueKey(value), // value가 바뀔 때마다 새 위젯으로 인식
           tween: Tween<double>(begin: 1.5, end: 1.0),
