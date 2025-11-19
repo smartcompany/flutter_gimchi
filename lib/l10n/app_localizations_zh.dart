@@ -286,5 +286,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get coinInfoSite => '币种信息网站';
 
   @override
-  String get adClickInstruction => 'X 클릭 후 매수/매도 시그널 확인';
+  String get adClickInstruction => '点击 X 后查看买卖信号';
+
+  @override
+  String get removeAdsCta => '购买无广告访问';
+
+  @override
+  String get removeAdsTitle => '无广告查看';
+
+  @override
+  String get removeAdsSubtitle => '更专注地查看交易策略。';
+
+  @override
+  String get todayStrategyDirect => '立即查看策略';
 }

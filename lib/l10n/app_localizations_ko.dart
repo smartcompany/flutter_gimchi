@@ -288,4 +288,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get adClickInstruction => 'X 클릭 후 매수/매도 시그널 확인';
+
+  @override
+  String get removeAdsCta => '광고 없이 보기 구매하기';
+
+  @override
+  String get removeAdsTitle => '광고 없이 보기';
+
+  @override
+  String get removeAdsSubtitle => '더 깔끔하게 매매 전략을 확인하세요.';
+
+  @override
+  String get todayStrategyDirect => '바로 전략 보기';
 }

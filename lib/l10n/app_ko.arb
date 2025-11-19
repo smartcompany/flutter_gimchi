@@ -101,5 +101,9 @@
   "turnOffAlert":"알림 끄기",
   "unFilled":"미체결",
   "coinInfoSite": "코인 정보 사이트",
-  "adClickInstruction": "X 클릭 후 매수/매도 시그널 확인"
+  "adClickInstruction": "X 클릭 후 매수/매도 시그널 확인",
+  "removeAdsCta": "광고 없이 보기 구매하기",
+  "removeAdsTitle": "광고 없이 보기",
+  "removeAdsSubtitle": "더 깔끔하게 매매 전략을 확인하세요.",
+  "todayStrategyDirect": "바로 전략 보기"
 }

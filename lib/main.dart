@@ -10,6 +10,7 @@ import 'simulation_model.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart'; // kIsWeb을 사용하기 위해 import
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 import 'OnboardingPage.dart'; // 온보딩 페이지 import
 import 'package:shared_preferences/shared_preferences.dart'; // 이미 import 되어 있음
 import 'package:firebase_core/firebase_core.dart';
@@ -198,6 +199,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   AdsStatus _adsStatus = AdsStatus.unload; // 광고 상태 관리
   bool _showAdOverlay = true; // 광고 오버레이 표시 여부
 
+  static const String _removeAdsProductId = 'remove_ads';
+  final InAppPurchase _iap = InAppPurchase.instance;
+  StreamSubscription<List<PurchaseDetails>>? _purchaseSubscription;
+  ProductDetails? _removeAdsProduct;
+  bool _hasAdFreePass = false;
+  bool _isPurchasing = false;
+
   RewardedAd? _rewardedAd;
   BannerAd? _bannerAd;
   InterstitialAd? _interstitialAd;
@@ -243,7 +251,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       _setupFCMPushSettings();
     }
 
-    _initAPIs();
+    _initializeDataPipelines();
     _startPolling();
     _loadLatestNews(); // 별도로 비동기 호출
 
@@ -251,6 +259,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     if (!kIsWeb) {
       _logAppStart();
     }
+  }
+
+  void _initializeDataPipelines() {
+    Future(() async {
+      await _loadAdFreePreference();
+      await _initAPIs();
+      await _initInAppPurchase();
+    });
   }
 
   Future<void> _logAppStart() async {
@@ -271,7 +287,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   Future<void> _initAPIs() async {
-    if (!kIsWeb) {
+    if (!kIsWeb && !_hasAdFreePass) {
       _loadRewardedAd();
       _loadBannerAd();
     }
@@ -308,6 +324,132 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _loadAdFreePreference() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasPass = prefs.getBool('has_ad_free_pass') ?? false;
+      if (!mounted) return;
+      setState(() {
+        _hasAdFreePass = hasPass;
+        if (hasPass) {
+          _adsStatus = AdsStatus.shown;
+        }
+      });
+    } catch (e) {
+      print('광고 제거 상태를 불러오지 못했습니다: $e');
+    }
+  }
+
+  Future<void> _setAdFreePass(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_ad_free_pass', value);
+    if (!mounted) return;
+    setState(() {
+      _hasAdFreePass = value;
+      _isPurchasing = false;
+      if (value) {
+        _adsStatus = AdsStatus.shown;
+      }
+    });
+    if (value) {
+      _disposeAds();
+    }
+  }
+
+  Future<void> _initInAppPurchase() async {
+    if (kIsWeb) return;
+    try {
+      final available = await _iap.isAvailable();
+      if (!available) return;
+
+      _purchaseSubscription ??= _iap.purchaseStream.listen(
+        _handlePurchaseUpdates,
+        onDone: () {},
+        onError: (Object error) {
+          if (!mounted) return;
+          setState(() {
+            _isPurchasing = false;
+          });
+        },
+      );
+
+      final response = await _iap.queryProductDetails({_removeAdsProductId});
+      if (mounted && response.productDetails.isNotEmpty) {
+        setState(() {
+          _removeAdsProduct = response.productDetails.first;
+        });
+      }
+
+      if (Platform.isIOS) {
+        await _iap.restorePurchases();
+      }
+    } catch (e) {
+      print('인앱 결제 초기화 실패: $e');
+    }
+  }
+
+  void _handlePurchaseUpdates(List<PurchaseDetails> purchaseDetailsList) {
+    for (final purchaseDetails in purchaseDetailsList) {
+      if (purchaseDetails.productID != _removeAdsProductId) continue;
+
+      if (purchaseDetails.status == PurchaseStatus.pending) {
+        if (mounted) {
+          setState(() {
+            _isPurchasing = true;
+          });
+        }
+      } else if (purchaseDetails.status == PurchaseStatus.purchased ||
+          purchaseDetails.status == PurchaseStatus.restored) {
+        _setAdFreePass(true);
+      } else if (purchaseDetails.status == PurchaseStatus.error ||
+          purchaseDetails.status == PurchaseStatus.canceled) {
+        if (mounted) {
+          setState(() {
+            _isPurchasing = false;
+          });
+        }
+      }
+
+      if (purchaseDetails.pendingCompletePurchase) {
+        _iap.completePurchase(purchaseDetails);
+      }
+    }
+  }
+
+  Future<void> _buyAdRemoval() async {
+    if (_removeAdsProduct == null || _isPurchasing) return;
+    setState(() {
+      _isPurchasing = true;
+    });
+    final purchaseParam = PurchaseParam(productDetails: _removeAdsProduct!);
+    await _iap.buyNonConsumable(purchaseParam: purchaseParam);
+  }
+
+  void _disposeAds() {
+    _rewardedAd?.dispose();
+    _rewardedAd = null;
+    _bannerAd?.dispose();
+    _bannerAd = null;
+    _interstitialAd?.dispose();
+    _interstitialAd = null;
+  }
+
+  void _showStrategyDirectly() {
+    setState(() {
+      _adsStatus = AdsStatus.shown;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
   void _startPolling() {
     Timer.periodic(Duration(seconds: 3), (timer) async {
       if (!mounted) return; // 위젯이 마운트되지 않은 경우 early return
@@ -342,6 +484,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   // 배너 광고 로드
   void _loadBannerAd() async {
+    if (_hasAdFreePass) return;
     try {
       MapEntry<String, String>? adUnitEntry;
 
@@ -389,7 +532,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _bannerAd?.dispose();
+    _purchaseSubscription?.cancel();
+    _disposeAds();
     super.dispose();
   }
 
@@ -538,6 +682,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   void _loadRewardedAd() async {
+    if (_hasAdFreePass) return;
     try {
       MapEntry<String, String>? adUnitEntry;
 
@@ -723,163 +868,190 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   // 조건 체크 함수
-  Card? shouldShowAdUnlockButton() {
+  Widget? shouldShowAdUnlockButton() {
     if (kIsWeb) return null; // 웹에서는 광고 버튼 표시 안 함
-    if (_adsStatus == AdsStatus.shown) return null; // 전략이 이미 공개된 경우
+    if (_adsStatus == AdsStatus.shown || _hasAdFreePass) return null;
 
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      color: Colors.white,
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
-        child: Column(
-          children: [
-            // 연 수익률 표시 (광고 버튼과 함께 숨겨짐)
-            if (_adsStatus == AdsStatus.load) ...[
-              // AI 매매 연 수익률
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey[300]!),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      l10n(context).aiReturn,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
+    final priceText = _removeAdsProduct?.price;
+    final aiReturn =
+        aiYieldData != null
+            ? '${aiYieldData!.totalReturn.toStringAsFixed(2)}%'
+            : '-';
+    final aiDays =
+        aiYieldData?.tradingDays != null
+            ? ' (📆 ${aiYieldData!.tradingDays}일)'
+            : '';
+    final gimchiReturn =
+        gimchiYieldData != null
+            ? '${gimchiYieldData!.totalReturn.toStringAsFixed(2)}%'
+            : '-';
+    final gimchiDays =
+        gimchiYieldData?.tradingDays != null
+            ? ' (📆 ${gimchiYieldData!.tradingDays}일)'
+            : '';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (priceText != null && priceText.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurple,
+                    borderRadius: BorderRadius.circular(32),
+                  ),
+                  child: Text(
+                    priceText,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text:
-                                '${aiYieldData?.totalReturn.toStringAsFixed(2)}%',
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.deepPurple,
-                            ),
-                          ),
-                          TextSpan(
-                            text: ' (📆 ${aiYieldData?.tradingDays}일)',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ],
-                      ),
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-
-              const SizedBox(height: 4),
-
-              // 김프 기준 매매 연 수익률
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey[300]!),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      l10n(context).gimchiReturn,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text:
-                                '${gimchiYieldData?.totalReturn.toStringAsFixed(2)}%',
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.deepPurple,
-                            ),
-                          ),
-                          TextSpan(
-                            text: ' (📆 ${gimchiYieldData?.tradingDays}일)',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ],
-                      ),
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
-                      ),
-                    ),
-                  ],
+            ),
+          _buildYieldInfoTile(
+            title: l10n(context).aiReturn,
+            valueText: aiReturn,
+            detailText: aiDays,
+          ),
+          const SizedBox(height: 8),
+          _buildYieldInfoTile(
+            title: l10n(context).gimchiReturn,
+            valueText: gimchiReturn,
+            detailText: gimchiDays,
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed:
+                  _removeAdsProduct == null || _isPurchasing
+                      ? null
+                      : _buyAdRemoval,
+              icon:
+                  _isPurchasing
+                      ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                      : const Text('👑', style: TextStyle(fontSize: 20)),
+              label: Text(
+                l10n(context).removeAdsCta,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-
-              const SizedBox(height: 20),
-            ],
-
-            // 광고 버튼
-            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 3,
+                minimumSize: const Size(double.infinity, 52),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
               onPressed: _getShowStrategyButtonHandler(),
-              child: Text(
-                l10n(context).todayStrategyAfterAds,
-                textAlign: TextAlign.center,
-              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepPurple,
                 foregroundColor: Colors.white,
                 textStyle: const TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.w700, // 더 굵게
+                  fontWeight: FontWeight.w700,
                 ),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 28,
-                  vertical: 16, // 더 두껍게
+                  vertical: 16,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 3, // 더 확실한 그림자
-                minimumSize: const Size(double.infinity, 52), // 최소 높이 보장
+                elevation: 3,
+                minimumSize: const Size(double.infinity, 52),
+              ),
+              child: Text(
+                l10n(context).todayStrategyAfterAds,
+                textAlign: TextAlign.center,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildYieldInfoTile({
+    required String title,
+    required String valueText,
+    required String detailText,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: valueText,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.deepPurple,
+                  ),
+                ),
+                if (detailText.isNotEmpty)
+                  TextSpan(
+                    text: detailText,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1177,6 +1349,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             backgroundColor: const Color(0xFFF8F5FA), // Scaffold와 동일한 배경색
             elevation: 0, // 그림자 제거
             centerTitle: true,
+            leading: !kIsWeb ? _buildChatIcon() : null,
             title: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -1227,91 +1400,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             actions: [
               if (!kIsWeb) ...[
                 // 알림 아이콘
-                Container(
-                  margin: const EdgeInsets.only(right: 8.0),
-                  decoration: BoxDecoration(
-                    color:
-                        _todayCommentAlarmType == TodayCommentAlarmType.kimchi
-                            ? Colors.orange.shade50
-                            : _todayCommentAlarmType == TodayCommentAlarmType.ai
-                            ? Colors.deepPurple.shade50
-                            : Colors.grey.shade50,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color:
-                          _todayCommentAlarmType == TodayCommentAlarmType.kimchi
-                              ? Colors.orange.shade200
-                              : _todayCommentAlarmType ==
-                                  TodayCommentAlarmType.ai
-                              ? Colors.deepPurple.shade200
-                              : Colors.grey.shade200,
-                      width: 1,
-                    ),
-                  ),
-                  child: InkWell(
-                    onTap: () async {
-                      await showAlarmSettingDialog(context);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(6.0),
-                      child: Icon(
-                        _todayCommentAlarmType == TodayCommentAlarmType.ai ||
-                                _todayCommentAlarmType ==
-                                    TodayCommentAlarmType.kimchi
-                            ? Icons.notifications_active
-                            : Icons.notifications_off,
-                        color:
-                            _todayCommentAlarmType ==
-                                    TodayCommentAlarmType.kimchi
-                                ? Colors.orange
-                                : _todayCommentAlarmType ==
-                                    TodayCommentAlarmType.ai
-                                ? Colors.deepPurple
-                                : Colors.grey,
-                        size: 20,
-                      ),
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                // 챗팅 버튼
-                Container(
-                  margin: const EdgeInsets.only(right: 8.0),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.blue.shade200, width: 1),
-                  ),
-                  child: InkWell(
-                    onTap: () async {
-                      // 채팅 시작 이벤트 로깅
-                      if (!kIsWeb) {
-                        await FirebaseAnalytics.instance.logEvent(
-                          name: 'chat_started',
-                          parameters: {
-                            'timestamp': DateTime.now().millisecondsSinceEpoch,
-                          },
-                        );
-                      }
-
-                      // 채팅봇 페이지로 네비게이트
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const AnonymousChatPage(),
-                        ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(6.0),
-                      child: Icon(
-                        Icons.support_agent,
-                        color: Colors.blue,
-                        size: 20,
-                      ),
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
+                _buildNotificationIcon(),
               ],
             ],
           ),
@@ -1388,7 +1477,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       children: [
         // 원래 알림 카드
         Container(
-          margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+          margin: const EdgeInsets.fromLTRB(8, 8, 8, 12),
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           decoration: BoxDecoration(
             color: bgColor,
@@ -1531,6 +1620,86 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             if (isSelected) const Icon(Icons.check, color: Colors.deepPurple),
           ],
         ),
+      ),
+    );
+  }
+
+  // 챗팅 아이콘 빌더
+  Widget _buildChatIcon() {
+    return Container(
+      margin: const EdgeInsets.only(left: 16.0),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.blue.shade200, width: 1),
+      ),
+      child: InkWell(
+        onTap: () async {
+          // 채팅 시작 이벤트 로깅
+          if (!kIsWeb) {
+            await FirebaseAnalytics.instance.logEvent(
+              name: 'chat_started',
+              parameters: {'timestamp': DateTime.now().millisecondsSinceEpoch},
+            );
+          }
+
+          // 채팅봇 페이지로 네비게이트
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const AnonymousChatPage()),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(6.0),
+          child: Icon(Icons.support_agent, color: Colors.blue, size: 20),
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+    );
+  }
+
+  // 알림 아이콘 빌더
+  Widget _buildNotificationIcon() {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      decoration: BoxDecoration(
+        color:
+            _todayCommentAlarmType == TodayCommentAlarmType.kimchi
+                ? Colors.orange.shade50
+                : _todayCommentAlarmType == TodayCommentAlarmType.ai
+                ? Colors.deepPurple.shade50
+                : Colors.grey.shade50,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color:
+              _todayCommentAlarmType == TodayCommentAlarmType.kimchi
+                  ? Colors.orange.shade200
+                  : _todayCommentAlarmType == TodayCommentAlarmType.ai
+                  ? Colors.deepPurple.shade200
+                  : Colors.grey.shade200,
+          width: 1,
+        ),
+      ),
+      child: InkWell(
+        onTap: () async {
+          await showAlarmSettingDialog(context);
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Icon(
+            _todayCommentAlarmType == TodayCommentAlarmType.ai ||
+                    _todayCommentAlarmType == TodayCommentAlarmType.kimchi
+                ? Icons.notifications_active
+                : Icons.notifications_off,
+            color:
+                _todayCommentAlarmType == TodayCommentAlarmType.kimchi
+                    ? Colors.orange
+                    : _todayCommentAlarmType == TodayCommentAlarmType.ai
+                    ? Colors.deepPurple
+                    : Colors.grey,
+            size: 20,
+          ),
+        ),
+        borderRadius: BorderRadius.circular(16),
       ),
     );
   }
@@ -1834,6 +2003,55 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (_hasAdFreePass) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF4ECFF),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.deepPurple.withOpacity(0.12),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.workspace_premium_outlined,
+                      color: Colors.deepPurple,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        l10n(context).removeAdsTitle,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.deepPurple,
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: _showStrategyDirectly,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 10,
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      child: Text(l10n(context).todayStrategyDirect),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             TabBar(
               labelColor: Colors.deepPurple,
               unselectedLabelColor: Colors.black54,
@@ -1858,7 +2076,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: 230,
+              height: 250,
               child: TabBarView(
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
@@ -1906,7 +2124,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     );
   }
 
-  Future<Card> makeStrategyTab(
+  Future<Widget> makeStrategyTab(
     SimulationType type,
     String title,
     buyPrice,
@@ -1928,14 +2146,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 : sellPrice.toString())
             : '-';
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        side: BorderSide.none,
-        borderRadius: BorderRadius.zero,
-      ),
-      color: Colors.white,
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+      color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 1.0, horizontal: 16),
         child: Column(
@@ -2300,6 +2513,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   // 광고 보고 매매 전략 보기 버튼의 onPressed 핸들러 함수 분리
   VoidCallback? _getShowStrategyButtonHandler() {
+    if (_hasAdFreePass) {
+      return _showStrategyDirectly;
+    }
+
     // 버튼을 활성화 후 액션 연동
     if (_adsStatus == AdsStatus.load) {
       return () => _showAdsView(scrollController: _scrollController);

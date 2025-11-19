@@ -645,6 +645,30 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'X 클릭 후 매수/매도 시그널 확인'**
   String get adClickInstruction;
+
+  /// No description provided for @removeAdsCta.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고 없이 보기 구매하기'**
+  String get removeAdsCta;
+
+  /// No description provided for @removeAdsTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고 없이 보기'**
+  String get removeAdsTitle;
+
+  /// No description provided for @removeAdsSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'더 깔끔하게 매매 전략을 확인하세요.'**
+  String get removeAdsSubtitle;
+
+  /// No description provided for @todayStrategyDirect.
+  ///
+  /// In ko, this message translates to:
+  /// **'바로 전략 보기'**
+  String get todayStrategyDirect;
 }
 
 class _AppLocalizationsDelegate

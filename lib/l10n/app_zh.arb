@@ -13,6 +13,10 @@
   "no": "否",
   "seeAdsAndStrategy": "观看广告后查看策略",
   "todayStrategyAfterAds": "查看今日交易策略（观看广告后）",
+  "todayStrategyDirect": "立即查看策略",
+  "removeAdsTitle": "无广告查看",
+  "removeAdsSubtitle": "更专注地查看交易策略。",
+  "removeAdsCta": "购买无广告访问",
   "aiReturn": "AI交易收益率",
   "gimchiReturn": "泡菜溢价交易收益率",
   "throwTestException": "抛出测试异常",
@@ -100,5 +104,6 @@
   "gimpAlert": "泡菜溢价通知",
   "turnOffAlert": "关闭通知",
   "unFilled": "未成交",
-  "coinInfoSite": "币种信息网站"
+  "coinInfoSite": "币种信息网站",
+  "adClickInstruction": "点击 X 后查看买卖信号"
 }
