@@ -1058,7 +1058,7 @@ class _SimulationPageState extends State<SimulationPage>
                         ),
                       ),
                       Text(
-                        '${krwFormat.format(results.isNotEmpty ? results.last.finalKRW.round() : 1000000)}원',
+                        '${krwFormat.format(results.isNotEmpty ? results.last.finalKRW.round() : 1000000)}${l10n(context).currencyWonSuffix}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

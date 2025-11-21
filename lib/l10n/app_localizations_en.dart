@@ -48,14 +48,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seeAdsAndStrategy => 'Watch ad to view strategy';
 
   @override
-  String get todayStrategyAfterAds =>
-      'Check Today\'s Trading Strategy (After Watching Ad)';
+  String get todayStrategyAfterAds => 'Today\'s Strategy (After Ads)';
 
   @override
-  String get aiReturn => 'AI Trading Return';
+  String get aiReturn => 'AI ROI';
 
   @override
-  String get gimchiReturn => 'K-Premium Trading Return';
+  String get gimchiReturn => 'K-Premium ROI';
 
   @override
   String get throwTestException => 'Throw Test Exception';
@@ -113,6 +112,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stackedFinalKRW => 'Final ₩';
+
+  @override
+  String get currencyWonSuffix => ' KRW';
 
   @override
   String get totalGain => 'Total Gain';
@@ -220,6 +222,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get strategySummaryEmpty => 'No strategy summary available.';
+
+  @override
   String get sellIfCurrentPrice => 'Sell if current price';
 
   @override
@@ -304,6 +309,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get removeAdsSubtitle =>
       'See the trading strategy with zero distractions.';
+
+  @override
+  String get removeAdsDescription =>
+      'Skip ads and use comfortably after payment';
+
+  @override
+  String get purchaseButton => 'Purchase';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get termsOfService => 'Terms of Service';
 
   @override
   String get todayStrategyDirect => 'View Strategy Now';

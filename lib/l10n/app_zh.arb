@@ -38,6 +38,7 @@
   "finalKRW": "最终韩元",
   "tradingPerioid": "交易期间",
   "stackedFinalKRW": "累计最终韩元",
+  "currencyWonSuffix": " 韩元",
   "totalGain": "总收益率",
   "extimatedYearGain": "预估年收益率",
   "chartTrendAnalysis": "图表趋势分析",
@@ -72,6 +73,7 @@
   "expectedGain": "预期收益率",
   "summary": "摘要",
   "kimchiStrategyComment": "当泡菜溢价低于 {buyThreshold}% 时买入，高于 {sellThreshold}% 时卖出。",
+  "strategySummaryEmpty": "暂无策略摘要。",
   "@kimchiStrategyComment": {
     "description": "关于泡菜溢价的买入/卖出策略说明",
     "placeholders": {
@@ -105,5 +107,9 @@
   "turnOffAlert": "关闭通知",
   "unFilled": "未成交",
   "coinInfoSite": "币种信息网站",
-  "adClickInstruction": "点击 X 后查看买卖信号"
+  "adClickInstruction": "点击 X 后查看买卖信号",
+  "removeAdsDescription": "跳过广告，支付后舒适使用",
+  "purchaseButton": "购买",
+  "privacyPolicy": "隐私政策",
+  "termsOfService": "服务条款"
 }

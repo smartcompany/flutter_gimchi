@@ -114,6 +114,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get stackedFinalKRW => '누적 최종 원화';
 
   @override
+  String get currencyWonSuffix => '원';
+
+  @override
   String get totalGain => '총 수익률';
 
   @override
@@ -218,6 +221,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get strategySummaryEmpty => '전략 요약 정보가 없습니다.';
+
+  @override
   String get sellIfCurrentPrice => '현재가 매도시';
 
   @override
@@ -297,6 +303,18 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get removeAdsSubtitle => '더 깔끔하게 매매 전략을 확인하세요.';
+
+  @override
+  String get removeAdsDescription => '광고를 보지 말고 결제 후 편하게 이용하세요';
+
+  @override
+  String get purchaseButton => '구매하기';
+
+  @override
+  String get privacyPolicy => '개인정보 처리 방침';
+
+  @override
+  String get termsOfService => '이용약관';
 
   @override
   String get todayStrategyDirect => '바로 전략 보기';

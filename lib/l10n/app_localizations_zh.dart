@@ -114,6 +114,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get stackedFinalKRW => '累计最终韩元';
 
   @override
+  String get currencyWonSuffix => ' 韩元';
+
+  @override
   String get totalGain => '总收益率';
 
   @override
@@ -218,6 +221,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get strategySummaryEmpty => '暂无策略摘要。';
+
+  @override
   String get sellIfCurrentPrice => '当前价格卖出';
 
   @override
@@ -296,6 +302,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get removeAdsSubtitle => '更专注地查看交易策略。';
+
+  @override
+  String get removeAdsDescription => '跳过广告，支付后舒适使用';
+
+  @override
+  String get purchaseButton => '购买';
+
+  @override
+  String get privacyPolicy => '隐私政策';
+
+  @override
+  String get termsOfService => '服务条款';
 
   @override
   String get todayStrategyDirect => '立即查看策略';

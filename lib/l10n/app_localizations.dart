@@ -310,6 +310,12 @@ abstract class AppLocalizations {
   /// **'누적 최종 원화'**
   String get stackedFinalKRW;
 
+  /// No description provided for @currencyWonSuffix.
+  ///
+  /// In ko, this message translates to:
+  /// **'원'**
+  String get currencyWonSuffix;
+
   /// No description provided for @totalGain.
   ///
   /// In ko, this message translates to:
@@ -508,6 +514,12 @@ abstract class AppLocalizations {
   /// **'김치 프리미엄이 {buyThreshold}% 이하일 때 매수, {sellThreshold}% 이상일 때 매도 전략입니다.'**
   String kimchiStrategyComment(double buyThreshold, double sellThreshold);
 
+  /// No description provided for @strategySummaryEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'전략 요약 정보가 없습니다.'**
+  String get strategySummaryEmpty;
+
   /// No description provided for @sellIfCurrentPrice.
   ///
   /// In ko, this message translates to:
@@ -663,6 +675,30 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'더 깔끔하게 매매 전략을 확인하세요.'**
   String get removeAdsSubtitle;
+
+  /// No description provided for @removeAdsDescription.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고를 보지 말고 결제 후 편하게 이용하세요'**
+  String get removeAdsDescription;
+
+  /// No description provided for @purchaseButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'구매하기'**
+  String get purchaseButton;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In ko, this message translates to:
+  /// **'개인정보 처리 방침'**
+  String get privacyPolicy;
+
+  /// No description provided for @termsOfService.
+  ///
+  /// In ko, this message translates to:
+  /// **'이용약관'**
+  String get termsOfService;
 
   /// No description provided for @todayStrategyDirect.
   ///

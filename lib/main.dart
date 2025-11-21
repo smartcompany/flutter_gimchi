@@ -199,7 +199,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   AdsStatus _adsStatus = AdsStatus.unload; // 광고 상태 관리
   bool _showAdOverlay = true; // 광고 오버레이 표시 여부
 
-  static const String _removeAdsProductId = 'remove_ads';
+  static const String _removeAdsProductId = 'com.smartcompany.usdtsignal.noads';
   final InAppPurchase _iap = InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _purchaseSubscription;
   ProductDetails? _removeAdsProduct;
@@ -263,7 +263,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   void _initializeDataPipelines() {
     Future(() async {
-      await _loadAdFreePreference();
       await _initAPIs();
       await _initInAppPurchase();
     });
@@ -324,38 +323,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _loadAdFreePreference() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final hasPass = prefs.getBool('has_ad_free_pass') ?? false;
-      if (!mounted) return;
-      setState(() {
-        _hasAdFreePass = hasPass;
-        if (hasPass) {
-          _adsStatus = AdsStatus.shown;
-        }
-      });
-    } catch (e) {
-      print('광고 제거 상태를 불러오지 못했습니다: $e');
-    }
-  }
-
-  Future<void> _setAdFreePass(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('has_ad_free_pass', value);
-    if (!mounted) return;
-    setState(() {
-      _hasAdFreePass = value;
-      _isPurchasing = false;
-      if (value) {
-        _adsStatus = AdsStatus.shown;
-      }
-    });
-    if (value) {
-      _disposeAds();
-    }
-  }
-
   Future<void> _initInAppPurchase() async {
     if (kIsWeb) return;
     try {
@@ -380,49 +347,273 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         });
       }
 
-      if (Platform.isIOS) {
-        await _iap.restorePurchases();
-      }
+      // restore를 호출하여 기존 구매 내역을 확인 (iOS, Android 모두)
+      await _iap.restorePurchases();
     } catch (e) {
       print('인앱 결제 초기화 실패: $e');
     }
   }
 
   void _handlePurchaseUpdates(List<PurchaseDetails> purchaseDetailsList) {
-    for (final purchaseDetails in purchaseDetailsList) {
-      if (purchaseDetails.productID != _removeAdsProductId) continue;
+    final matchingPurchase =
+        purchaseDetailsList
+            .where(
+              (purchaseDetails) =>
+                  purchaseDetails.productID == _removeAdsProductId,
+            )
+            .firstOrNull;
 
-      if (purchaseDetails.status == PurchaseStatus.pending) {
+    if (matchingPurchase == null) return;
+
+    switch (matchingPurchase.status) {
+      case PurchaseStatus.pending:
         if (mounted) {
           setState(() {
             _isPurchasing = true;
           });
         }
-      } else if (purchaseDetails.status == PurchaseStatus.purchased ||
-          purchaseDetails.status == PurchaseStatus.restored) {
-        _setAdFreePass(true);
-      } else if (purchaseDetails.status == PurchaseStatus.error ||
-          purchaseDetails.status == PurchaseStatus.canceled) {
+        break;
+      case PurchaseStatus.purchased:
+      case PurchaseStatus.restored:
+        if (mounted) {
+          setState(() {
+            _isPurchasing = false;
+            _hasAdFreePass = true;
+            _adsStatus = AdsStatus.shown;
+          });
+          _disposeAds();
+          // 구매 완료 시 팝업 닫기
+          try {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
+          } catch (e) {
+            // 팝업이 이미 닫혔거나 없는 경우 무시
+          }
+        }
+        break;
+      case PurchaseStatus.error:
+      case PurchaseStatus.canceled:
         if (mounted) {
           setState(() {
             _isPurchasing = false;
           });
         }
-      }
+        break;
+    }
 
-      if (purchaseDetails.pendingCompletePurchase) {
-        _iap.completePurchase(purchaseDetails);
-      }
+    if (matchingPurchase.pendingCompletePurchase) {
+      _iap.completePurchase(matchingPurchase);
     }
   }
 
   Future<void> _buyAdRemoval() async {
     if (_removeAdsProduct == null || _isPurchasing) return;
-    setState(() {
-      _isPurchasing = true;
-    });
-    final purchaseParam = PurchaseParam(productDetails: _removeAdsProduct!);
-    await _iap.buyNonConsumable(purchaseParam: purchaseParam);
+    await _showPurchaseConfirmationDialog();
+  }
+
+  Future<void> _showPurchaseConfirmationDialog() async {
+    if (_removeAdsProduct == null) return;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        bool isPurchasingInDialog = false;
+        return StatefulBuilder(
+          builder:
+              (context, setDialogState) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                title: Row(
+                  children: [
+                    const Icon(
+                      Icons.remove_circle_outline,
+                      color: Colors.deepPurple,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n(context).removeAdsTitle,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 가격 표시
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 16,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.deepPurple.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.deepPurple.shade200),
+                        ),
+                        child: Center(
+                          child: Text(
+                            _removeAdsProduct!.price,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.deepPurple.shade700,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // 설명
+                      Text(
+                        l10n(context).removeAdsDescription,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          height: 1.5,
+                          color: Colors.black,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      // 개인정보 처리 방침 및 이용약관 링크
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          TextButton(
+                            onPressed:
+                                isPurchasingInDialog
+                                    ? null
+                                    : () async {
+                                      final url = Uri.parse(
+                                        Platform.isIOS
+                                            ? 'https://www.apple.com/legal/privacy/'
+                                            : 'https://policies.google.com/privacy',
+                                      );
+                                      if (await canLaunchUrl(url)) {
+                                        await launchUrl(
+                                          url,
+                                          mode: LaunchMode.externalApplication,
+                                        );
+                                      }
+                                    },
+                            child: Text(
+                              l10n(context).privacyPolicy,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                          const Text(
+                            ' | ',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                          TextButton(
+                            onPressed:
+                                isPurchasingInDialog
+                                    ? null
+                                    : () async {
+                                      final url = Uri.parse(
+                                        Platform.isIOS
+                                            ? 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/'
+                                            : 'https://policies.google.com/terms',
+                                      );
+                                      if (await canLaunchUrl(url)) {
+                                        await launchUrl(
+                                          url,
+                                          mode: LaunchMode.externalApplication,
+                                        );
+                                      }
+                                    },
+                            child: Text(
+                              l10n(context).termsOfService,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed:
+                        isPurchasingInDialog
+                            ? null
+                            : () {
+                              if (mounted) {
+                                setState(() {
+                                  _isPurchasing = false;
+                                });
+                              }
+                              Navigator.of(context).pop();
+                            },
+                    child: Text(
+                      l10n(context).cancel,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed:
+                        isPurchasingInDialog
+                            ? null
+                            : () async {
+                              setDialogState(() {
+                                isPurchasingInDialog = true;
+                              });
+                              if (mounted) {
+                                setState(() {
+                                  _isPurchasing = true;
+                                });
+                              }
+                              final purchaseParam = PurchaseParam(
+                                productDetails: _removeAdsProduct!,
+                              );
+                              await _iap.buyNonConsumable(
+                                purchaseParam: purchaseParam,
+                              );
+                            },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child:
+                        isPurchasingInDialog
+                            ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                            : Text(
+                              l10n(context).purchaseButton,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                  ),
+                ],
+              ),
+        );
+      },
+    );
   }
 
   void _disposeAds() {
@@ -870,24 +1061,24 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   // 조건 체크 함수
   Widget? shouldShowAdUnlockButton() {
     if (kIsWeb) return null; // 웹에서는 광고 버튼 표시 안 함
+
     if (_adsStatus == AdsStatus.shown || _hasAdFreePass) return null;
 
-    final priceText = _removeAdsProduct?.price;
     final aiReturn =
         aiYieldData != null
-            ? '${aiYieldData!.totalReturn.toStringAsFixed(2)}%'
+            ? '${aiYieldData!.totalReturn.toStringAsFixed(1)}%'
             : '-';
     final aiDays =
         aiYieldData?.tradingDays != null
-            ? ' (📆 ${aiYieldData!.tradingDays}일)'
+            ? ' (${aiYieldData!.tradingDays} 🗓️)'
             : '';
     final gimchiReturn =
         gimchiYieldData != null
-            ? '${gimchiYieldData!.totalReturn.toStringAsFixed(2)}%'
+            ? '${gimchiYieldData!.totalReturn.toStringAsFixed(1)}%'
             : '-';
     final gimchiDays =
         gimchiYieldData?.tradingDays != null
-            ? ' (📆 ${gimchiYieldData!.tradingDays}일)'
+            ? ' (${gimchiYieldData!.tradingDays} 🗓️)'
             : '';
 
     return Padding(
@@ -895,30 +1086,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (priceText != null && priceText.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.deepPurple,
-                    borderRadius: BorderRadius.circular(32),
-                  ),
-                  child: Text(
-                    priceText,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
           _buildYieldInfoTile(
             title: l10n(context).aiReturn,
             valueText: aiReturn,
@@ -967,7 +1134,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 3,
-                minimumSize: const Size(double.infinity, 52),
+                minimumSize: const Size(double.infinity, 56),
+                fixedSize: const Size(double.infinity, 56),
               ),
             ),
           ),
@@ -991,7 +1159,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 3,
-                minimumSize: const Size(double.infinity, 52),
+                minimumSize: const Size(double.infinity, 56),
+                fixedSize: const Size(double.infinity, 56),
               ),
               child: Text(
                 l10n(context).todayStrategyAfterAds,
@@ -1276,17 +1445,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.grey.withOpacity(0.1),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
               ),
               child: Column(
                 children: [
@@ -1305,17 +1463,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.grey.withOpacity(0.1),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
               ),
               child: Column(
                 children: [
@@ -1482,14 +1629,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.withOpacity(0.15), width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            border: Border.all(color: bgColor.withOpacity(0.7)),
           ),
           child: Row(
             children: [
@@ -1498,10 +1638,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               Expanded(
                 child: Text(
                   comment,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade900, // 더 명확한 대비
+                    color: Colors.black87,
                   ),
                 ),
               ),
@@ -1516,14 +1656,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              border: Border.all(color: Colors.grey.withOpacity(0.3)),
             ),
             child: Column(
               children: [
@@ -2160,18 +2293,16 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               children: [
                 Text(
                   '${l10n(context).buy}: $buyPriceStr',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
-                    color: Colors.grey.shade900, // 더 명확한 대비
                   ),
                 ),
                 Text(
                   '${l10n(context).sell}: $sellPriceStr',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
-                    color: Colors.grey.shade900, // 더 명확한 대비
                   ),
                 ),
               ],
@@ -2182,10 +2313,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               children: [
                 Text(
                   '${l10n(context).gain}: $profitRateStr',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
-                    color: Colors.grey.shade900, // 더 명확한 대비
                   ),
                 ),
                 // 라운드 버튼으로 요약
@@ -2204,19 +2334,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.deepPurple.shade50, // 연보라색 배경
                       foregroundColor: Colors.deepPurple,
-                      elevation: 2, // 그림자 추가
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
-                        side: BorderSide(
-                          color: Colors.deepPurple.withOpacity(0.2),
-                          width: 1,
-                        ),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12, // 더 두껍게
+                        horizontal: 8,
+                        vertical: 8,
                       ),
-                      minimumSize: const Size(0, 44), // 최소 높이
                     ),
                     onPressed: () {
                       showDialog(
@@ -2242,7 +2367,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                                           strategy is String &&
                                           strategy.isNotEmpty
                                       ? strategy
-                                      : '전략 요약 정보가 없습니다.',
+                                      : l10n(context).strategySummaryEmpty,
                                   style: const TextStyle(
                                     fontSize: 16,
                                     height: 1.5,
@@ -2291,19 +2416,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(
-                    color: Colors.deepPurple,
-                    width: 1.5,
-                  ), // 더 굵은 테두리
+                  side: const BorderSide(color: Colors.deepPurple),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 14,
-                    horizontal: 20,
-                  ), // 더 두껍게
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   foregroundColor: Colors.deepPurple,
-                  minimumSize: const Size(0, 48), // 최소 높이
                 ),
                 onPressed:
                     latestStrategy == null

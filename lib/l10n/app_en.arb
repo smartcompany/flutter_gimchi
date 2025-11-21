@@ -12,13 +12,13 @@
   "needPermission": "Permission required",
   "no": "No",
   "seeAdsAndStrategy": "Watch ad to view strategy",
-  "todayStrategyAfterAds": "Check Today's Trading Strategy (After Watching Ad)",
+  "todayStrategyAfterAds": "Today's Strategy (After Ads)",
   "todayStrategyDirect": "View Strategy Now",
   "removeAdsTitle": "View Without Ads",
   "removeAdsSubtitle": "See the trading strategy with zero distractions.",
   "removeAdsCta": "Buy Ad-Free Access",
-  "aiReturn": "AI Trading Return",
-  "gimchiReturn": "K-Premium Trading Return",
+  "aiReturn": "AI ROI",
+  "gimchiReturn": "K-Premium ROI",
   "throwTestException": "Throw Test Exception",
   "throw_test_exception": "Throw Test Exception",
   "usdtSignal": "USDT Signal",
@@ -38,6 +38,7 @@
   "finalKRW": "Final KRW",
   "tradingPerioid": "Period",
   "stackedFinalKRW": "Final ₩",
+  "currencyWonSuffix": " KRW",
   "totalGain": "Total Gain",
   "extimatedYearGain": "Est. %/yr",
   "chartTrendAnalysis": "Chart Trend Analysis",
@@ -72,6 +73,7 @@
   "expectedGain": "Expected Return",
   "summary": "Summary",
   "kimchiStrategyComment": "Buy when the K-Premium is below {buyThreshold}%, and sell when it is above {sellThreshold}%.",
+  "strategySummaryEmpty": "No strategy summary available.",
   "@kimchiStrategyComment": {
     "description": "K-premium buy/sell strategy explanation",
     "placeholders": {
@@ -105,5 +107,9 @@
   "turnOffAlert": "Turn off alert",
   "unFilled": "Unfilled",
   "coinInfoSite": "Coin Info Site",
-  "adClickInstruction": "Click X to check buy/sell signals"
+  "adClickInstruction": "Click X to check buy/sell signals",
+  "removeAdsDescription": "Skip ads and use comfortably after payment",
+  "purchaseButton": "Purchase",
+  "privacyPolicy": "Privacy Policy",
+  "termsOfService": "Terms of Service"
 }

@@ -32,10 +32,9 @@ class InfoItem extends StatelessWidget {
               scale: scale,
               child: Text(
                 value,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade900, // 더 명확한 대비
                 ),
               ),
             );
