@@ -48,7 +48,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seeAdsAndStrategy => 'Watch ad to view strategy';
 
   @override
-  String get todayStrategyAfterAds => 'Today\'s Strategy (After Ads)';
+  String get todayStrategyAfterAds => 'Watch Ad & View Strategy';
 
   @override
   String get aiReturn => 'AI ROI';
