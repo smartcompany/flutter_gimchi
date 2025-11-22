@@ -1943,55 +1943,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_hasAdFreePass) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF4ECFF),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.deepPurple.withOpacity(0.12),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.workspace_premium_outlined,
-                      color: Colors.deepPurple,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        l10n(context).removeAdsTitle,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.deepPurple,
-                        ),
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: _showStrategyDirectly,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 10,
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      child: Text(l10n(context).todayStrategyDirect),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
             TabBar(
               labelColor: Colors.deepPurple,
               unselectedLabelColor: Colors.black54,
