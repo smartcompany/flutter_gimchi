@@ -301,7 +301,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adClickInstruction => 'Click X to check buy/sell signals';
 
   @override
-  String get removeAdsCta => 'View Strategy Without Ads';
+  String get removeAdsCta => 'Ad-Free View';
 
   @override
   String get removeAdsTitle => 'View Without Ads';
