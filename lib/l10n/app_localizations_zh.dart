@@ -295,7 +295,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get adClickInstruction => '点击 X 后查看买卖信号';
 
   @override
-  String get removeAdsCta => '购买无广告访问';
+  String get removeAdsCta => '无广告查看交易策略';
 
   @override
   String get removeAdsTitle => '无广告查看';
@@ -304,7 +304,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get removeAdsSubtitle => '更专注地查看交易策略。';
 
   @override
-  String get removeAdsDescription => '跳过广告，支付后舒适使用';
+  String get removeAdsDescription => '支付后，无需观看广告即可立即查看交易策略。';
 
   @override
   String get purchaseButton => '购买';

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -107,10 +106,9 @@ class _PurchaseConfirmationDialogState
   }
 
   Future<void> _openPrivacyPolicy() async {
+    // 앱 자체의 개인정보 처리 방침 페이지
     final url = Uri.parse(
-      Platform.isIOS
-          ? 'https://www.apple.com/legal/privacy/'
-          : 'https://policies.google.com/privacy',
+      'https://smartcompany.github.io/USDTSignal/privacy.html',
     );
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
@@ -118,10 +116,9 @@ class _PurchaseConfirmationDialogState
   }
 
   Future<void> _openTermsOfService() async {
+    // 앱 자체의 이용약관 페이지
     final url = Uri.parse(
-      Platform.isIOS
-          ? 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/'
-          : 'https://policies.google.com/terms',
+      'https://smartcompany.github.io/USDTSignal/terms.html',
     );
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
@@ -193,8 +190,8 @@ class _PurchaseConfirmationDialogState
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              l10n(context).removeAdsTitle,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              l10n(context).removeAdsCta,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
             ),
           ),
         ],

@@ -16,7 +16,7 @@
   "todayStrategyDirect": "View Strategy Now",
   "removeAdsTitle": "View Without Ads",
   "removeAdsSubtitle": "See the trading strategy with zero distractions.",
-  "removeAdsCta": "Buy Ad-Free Access",
+  "removeAdsCta": "View Strategy Without Ads",
   "aiReturn": "AI ROI",
   "gimchiReturn": "K-Premium ROI",
   "throwTestException": "Throw Test Exception",
@@ -108,7 +108,7 @@
   "unFilled": "Unfilled",
   "coinInfoSite": "Coin Info Site",
   "adClickInstruction": "Click X to check buy/sell signals",
-  "removeAdsDescription": "Skip ads and use comfortably after payment",
+  "removeAdsDescription": "After payment, you can view trading strategies immediately without watching ads.",
   "purchaseButton": "Purchase",
   "privacyPolicy": "Privacy Policy",
   "termsOfService": "Terms of Service"

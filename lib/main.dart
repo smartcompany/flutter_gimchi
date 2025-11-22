@@ -952,7 +952,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                           strokeWidth: 2.5,
                         ),
                       )
-                      : const Icon(Icons.workspace_premium, size: 20),
+                      : const Icon(Icons.star, size: 20, color: Colors.amber),
               label: Text(
                 l10n(context).removeAdsCta,
                 style: const TextStyle(

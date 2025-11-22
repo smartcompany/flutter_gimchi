@@ -661,7 +661,7 @@ abstract class AppLocalizations {
   /// No description provided for @removeAdsCta.
   ///
   /// In ko, this message translates to:
-  /// **'광고 없이 보기 구매하기'**
+  /// **'광고 없이 매매 전략 보기'**
   String get removeAdsCta;
 
   /// No description provided for @removeAdsTitle.
@@ -679,7 +679,7 @@ abstract class AppLocalizations {
   /// No description provided for @removeAdsDescription.
   ///
   /// In ko, this message translates to:
-  /// **'광고를 보지 말고 결제 후 편하게 이용하세요'**
+  /// **'결제 후에는 광고 시청 없이 바로 매매 전략을 확인할 수 있습니다.'**
   String get removeAdsDescription;
 
   /// No description provided for @purchaseButton.

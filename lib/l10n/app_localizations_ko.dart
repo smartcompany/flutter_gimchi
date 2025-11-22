@@ -296,7 +296,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get adClickInstruction => 'X 클릭 후 매수/매도 시그널 확인';
 
   @override
-  String get removeAdsCta => '광고 없이 보기 구매하기';
+  String get removeAdsCta => '광고 없이 매매 전략 보기';
 
   @override
   String get removeAdsTitle => '광고 없이 보기';
@@ -305,7 +305,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get removeAdsSubtitle => '더 깔끔하게 매매 전략을 확인하세요.';
 
   @override
-  String get removeAdsDescription => '광고를 보지 말고 결제 후 편하게 이용하세요';
+  String get removeAdsDescription => '결제 후에는 광고 시청 없이 바로 매매 전략을 확인할 수 있습니다.';
 
   @override
   String get purchaseButton => '구매하기';

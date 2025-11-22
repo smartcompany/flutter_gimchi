@@ -301,7 +301,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adClickInstruction => 'Click X to check buy/sell signals';
 
   @override
-  String get removeAdsCta => 'Buy Ad-Free Access';
+  String get removeAdsCta => 'View Strategy Without Ads';
 
   @override
   String get removeAdsTitle => 'View Without Ads';
@@ -312,7 +312,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get removeAdsDescription =>
-      'Skip ads and use comfortably after payment';
+      'After payment, you can view trading strategies immediately without watching ads.';
 
   @override
   String get purchaseButton => 'Purchase';
