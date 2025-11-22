@@ -57,6 +57,7 @@ dependencies:
   flutter_chat_core: ^2.6.1
   url_launcher: ^6.2.5
   package_info_plus: ^8.0.2
+  wakelock_plus: ^1.2.8
   
   flutter_localizations:
     sdk: flutter

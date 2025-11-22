@@ -27,6 +27,8 @@ import 'anonymous_chat_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:url_launcher/url_launcher.dart'; // url_launcher 패키지 import
 import 'news_splash_view.dart';
+import 'dialogs/purchase_confirmation_dialog.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +42,13 @@ void main() async {
     await _initializeAnalytics();
 
     await printIDFA();
+
+    // USB로 연결된 디버그 모드에서 화면 잠자기 방지
+    // 디버그 모드로 실행할 때는 일반적으로 USB로 연결되어 있음
+    if (kDebugMode) {
+      await WakelockPlus.enable();
+      print('USB 디버그 모드: 화면 잠자기 방지 활성화');
+    }
   }
 
   runApp(const MyApp());
@@ -382,14 +391,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             _adsStatus = AdsStatus.shown;
           });
           _disposeAds();
-          // 구매 완료 시 팝업 닫기
-          try {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            }
-          } catch (e) {
-            // 팝업이 이미 닫혔거나 없는 경우 무시
-          }
+          // 구매 완료 시 팝업 닫기는 Dialog 내부에서 처리함
         }
         break;
       case PurchaseStatus.error:
@@ -409,210 +411,15 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   Future<void> _buyAdRemoval() async {
     if (_removeAdsProduct == null || _isPurchasing) return;
-    await _showPurchaseConfirmationDialog();
-  }
-
-  Future<void> _showPurchaseConfirmationDialog() async {
-    if (_removeAdsProduct == null) return;
 
     await showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
-        bool isPurchasingInDialog = false;
-        return StatefulBuilder(
-          builder:
-              (context, setDialogState) => AlertDialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                title: Row(
-                  children: [
-                    const Icon(
-                      Icons.remove_circle_outline,
-                      color: Colors.deepPurple,
-                      size: 28,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        l10n(context).removeAdsTitle,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                content: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 가격 표시
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 16,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.deepPurple.shade50,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.deepPurple.shade200),
-                        ),
-                        child: Center(
-                          child: Text(
-                            _removeAdsProduct!.price,
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.deepPurple.shade700,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      // 설명
-                      Text(
-                        l10n(context).removeAdsDescription,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          height: 1.5,
-                          color: Colors.black,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      // 개인정보 처리 방침 및 이용약관 링크
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          TextButton(
-                            onPressed:
-                                isPurchasingInDialog
-                                    ? null
-                                    : () async {
-                                      final url = Uri.parse(
-                                        Platform.isIOS
-                                            ? 'https://www.apple.com/legal/privacy/'
-                                            : 'https://policies.google.com/privacy',
-                                      );
-                                      if (await canLaunchUrl(url)) {
-                                        await launchUrl(
-                                          url,
-                                          mode: LaunchMode.externalApplication,
-                                        );
-                                      }
-                                    },
-                            child: Text(
-                              l10n(context).privacyPolicy,
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                          const Text(
-                            ' | ',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                          TextButton(
-                            onPressed:
-                                isPurchasingInDialog
-                                    ? null
-                                    : () async {
-                                      final url = Uri.parse(
-                                        Platform.isIOS
-                                            ? 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/'
-                                            : 'https://policies.google.com/terms',
-                                      );
-                                      if (await canLaunchUrl(url)) {
-                                        await launchUrl(
-                                          url,
-                                          mode: LaunchMode.externalApplication,
-                                        );
-                                      }
-                                    },
-                            child: Text(
-                              l10n(context).termsOfService,
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed:
-                        isPurchasingInDialog
-                            ? null
-                            : () {
-                              if (mounted) {
-                                setState(() {
-                                  _isPurchasing = false;
-                                });
-                              }
-                              Navigator.of(context).pop();
-                            },
-                    child: Text(
-                      l10n(context).cancel,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed:
-                        isPurchasingInDialog
-                            ? null
-                            : () async {
-                              setDialogState(() {
-                                isPurchasingInDialog = true;
-                              });
-                              if (mounted) {
-                                setState(() {
-                                  _isPurchasing = true;
-                                });
-                              }
-                              final purchaseParam = PurchaseParam(
-                                productDetails: _removeAdsProduct!,
-                              );
-                              await _iap.buyNonConsumable(
-                                purchaseParam: purchaseParam,
-                              );
-                            },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child:
-                        isPurchasingInDialog
-                            ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.5,
-                              ),
-                            )
-                            : Text(
-                              l10n(context).purchaseButton,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                  ),
-                ],
-              ),
-        );
-      },
+      builder:
+          (context) => PurchaseConfirmationDialog(
+            product: _removeAdsProduct!,
+            iap: _iap,
+          ),
     );
   }
 
@@ -1115,7 +922,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                           strokeWidth: 2.5,
                         ),
                       )
-                      : const Text('👑', style: TextStyle(fontSize: 20)),
+                      : const Icon(Icons.workspace_premium, size: 20),
               label: Text(
                 l10n(context).removeAdsCta,
                 style: const TextStyle(
