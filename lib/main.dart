@@ -274,6 +274,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     Future(() async {
       await _initAPIs();
       await _initInAppPurchase();
+
+      if (kIsWeb) {
+        return;
+      }
+
+      if (_hasAdFreePass) {
+        return;
+      }
+
+      _loadRewardedAd();
+      _loadBannerAd();
     });
   }
 
@@ -295,11 +306,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   Future<void> _initAPIs() async {
-    if (!kIsWeb && !_hasAdFreePass) {
-      _loadRewardedAd();
-      _loadBannerAd();
-    }
-
     await _loadAllApis();
 
     if (!kIsWeb) {
@@ -358,6 +364,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
       // restore를 호출하여 기존 구매 내역을 확인 (iOS, Android 모두)
       await _iap.restorePurchases();
+      debugPrint('인앱 결제 복원 완료');
     } catch (e) {
       print('인앱 결제 초기화 실패: $e');
     }
@@ -507,21 +514,44 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             MediaQuery.of(context).size.width.truncate(),
           );
 
-      _bannerAd = BannerAd(
+      // 기존 배너 광고 정리
+      _bannerAd?.dispose();
+
+      // 로드 상태 초기화
+      if (mounted) {
+        setState(() {
+          _bannerAd = null;
+        });
+      }
+
+      final newBannerAd = BannerAd(
         adUnitId: adUnitEntry.value,
         size: adSize ?? AdSize.banner, // adSize가 null이면 기본 배너
         request: const AdRequest(),
         listener: BannerAdListener(
           onAdLoaded: (ad) {
             print('Banner ad loaded');
+            // 로드 성공 시에만 _bannerAd 설정
+            if (mounted && ad is BannerAd) {
+              setState(() {
+                _bannerAd = ad;
+              });
+            }
           },
           onAdFailedToLoad: (ad, error) {
             print('Banner ad failed to load: $error');
             ad.dispose();
+            if (mounted) {
+              setState(() {
+                _bannerAd = null;
+              });
+            }
           },
         ),
       );
-      _bannerAd?.load();
+
+      // load() 호출 - onAdLoaded 콜백에서만 _bannerAd가 설정됨
+      newBannerAd.load();
     } catch (e) {
       print('배너 광고 로드 실패: $e');
     }
@@ -1032,6 +1062,91 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     );
   }
 
+  // 광고 오버레이 (결제 안 한 경우만 표시)
+  Widget _buildAdOverlay() {
+    if (_hasAdFreePass) {
+      return const SizedBox.shrink();
+    }
+
+    if (!_showAdOverlay) {
+      return const SizedBox.shrink();
+    }
+
+    if (_bannerAd == null) {
+      return const SizedBox.shrink();
+    }
+
+    // responseInfo가 null이 아니어야 로드 완료
+    if (_bannerAd!.responseInfo == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      height: 100, // 충분한 높이 확보
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          // 배너 광고
+          Expanded(child: Center(child: AdWidget(ad: _bannerAd!))),
+          // 툴팁 메시지
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(14),
+                bottomRight: Radius.circular(14),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n(context).adClickInstruction,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.blue.shade700,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                // X 버튼
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _showAdOverlay = false;
+                    });
+                  },
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade600,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // 최신 뉴스 로드 (별도로 비동기 호출)
   Future<void> _loadLatestNews() async {
     try {
@@ -1455,75 +1570,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             ],
           ),
         ),
-        // 광고 오버레이 (항상 표시)
-        if (_showAdOverlay && _bannerAd != null)
-          Container(
-            width: double.infinity,
-            height: 100, // 충분한 높이 확보
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.grey.withOpacity(0.3)),
-            ),
-            child: Column(
-              children: [
-                // 배너 광고
-                Expanded(child: Center(child: AdWidget(ad: _bannerAd!))),
-                // 툴팁 메시지
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 4,
-                    horizontal: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(14),
-                      bottomRight: Radius.circular(14),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          l10n(context).adClickInstruction,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.blue.shade700,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      // X 버튼
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _showAdOverlay = false;
-                          });
-                        },
-                        child: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade600,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+        // 광고 오버레이 (결제 안 한 경우만 표시)
+        _buildAdOverlay(),
       ],
     );
   }
