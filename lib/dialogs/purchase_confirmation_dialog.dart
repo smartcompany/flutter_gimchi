@@ -72,7 +72,7 @@ class _PurchaseConfirmationDialogState
       return;
     }
 
-    setState(() {
+      setState(() {
       switch (matchingPurchase.status) {
         case PurchaseStatus.pending:
           print('[PurchaseDialog] Purchase pending');
@@ -97,8 +97,8 @@ class _PurchaseConfirmationDialogState
           // 취소 시 스피너 중지
           _isPurchasing = false;
           break;
-      }
-    });
+        }
+      });
 
     if (matchingPurchase.pendingCompletePurchase) {
       widget.iap.completePurchase(matchingPurchase);

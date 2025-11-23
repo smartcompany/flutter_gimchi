@@ -21,6 +21,7 @@ class ChartOnlyPage extends StatefulWidget {
   // AI/김프 매매 체크박스 초기값을 받을 수 있도록 파라미터 추가
   final bool initialShowAITrading;
   final bool initialShowGimchiTrading;
+
   // 기존 생성자
   const ChartOnlyPage({
     super.key,
@@ -64,6 +65,12 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
   bool showKimchiPlotBands = false;
   List aiTradeResults = [];
   bool _markersVisible = true;
+
+  final buyMarkerImage = const AssetImage('assets/markers/arrow_shape_up.png');
+
+  final sellMarkerImage = const AssetImage(
+    'assets/markers/arrow_shape_down.png',
+  );
 
   final _zoomPanBehavior = ZoomPanBehavior(
     enablePinching: true,
@@ -393,11 +400,11 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         xValueMapper: (r, _) => r.buyDate,
         yValueMapper: (r, _) => r.buyPrice,
         markerSettings: MarkerSettings(
-          isVisible: _markersVisible, // 애니메이션 비활성화 (메모리 이슈 해결)
-          shape: DataMarkerType.triangle,
-          color: Colors.red,
-          width: 12,
-          height: 12,
+          isVisible: _markersVisible,
+          shape: DataMarkerType.image,
+          image: buyMarkerImage, // 매수 신호 - 위쪽 화살표
+          width: 24,
+          height: 24,
         ),
       ),
       ScatterSeries<dynamic, DateTime>(
@@ -406,11 +413,11 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         xValueMapper: (r, _) => r.sellDate!,
         yValueMapper: (r, _) => r.sellPrice!,
         markerSettings: MarkerSettings(
-          isVisible: _markersVisible, // 애니메이션 비활성화 (메모리 이슈 해결)
-          shape: DataMarkerType.invertedTriangle,
-          color: Colors.blue,
-          width: 12,
-          height: 12,
+          isVisible: _markersVisible,
+          shape: DataMarkerType.image,
+          image: sellMarkerImage, // 틴트 컬러 - 빨간색
+          width: 24,
+          height: 24,
         ),
       ),
     ];
