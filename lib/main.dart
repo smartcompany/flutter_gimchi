@@ -1307,7 +1307,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               borderRadius: BorderRadius.circular(16),
             ),
             title: Text(l10n(context).loadingFail),
-            content: const Text('데이터를 불러오는데 실패했습니다.\n다시 시도하시겠습니까?'),
+            content: Text(l10n(context).failedToload),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -1318,7 +1318,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   Navigator.of(context).pop();
                   _loadAllApis();
                 },
-                child: const Text('예'),
+                child: Text(l10n(context).yes),
               ),
             ],
           ),
@@ -2397,9 +2397,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             builder:
                 (context) => AlertDialog(
                   title: Text(l10n(context).needPermission),
-                  content: const Text(
-                    '알림을 받으려면 기기 설정에서 알림 권한을 허용해야 합니다.\n설정으로 이동하시겠습니까?',
-                  ),
+                  content: Text(l10n(context).permissionRequiredMessage),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),

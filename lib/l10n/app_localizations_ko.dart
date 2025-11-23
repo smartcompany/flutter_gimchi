@@ -42,7 +42,41 @@ class AppLocalizationsKo extends AppLocalizations {
   String get needPermission => '알림 권한 필요';
 
   @override
+  String get permissionRequiredMessage =>
+      '알림을 받으려면 기기 설정에서 알림 권한을 허용해야 합니다.\n설정으로 이동하시겠습니까?';
+
+  @override
   String get no => '아니오';
+
+  @override
+  String get yes => '예';
+
+  @override
+  String get useTrendBasedStrategy => '추세 기반 전략 사용';
+
+  @override
+  String get error => '에러';
+
+  @override
+  String get dash => '-';
+
+  @override
+  String get kimchiStrategy => '김프 전략';
+
+  @override
+  String get viewAllStrategyHistory => '전체 전략 히스토리 보기';
+
+  @override
+  String get kimchiStrategyHistory => '김프 매매 전략 히스토리';
+
+  @override
+  String get aiStrategyHistory => 'AI 매매 전략 히스토리';
+
+  @override
+  String get strategy => '전략';
+
+  @override
+  String get noStrategyData => '전략 데이터가 없습니다';
 
   @override
   String get seeAdsAndStrategy => '광고 보고 매매 전략 보기';
@@ -199,9 +233,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get failedToSaveSettings => '설정 저장에 실패했습니다.';
-
-  @override
-  String get strategy => '전략';
 
   @override
   String get buyPrice => '매수 가격';

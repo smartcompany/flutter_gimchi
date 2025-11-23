@@ -67,8 +67,8 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
               const SizedBox(width: 12),
               Text(
                 widget.simulationType == SimulationType.kimchi
-                    ? '김프 매매 전략 히스토리'
-                    : 'AI 매매 전략 히스토리',
+                    ? l10n(context).kimchiStrategyHistory
+                    : l10n(context).aiStrategyHistory,
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -132,7 +132,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          '전략 데이터가 없습니다',
+                          l10n(context).noStrategyData,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -185,7 +185,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            '${DateFormat('yyyy/MM/dd').format(date)} 전략',
+                            '${DateFormat('yyyy/MM/dd').format(date)} ${l10n(context).strategy}',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -248,7 +248,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            '${DateFormat('yyyy/MM/dd').format(date)} 전략',
+                            '${DateFormat('yyyy/MM/dd').format(date)} ${l10n(context).strategy}',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -452,7 +452,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text('닫기'),
+                    child: Text(l10n(context).close),
                   ),
                 ),
               ],
@@ -468,7 +468,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text('${DateFormat('yyyy/MM/dd').format(date)} 김프 전략'),
+            title: Text('${DateFormat('yyyy/MM/dd').format(date)} ${l10n(context).kimchiStrategy}'),
             content: _buildKimchiStrategyDetail(context, date),
             actions: [
               TextButton(

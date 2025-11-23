@@ -131,7 +131,7 @@ class SimulationPage extends StatefulWidget {
                             });
                           },
                         ),
-                        Text('추세 기반 전략 사용'),
+                        Text(l10n(context).useTrendBasedStrategy),
                       ],
                     ),
                 ],
@@ -452,7 +452,7 @@ class _SimulationPageState extends State<SimulationPage>
             loading
                 ? const Center(child: CircularProgressIndicator())
                 : error != null
-                ? Center(child: Text('에러: $error'))
+                ? Center(child: Text('${l10n(context).error}: $error'))
                 : ListView(
                   padding: const EdgeInsets.all(16.0),
                   children: [
@@ -1028,7 +1028,7 @@ class _SimulationPageState extends State<SimulationPage>
                 const SizedBox(height: 4),
                 Builder(
                   builder: (context) {
-                    if (results.isEmpty) return const Text('-');
+                    if (results.isEmpty) return Text(l10n(context).dash);
                     final startDate = results.first.buyDate?.toCustomString();
                     final endDate = results.last.analysisDate.toCustomString();
                     final text = '${startDate} ~ ${endDate}';
@@ -1142,9 +1142,9 @@ class _SimulationPageState extends State<SimulationPage>
                           Builder(
                             builder: (context) {
                               if (results.isEmpty) {
-                                return const Text(
-                                  '-',
-                                  style: TextStyle(
+                                return Text(
+                                  l10n(context).dash,
+                                  style: const TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.deepPurple,
@@ -1154,9 +1154,9 @@ class _SimulationPageState extends State<SimulationPage>
                               final firstDate = results.first.buyDate;
                               final lastDate = results.last.analysisDate;
                               if (firstDate == null) {
-                                return const Text(
-                                  '-',
-                                  style: TextStyle(
+                                return Text(
+                                  l10n(context).dash,
+                                  style: const TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.deepPurple,
@@ -1166,9 +1166,9 @@ class _SimulationPageState extends State<SimulationPage>
                               final days =
                                   lastDate.difference(firstDate).inDays;
                               if (days < 1) {
-                                return const Text(
-                                  '-',
-                                  style: TextStyle(
+                                return Text(
+                                  l10n(context).dash,
+                                  style: const TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.deepPurple,
@@ -1254,7 +1254,7 @@ class _SimulationPageState extends State<SimulationPage>
                       },
                       icon: const Icon(Icons.history, color: Colors.white),
                       label: Text(
-                        '전체 전략 히스토리 보기',
+                        l10n(context).viewAllStrategyHistory,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

@@ -42,7 +42,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get needPermission => 'Permission required';
 
   @override
+  String get permissionRequiredMessage =>
+      'To receive notifications, you need to allow notification permissions in device settings.\nWould you like to go to settings?';
+
+  @override
   String get no => 'No';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get useTrendBasedStrategy => 'Use trend-based strategy';
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String get dash => '-';
+
+  @override
+  String get kimchiStrategy => 'K-Premium Strategy';
+
+  @override
+  String get viewAllStrategyHistory => 'View History';
+
+  @override
+  String get kimchiStrategyHistory => 'K-Premium History';
+
+  @override
+  String get aiStrategyHistory => 'AI History';
+
+  @override
+  String get strategy => 'Strategy';
+
+  @override
+  String get noStrategyData => 'No strategy data available';
 
   @override
   String get seeAdsAndStrategy => 'Watch ad to view strategy';
@@ -200,9 +234,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get failedToSaveSettings => 'Failed to save settings.';
-
-  @override
-  String get strategy => 'Strategy';
 
   @override
   String get buyPrice => 'Buy Price';
