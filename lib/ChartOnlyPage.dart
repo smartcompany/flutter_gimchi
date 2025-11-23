@@ -22,6 +22,11 @@ class ChartOnlyPage extends StatefulWidget {
   final bool initialShowAITrading;
   final bool initialShowGimchiTrading;
 
+  static const buyMarkerImage = AssetImage('assets/markers/arrow_shape_up.png');
+  static const sellMarkerImage = AssetImage(
+    'assets/markers/arrow_shape_down.png',
+  );
+
   // 기존 생성자
   const ChartOnlyPage({
     super.key,
@@ -57,7 +62,8 @@ class ChartOnlyPage extends StatefulWidget {
   State<ChartOnlyPage> createState() => _ChartOnlyPageState();
 }
 
-class _ChartOnlyPageState extends State<ChartOnlyPage> {
+class _ChartOnlyPageState extends State<ChartOnlyPage>
+    with TickerProviderStateMixin {
   bool showKimchiPremium = true;
   bool showAITrading = false;
   bool showGimchiTrading = false;
@@ -65,12 +71,8 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
   bool showKimchiPlotBands = false;
   List aiTradeResults = [];
   bool _markersVisible = true;
-
-  final buyMarkerImage = const AssetImage('assets/markers/arrow_shape_up.png');
-
-  final sellMarkerImage = const AssetImage(
-    'assets/markers/arrow_shape_down.png',
-  );
+  bool _markersBlinking = true;
+  late AnimationController _blinkController;
 
   final _zoomPanBehavior = ZoomPanBehavior(
     enablePinching: true,
@@ -91,6 +93,12 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
   @override
   void initState() {
     super.initState();
+    // 크기 변화 애니메이션 컨트롤러 초기화
+    _blinkController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+
     // 초기 체크박스 상태를 위젯 파라미터로부터 세팅
     showAITrading = widget.initialShowAITrading;
     showGimchiTrading = widget.initialShowGimchiTrading;
@@ -122,6 +130,15 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         _autoZoomToAITrades();
       });
     }
+  }
+
+  @override
+  void dispose() {
+    // 마커를 숨겨서 크래시 방지
+    _markersVisible = false;
+    _markersBlinking = false;
+    _blinkController.dispose();
+    super.dispose();
   }
 
   @override
@@ -247,16 +264,49 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
     AppLocalizations l10n,
     List<PlotBand> kimchiPlotBands,
   ) {
-    return SfCartesianChart(
-      onTooltipRender: (TooltipArgs args) => _handleTooltipRender(args, l10n),
-      legend: const Legend(isVisible: true, position: LegendPosition.bottom),
-      margin: const EdgeInsets.all(10),
-      primaryXAxis: _buildPrimaryXAxis(kimchiPlotBands),
-      primaryYAxis: _buildPrimaryYAxis(),
-      axes: _buildAxes(),
-      zoomPanBehavior: _zoomPanBehavior,
-      tooltipBehavior: TooltipBehavior(enable: true),
-      series: _buildChartSeries(l10n),
+    // 다음 매수/매도 시점 가져오기
+    final simulationType = () {
+      if (showAITrading) return SimulationType.ai;
+      if (showGimchiTrading) return SimulationType.kimchi;
+
+      return SimulationType.ai;
+    }();
+
+    final nextPoint = SimulationModel.getNextTradingPoint(
+      simulationType: simulationType,
+      latestStrategy: widget.strategyList.last,
+      exchangeRates: widget.exchangeRates,
+      usdtChartData: widget.usdtChartData,
+      premiumTrends: widget.premiumTrends,
+      currentPrice: widget.usdtChartData.safeLast?.close,
+    );
+
+    return AnimatedBuilder(
+      animation: _blinkController,
+      builder: (context, child) {
+        // 크기 변화: 1.0 ~ 1.4 사이에서 변화
+        final scale = 1.0 + _blinkController.value * 0.4;
+
+        return SfCartesianChart(
+          onTooltipRender:
+              (TooltipArgs args) => _handleTooltipRender(args, l10n),
+          legend: const Legend(
+            isVisible: true,
+            position: LegendPosition.bottom,
+          ),
+          margin: const EdgeInsets.all(10),
+          primaryXAxis: _buildPrimaryXAxis(kimchiPlotBands),
+          primaryYAxis: _buildPrimaryYAxis(),
+          axes: _buildAxes(),
+          zoomPanBehavior: _zoomPanBehavior,
+          tooltipBehavior: TooltipBehavior(enable: true),
+          series: [
+            ..._buildChartSeries(l10n),
+            if (nextPoint != null)
+              _buildNextTradingPointSeries(nextPoint, scale),
+          ],
+        );
+      },
     );
   }
 
@@ -391,6 +441,32 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
     );
   }
 
+  // 다음 매수/매도 시점 크기 변화 마크 시리즈
+  ScatterSeries<({DateTime date, double price, bool isBuy}), DateTime>
+  _buildNextTradingPointSeries(
+    ({double price, bool isBuy}) nextPoint,
+    double scale,
+  ) {
+    return ScatterSeries<({DateTime date, double price, bool isBuy}), DateTime>(
+      name: nextPoint.isBuy ? '매수' : '매도',
+      dataSource: [
+        (date: DateTime.now(), price: nextPoint.price, isBuy: nextPoint.isBuy),
+      ],
+      xValueMapper: (p, _) => p.date,
+      yValueMapper: (p, _) => p.price,
+      markerSettings: MarkerSettings(
+        isVisible: _markersBlinking,
+        shape: DataMarkerType.image,
+        image:
+            nextPoint.isBuy
+                ? ChartOnlyPage.buyMarkerImage
+                : ChartOnlyPage.sellMarkerImage,
+        width: 24 * scale,
+        height: 24 * scale,
+      ),
+    );
+  }
+
   // AI 매수/매도 시리즈들
   List<ScatterSeries> _buildAITradingSeries(AppLocalizations l10n) {
     return [
@@ -402,7 +478,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         markerSettings: MarkerSettings(
           isVisible: _markersVisible,
           shape: DataMarkerType.image,
-          image: buyMarkerImage, // 매수 신호 - 위쪽 화살표
+          image: ChartOnlyPage.buyMarkerImage, // 매수 신호 - 위쪽 화살표
           width: 24,
           height: 24,
         ),
@@ -415,7 +491,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         markerSettings: MarkerSettings(
           isVisible: _markersVisible,
           shape: DataMarkerType.image,
-          image: sellMarkerImage, // 틴트 컬러 - 빨간색
+          image: ChartOnlyPage.sellMarkerImage, // 틴트 컬러 - 빨간색
           width: 24,
           height: 24,
         ),

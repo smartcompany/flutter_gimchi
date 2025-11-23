@@ -458,4 +458,139 @@ class SimulationModel {
 
     return _calculateYieldData(simResults);
   }
+
+  // 다음 매수/매도 시점 가져오기 (현재 가격 기준으로 하나만 반환)
+  static ({double price, bool isBuy})? getNextTradingPoint({
+    required SimulationType simulationType,
+    StrategyMap? latestStrategy,
+    List<ChartData>? exchangeRates,
+    List<USDTChartData>? usdtChartData,
+    Map<DateTime, Map<String, double>>? premiumTrends,
+    double? currentPrice,
+  }) {
+    if (currentPrice == null || currentPrice == 0) {
+      return null;
+    }
+
+    switch (simulationType) {
+      case SimulationType.ai:
+        if (latestStrategy == null) {
+          return null;
+        }
+        final buyPrice = (latestStrategy['buy_price'] as num?)?.toDouble() ?? 0;
+        final sellPrice =
+            (latestStrategy['sell_price'] as num?)?.toDouble() ?? 0;
+
+        if (buyPrice == 0 || sellPrice == 0) {
+          return null;
+        }
+
+        // 현재 가격 > buyPrice → 매수 시점 표시 (buyPrice 위치)
+        // 현재 가격 <= buyPrice → 매도 시점 표시 (sellPrice 위치)
+        if (currentPrice > buyPrice) {
+          return (price: buyPrice, isBuy: true);
+        } else {
+          return (price: sellPrice, isBuy: false);
+        }
+
+      case SimulationType.kimchi:
+        if (exchangeRates == null || exchangeRates.isEmpty) {
+          return null;
+        }
+        if (usdtChartData == null || usdtChartData.isEmpty) {
+          return null;
+        }
+
+        final exchangeRateValue = exchangeRates.last.value;
+        if (exchangeRateValue == 0) {
+          return null;
+        }
+
+        // 오늘 날짜 (targetDate로 사용) - _buildTodayComment와 동일하게 usdtChartData.last.time 사용
+        final todayUsdtTime = usdtChartData.last.time;
+
+        // 김치 프리미엄 매수/매도 가격 계산
+        final prices = getKimchiTradingPrices(
+          exchangeRateValue: exchangeRateValue,
+          premiumTrends: premiumTrends,
+          targetDate: todayUsdtTime,
+        );
+
+        final buyPrice = prices.buyPrice;
+        final sellPrice = prices.sellPrice;
+
+        if (buyPrice == 0 || sellPrice == 0) {
+          return null;
+        }
+
+        // 현재 가격 > buyPrice → 매수 시점 표시 (buyPrice 위치)
+        // 현재 가격 <= buyPrice → 매도 시점 표시 (sellPrice 위치)
+        if (currentPrice > buyPrice) {
+          return (price: buyPrice, isBuy: true);
+        } else {
+          return (price: sellPrice, isBuy: false);
+        }
+    }
+  }
+
+  // 김치 프리미엄 매수/매도 가격 계산 (main.dart의 _buildTodayComment와 동일한 로직)
+  static ({double buyPrice, double sellPrice}) getKimchiTradingPrices({
+    required double exchangeRateValue,
+    Map<DateTime, Map<String, double>>? premiumTrends,
+    DateTime? targetDate,
+  }) {
+    Map<String, double>? trendData;
+    if (SimulationCondition.instance.useTrend) {
+      trendData = premiumTrends?[targetDate];
+    }
+
+    final (buyThreshold, sellThreshold) = getKimchiThresholds(
+      trendData: trendData,
+    );
+
+    final buyPrice = exchangeRateValue * (1 + buyThreshold / 100);
+    final sellPrice = exchangeRateValue * (1 + sellThreshold / 100);
+
+    return (buyPrice: buyPrice, sellPrice: sellPrice);
+  }
+
+  static double _getKimchiBuyPrice({
+    List<ChartData>? exchangeRates,
+    List<USDTChartData>? usdtChartData,
+    Map<DateTime, Map<String, double>>? premiumTrends,
+    DateTime? targetDate,
+  }) {
+    if (exchangeRates == null || exchangeRates.isEmpty) return 0;
+    final exchangeRateValue = exchangeRates.last.value;
+    if (exchangeRateValue == 0) return 0;
+
+    // targetDate가 있으면 해당 날짜의 트렌드 데이터 사용, 없으면 마지막 날짜 사용
+    final date = targetDate ?? usdtChartData?.last.time;
+    Map<String, double>? trendData;
+    if (SimulationCondition.instance.useTrend) {
+      trendData = premiumTrends?[date];
+    }
+    final (buyThreshold, _) = getKimchiThresholds(trendData: trendData);
+    return exchangeRateValue * (1 + buyThreshold / 100);
+  }
+
+  static double _getKimchiSellPrice({
+    List<ChartData>? exchangeRates,
+    List<USDTChartData>? usdtChartData,
+    Map<DateTime, Map<String, double>>? premiumTrends,
+    DateTime? targetDate,
+  }) {
+    if (exchangeRates == null || exchangeRates.isEmpty) return 0;
+    final exchangeRateValue = exchangeRates.last.value;
+    if (exchangeRateValue == 0) return 0;
+
+    // targetDate가 있으면 해당 날짜의 트렌드 데이터 사용, 없으면 마지막 날짜 사용
+    final date = targetDate ?? usdtChartData?.last.time;
+    Map<String, double>? trendData;
+    if (SimulationCondition.instance.useTrend) {
+      trendData = premiumTrends?[date];
+    }
+    final (_, sellThreshold) = getKimchiThresholds(trendData: trendData);
+    return exchangeRateValue * (1 + sellThreshold / 100);
+  }
 }
