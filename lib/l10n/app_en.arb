@@ -110,6 +110,10 @@
   "adClickInstruction": "Click X to check buy/sell signals",
   "removeAdsDescription": "After payment, you can view trading strategies immediately without watching ads.",
   "purchaseButton": "Purchase",
+  "restoreButton": "Restore Purchases",
+  "restoreSuccess": "Success",
+  "restoreNoPurchases": "No purchases to restore",
+  "adLoadingMessage": "Loading ad. Please try again later.",
   "privacyPolicy": "Privacy Policy",
-  "termsOfService": "Terms of Service"
+  "termsOfService": "Terms"
 }

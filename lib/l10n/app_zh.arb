@@ -110,6 +110,10 @@
   "adClickInstruction": "点击 X 后查看买卖信号",
   "removeAdsDescription": "支付后，无需观看广告即可立即查看交易策略。",
   "purchaseButton": "购买",
+  "restoreButton": "恢复购买",
+  "restoreSuccess": "成功",
+  "restoreNoPurchases": "没有可恢复的购买记录",
+  "adLoadingMessage": "正在加载广告，请稍后再试。",
   "privacyPolicy": "隐私政策",
-  "termsOfService": "服务条款"
+  "termsOfService": "条款"
 }

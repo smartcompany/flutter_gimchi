@@ -311,10 +311,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get purchaseButton => '구매하기';
 
   @override
+  String get restoreButton => '구매 복원';
+
+  @override
+  String get restoreSuccess => '성공';
+
+  @override
+  String get restoreNoPurchases => '복원할 구매 내역이 없습니다';
+
+  @override
+  String get adLoadingMessage => '광고를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.';
+
+  @override
   String get privacyPolicy => '개인정보 처리 방침';
 
   @override
-  String get termsOfService => '이용약관';
+  String get termsOfService => '약관';
 
   @override
   String get todayStrategyDirect => '바로 전략 보기';

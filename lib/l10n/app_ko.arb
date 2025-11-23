@@ -109,7 +109,11 @@
   "removeAdsSubtitle": "더 깔끔하게 매매 전략을 확인하세요.",
   "removeAdsDescription": "결제 후에는 광고 시청 없이 바로 매매 전략을 확인할 수 있습니다.",
   "purchaseButton": "구매하기",
+  "restoreButton": "구매 복원",
+  "restoreSuccess": "성공",
+  "restoreNoPurchases": "복원할 구매 내역이 없습니다",
+  "adLoadingMessage": "광고를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.",
   "privacyPolicy": "개인정보 처리 방침",
-  "termsOfService": "이용약관",
+  "termsOfService": "약관",
   "todayStrategyDirect": "바로 전략 보기"
 }

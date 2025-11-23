@@ -371,6 +371,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   void _handlePurchaseUpdates(List<PurchaseDetails> purchaseDetailsList) {
+    print(
+      '[Main] _handlePurchaseUpdates called with ${purchaseDetailsList.length} items',
+    );
+
     final matchingPurchase =
         purchaseDetailsList
             .where(
@@ -379,10 +383,20 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             )
             .firstOrNull;
 
-    if (matchingPurchase == null) return;
+    if (matchingPurchase == null) {
+      print(
+        '[Main] No matching purchase found for product: $_removeAdsProductId',
+      );
+      return;
+    }
+
+    print(
+      '[Main] Matching purchase found: ${matchingPurchase.productID}, status: ${matchingPurchase.status}',
+    );
 
     switch (matchingPurchase.status) {
       case PurchaseStatus.pending:
+        print('[Main] Purchase pending');
         if (mounted) {
           setState(() {
             _isPurchasing = true;
@@ -390,7 +404,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         }
         break;
       case PurchaseStatus.purchased:
-      case PurchaseStatus.restored:
+        print('[Main] Purchase successful (purchased)');
         if (mounted) {
           setState(() {
             _isPurchasing = false;
@@ -398,11 +412,32 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             _adsStatus = AdsStatus.shown;
           });
           _disposeAds();
+          print('[Main] Ad-free pass activated');
           // 구매 완료 시 팝업 닫기는 Dialog 내부에서 처리함
         }
         break;
+      case PurchaseStatus.restored:
+        print('[Main] Purchase restored successfully');
+        if (mounted) {
+          setState(() {
+            _isPurchasing = false;
+            _hasAdFreePass = true;
+            _adsStatus = AdsStatus.shown;
+          });
+          _disposeAds();
+          print('[Main] Ad-free pass activated from restore');
+        }
+        break;
       case PurchaseStatus.error:
+        print('[Main] Purchase error: ${matchingPurchase.error?.message}');
+        if (mounted) {
+          setState(() {
+            _isPurchasing = false;
+          });
+        }
+        break;
       case PurchaseStatus.canceled:
+        print('[Main] Purchase canceled');
         if (mounted) {
           setState(() {
             _isPurchasing = false;
@@ -412,6 +447,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     }
 
     if (matchingPurchase.pendingCompletePurchase) {
+      print('[Main] Completing purchase...');
       _iap.completePurchase(matchingPurchase);
     }
   }

@@ -310,10 +310,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get purchaseButton => '购买';
 
   @override
+  String get restoreButton => '恢复购买';
+
+  @override
+  String get restoreSuccess => '成功';
+
+  @override
+  String get restoreNoPurchases => '没有可恢复的购买记录';
+
+  @override
+  String get adLoadingMessage => '正在加载广告，请稍后再试。';
+
+  @override
   String get privacyPolicy => '隐私政策';
 
   @override
-  String get termsOfService => '服务条款';
+  String get termsOfService => '条款';
 
   @override
   String get todayStrategyDirect => '立即查看策略';

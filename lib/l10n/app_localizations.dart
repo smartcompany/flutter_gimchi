@@ -688,6 +688,30 @@ abstract class AppLocalizations {
   /// **'구매하기'**
   String get purchaseButton;
 
+  /// No description provided for @restoreButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'구매 복원'**
+  String get restoreButton;
+
+  /// No description provided for @restoreSuccess.
+  ///
+  /// In ko, this message translates to:
+  /// **'성공'**
+  String get restoreSuccess;
+
+  /// No description provided for @restoreNoPurchases.
+  ///
+  /// In ko, this message translates to:
+  /// **'복원할 구매 내역이 없습니다'**
+  String get restoreNoPurchases;
+
+  /// No description provided for @adLoadingMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.'**
+  String get adLoadingMessage;
+
   /// No description provided for @privacyPolicy.
   ///
   /// In ko, this message translates to:
@@ -697,7 +721,7 @@ abstract class AppLocalizations {
   /// No description provided for @termsOfService.
   ///
   /// In ko, this message translates to:
-  /// **'이용약관'**
+  /// **'약관'**
   String get termsOfService;
 
   /// No description provided for @todayStrategyDirect.

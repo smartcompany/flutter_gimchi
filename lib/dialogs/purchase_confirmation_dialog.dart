@@ -22,6 +22,8 @@ class PurchaseConfirmationDialog extends StatefulWidget {
 class _PurchaseConfirmationDialogState
     extends State<PurchaseConfirmationDialog> {
   bool _isPurchasing = false;
+  bool _isRestoring = false;
+  bool _restoreSuccess = false;
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
   @override
@@ -52,13 +54,30 @@ class _PurchaseConfirmationDialogState
       '[PurchaseDialog] _handlePurchaseUpdates called with ${purchaseDetailsList.length} items',
     );
 
+    // 모든 구매 내역 로그 출력
+    for (final purchase in purchaseDetailsList) {
+      print(
+        '[PurchaseDialog] Purchase: ${purchase.productID}, status: ${purchase.status}',
+      );
+    }
+
     final matchingPurchase =
         purchaseDetailsList
             .where((p) => p.productID == widget.product.id)
             .firstOrNull;
 
     if (matchingPurchase == null) {
-      print('[PurchaseDialog] No matching purchase found');
+      print(
+        '[PurchaseDialog] No matching purchase found for product: ${widget.product.id}',
+      );
+      // 복원 중인데 매칭되는 구매가 없으면 복원 실패로 처리
+      if (_isRestoring && !_restoreSuccess) {
+        // 복원이 아직 진행 중일 수 있으므로 바로 실패 처리하지 않음
+        // _onRestorePressed에서 타임아웃 후 처리
+        print(
+          '[PurchaseDialog] Restore in progress, waiting for matching purchase...',
+        );
+      }
       return;
     }
 
@@ -72,17 +91,33 @@ class _PurchaseConfirmationDialogState
       return;
     }
 
-      setState(() {
+    setState(() {
       switch (matchingPurchase.status) {
         case PurchaseStatus.pending:
           print('[PurchaseDialog] Purchase pending');
           _isPurchasing = true;
           break;
         case PurchaseStatus.purchased:
-        case PurchaseStatus.restored:
-          print('[PurchaseDialog] Purchase successful');
+          print('[PurchaseDialog] Purchase successful (purchased)');
           _isPurchasing = false;
+          _isRestoring = false;
           if (mounted) {
+            Navigator.of(context).pop();
+          }
+          break;
+        case PurchaseStatus.restored:
+          print('[PurchaseDialog] Purchase restored successfully');
+          _isPurchasing = false;
+          _isRestoring = false;
+          _restoreSuccess = true;
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  '${l10n(context).restoreButton} ${l10n(context).restoreSuccess}',
+                ),
+              ),
+            );
             Navigator.of(context).pop();
           }
           break;
@@ -91,16 +126,24 @@ class _PurchaseConfirmationDialogState
             '[PurchaseDialog] Purchase error: ${matchingPurchase.error?.message}',
           );
           _isPurchasing = false;
+          _isRestoring = false;
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(l10n(context).loadingFail)));
+          }
           break;
         case PurchaseStatus.canceled:
           print('[PurchaseDialog] Purchase canceled');
-          // 취소 시 스피너 중지
+          // 취소 시 스피너 중지 (사용자가 취소한 것이므로 스넥바 표시 안 함)
           _isPurchasing = false;
+          _isRestoring = false;
           break;
-        }
-      });
+      }
+    });
 
     if (matchingPurchase.pendingCompletePurchase) {
+      print('[PurchaseDialog] Completing purchase...');
       widget.iap.completePurchase(matchingPurchase);
     }
   }
@@ -136,7 +179,7 @@ class _PurchaseConfirmationDialogState
   }
 
   Future<void> _onPurchasePressed() async {
-    if (_isPurchasing) return; // 이미 구매 중이면 무시
+    if (_isPurchasing || _isRestoring) return; // 이미 구매 중이면 무시
 
     setState(() {
       _isPurchasing = true;
@@ -168,6 +211,50 @@ class _PurchaseConfirmationDialogState
       if (mounted) {
         setState(() {
           _isPurchasing = false;
+        });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n(context).loadingFail)));
+      }
+    }
+  }
+
+  Future<void> _onRestorePressed() async {
+    if (_isPurchasing || _isRestoring) return; // 이미 복원 중이면 무시
+
+    setState(() {
+      _isRestoring = true;
+      _restoreSuccess = false;
+    });
+
+    try {
+      await widget.iap.restorePurchases();
+      print('[PurchaseDialog] Restore purchases initiated');
+
+      // 복원은 비동기로 처리되며, purchaseStream을 통해 결과가 전달됩니다.
+      // 복원된 구매가 있으면 _handlePurchaseUpdates에서 처리됩니다.
+      // 복원이 완료되거나 실패하면 상태를 업데이트합니다.
+      // 최대 3초 대기 (복원된 구매가 있으면 _handlePurchaseUpdates에서 조기 종료)
+      await Future.delayed(const Duration(seconds: 3));
+
+      if (mounted && _isRestoring) {
+        // 아직 복원 중이면 (성공하지 못했으면) 실패로 처리
+        setState(() {
+          _isRestoring = false;
+        });
+
+        if (!_restoreSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n(context).restoreNoPurchases)),
+          );
+        }
+      }
+    } catch (e) {
+      print('Restore purchases failed: $e');
+      if (mounted) {
+        setState(() {
+          _isRestoring = false;
+          _restoreSuccess = false;
         });
         ScaffoldMessenger.of(
           context,
@@ -238,7 +325,10 @@ class _PurchaseConfirmationDialogState
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextButton(
-                  onPressed: _isPurchasing ? null : _openPrivacyPolicy,
+                  onPressed:
+                      (_isPurchasing || _isRestoring)
+                          ? null
+                          : _openPrivacyPolicy,
                   child: Text(
                     l10n(context).privacyPolicy,
                     style: const TextStyle(fontSize: 12),
@@ -246,7 +336,10 @@ class _PurchaseConfirmationDialogState
                 ),
                 const Text(' | ', style: TextStyle(color: Colors.grey)),
                 TextButton(
-                  onPressed: _isPurchasing ? null : _openTermsOfService,
+                  onPressed:
+                      (_isPurchasing || _isRestoring)
+                          ? null
+                          : _openTermsOfService,
                   child: Text(
                     l10n(context).termsOfService,
                     style: const TextStyle(fontSize: 12),
@@ -254,19 +347,37 @@ class _PurchaseConfirmationDialogState
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            // Restore Purchases 버튼
+            TextButton(
+              onPressed:
+                  (_isPurchasing || _isRestoring) ? null : _onRestorePressed,
+              child:
+                  _isRestoring
+                      ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                      : Text(
+                        l10n(context).restoreButton,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+            ),
           ],
         ),
       ),
       actions: [
         TextButton(
-          onPressed: _onCancelPressed,
+          onPressed: (_isPurchasing || _isRestoring) ? null : _onCancelPressed,
           child: Text(
             l10n(context).cancel,
             style: const TextStyle(fontSize: 16),
           ),
         ),
         ElevatedButton(
-          onPressed: _isPurchasing ? null : _onPurchasePressed,
+          onPressed:
+              (_isPurchasing || _isRestoring) ? null : _onPurchasePressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.deepPurple,
             foregroundColor: Colors.white,

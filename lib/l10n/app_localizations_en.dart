@@ -318,10 +318,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get purchaseButton => 'Purchase';
 
   @override
+  String get restoreButton => 'Restore Purchases';
+
+  @override
+  String get restoreSuccess => 'Success';
+
+  @override
+  String get restoreNoPurchases => 'No purchases to restore';
+
+  @override
+  String get adLoadingMessage => 'Loading ad. Please try again later.';
+
+  @override
   String get privacyPolicy => 'Privacy Policy';
 
   @override
-  String get termsOfService => 'Terms of Service';
+  String get termsOfService => 'Terms';
 
   @override
   String get todayStrategyDirect => 'View Strategy Now';
