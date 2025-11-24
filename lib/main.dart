@@ -218,6 +218,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   RewardedAd? _rewardedAd;
   BannerAd? _bannerAd;
   InterstitialAd? _interstitialAd;
+  bool _isBannerAdLoaded = false; // 배너 광고 로드 완료 플래그
 
   double kimchiMin = 0;
   double kimchiMax = 0;
@@ -471,6 +472,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     _rewardedAd = null;
     _bannerAd?.dispose();
     _bannerAd = null;
+    _isBannerAdLoaded = false;
     _interstitialAd?.dispose();
     _interstitialAd = null;
   }
@@ -557,6 +559,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       if (mounted) {
         setState(() {
           _bannerAd = null;
+          _isBannerAdLoaded = false;
         });
       }
 
@@ -567,10 +570,11 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         listener: BannerAdListener(
           onAdLoaded: (ad) {
             print('Banner ad loaded');
-            // 로드 성공 시에만 _bannerAd 설정
+            // 로드 성공 시에만 _bannerAd 설정 및 플래그 설정
             if (mounted && ad is BannerAd) {
               setState(() {
                 _bannerAd = ad;
+                _isBannerAdLoaded = true;
               });
             }
           },
@@ -580,6 +584,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             if (mounted) {
               setState(() {
                 _bannerAd = null;
+                _isBannerAdLoaded = false;
               });
             }
           },
@@ -1108,12 +1113,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       return const SizedBox.shrink();
     }
 
-    if (_bannerAd == null) {
-      return const SizedBox.shrink();
-    }
-
-    // responseInfo가 null이 아니어야 로드 완료
-    if (_bannerAd!.responseInfo == null) {
+    // 광고가 로드되지 않았거나 null이면 표시하지 않음
+    if (_bannerAd == null || !_isBannerAdLoaded) {
       return const SizedBox.shrink();
     }
 

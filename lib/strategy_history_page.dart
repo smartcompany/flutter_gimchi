@@ -468,7 +468,9 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text('${DateFormat('yyyy/MM/dd').format(date)} ${l10n(context).kimchiStrategy}'),
+            title: Text(
+              '${DateFormat('yyyy/MM/dd').format(date)} ${l10n(context).kimchiStrategy}',
+            ),
             content: _buildKimchiStrategyDetail(context, date),
             actions: [
               TextButton(
