@@ -166,11 +166,77 @@ abstract class AppLocalizations {
   /// **'알림 권한 필요'**
   String get needPermission;
 
+  /// No description provided for @permissionRequiredMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'알림을 받으려면 기기 설정에서 알림 권한을 허용해야 합니다.\n설정으로 이동하시겠습니까?'**
+  String get permissionRequiredMessage;
+
   /// No description provided for @no.
   ///
   /// In ko, this message translates to:
   /// **'아니오'**
   String get no;
+
+  /// No description provided for @yes.
+  ///
+  /// In ko, this message translates to:
+  /// **'예'**
+  String get yes;
+
+  /// No description provided for @useTrendBasedStrategy.
+  ///
+  /// In ko, this message translates to:
+  /// **'추세 기반 전략 사용'**
+  String get useTrendBasedStrategy;
+
+  /// No description provided for @error.
+  ///
+  /// In ko, this message translates to:
+  /// **'에러'**
+  String get error;
+
+  /// No description provided for @dash.
+  ///
+  /// In ko, this message translates to:
+  /// **'-'**
+  String get dash;
+
+  /// No description provided for @kimchiStrategy.
+  ///
+  /// In ko, this message translates to:
+  /// **'김프 전략'**
+  String get kimchiStrategy;
+
+  /// No description provided for @viewAllStrategyHistory.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 전략 히스토리 보기'**
+  String get viewAllStrategyHistory;
+
+  /// No description provided for @kimchiStrategyHistory.
+  ///
+  /// In ko, this message translates to:
+  /// **'김프 매매 전략 히스토리'**
+  String get kimchiStrategyHistory;
+
+  /// No description provided for @aiStrategyHistory.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 매매 전략 히스토리'**
+  String get aiStrategyHistory;
+
+  /// No description provided for @strategy.
+  ///
+  /// In ko, this message translates to:
+  /// **'전략'**
+  String get strategy;
+
+  /// No description provided for @noStrategyData.
+  ///
+  /// In ko, this message translates to:
+  /// **'전략 데이터가 없습니다'**
+  String get noStrategyData;
 
   /// No description provided for @seeAdsAndStrategy.
   ///
@@ -478,12 +544,6 @@ abstract class AppLocalizations {
   /// **'설정 저장에 실패했습니다.'**
   String get failedToSaveSettings;
 
-  /// No description provided for @strategy.
-  ///
-  /// In ko, this message translates to:
-  /// **'전략'**
-  String get strategy;
-
   /// No description provided for @buyPrice.
   ///
   /// In ko, this message translates to:
@@ -688,6 +748,30 @@ abstract class AppLocalizations {
   /// **'구매하기'**
   String get purchaseButton;
 
+  /// No description provided for @restoreButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'구매 복원'**
+  String get restoreButton;
+
+  /// No description provided for @restoreSuccess.
+  ///
+  /// In ko, this message translates to:
+  /// **'성공'**
+  String get restoreSuccess;
+
+  /// No description provided for @restoreNoPurchases.
+  ///
+  /// In ko, this message translates to:
+  /// **'복원할 구매 내역이 없습니다'**
+  String get restoreNoPurchases;
+
+  /// No description provided for @adLoadingMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.'**
+  String get adLoadingMessage;
+
   /// No description provided for @privacyPolicy.
   ///
   /// In ko, this message translates to:
@@ -697,7 +781,7 @@ abstract class AppLocalizations {
   /// No description provided for @termsOfService.
   ///
   /// In ko, this message translates to:
-  /// **'이용약관'**
+  /// **'약관'**
   String get termsOfService;
 
   /// No description provided for @todayStrategyDirect.

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'dart:io';
+import 'utils.dart';
 
 typedef OnAdLoaded = void Function();
 typedef OnAdFailed = void Function();
@@ -87,9 +87,9 @@ class AdManager {
         },
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('광고를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n(context).adLoadingMessage)));
     }
   }
 
@@ -116,9 +116,9 @@ class AdManager {
       );
       _interstitialAd!.show();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('광고를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n(context).adLoadingMessage)));
     }
   }
 

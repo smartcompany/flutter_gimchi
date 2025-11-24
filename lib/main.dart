@@ -220,6 +220,7 @@ class _MyHomePageState extends State<MyHomePage>
   RewardedAd? _rewardedAd;
   BannerAd? _bannerAd;
   InterstitialAd? _interstitialAd;
+  bool _isBannerAdLoaded = false; // 배너 광고 로드 완료 플래그
 
   double kimchiMin = 0;
   double kimchiMax = 0;
@@ -379,6 +380,10 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   void _handlePurchaseUpdates(List<PurchaseDetails> purchaseDetailsList) {
+    print(
+      '[Main] _handlePurchaseUpdates called with ${purchaseDetailsList.length} items',
+    );
+
     final matchingPurchase =
         purchaseDetailsList
             .where(
@@ -387,10 +392,20 @@ class _MyHomePageState extends State<MyHomePage>
             )
             .firstOrNull;
 
-    if (matchingPurchase == null) return;
+    if (matchingPurchase == null) {
+      print(
+        '[Main] No matching purchase found for product: $_removeAdsProductId',
+      );
+      return;
+    }
+
+    print(
+      '[Main] Matching purchase found: ${matchingPurchase.productID}, status: ${matchingPurchase.status}',
+    );
 
     switch (matchingPurchase.status) {
       case PurchaseStatus.pending:
+        print('[Main] Purchase pending');
         if (mounted) {
           setState(() {
             _isPurchasing = true;
@@ -398,7 +413,7 @@ class _MyHomePageState extends State<MyHomePage>
         }
         break;
       case PurchaseStatus.purchased:
-      case PurchaseStatus.restored:
+        print('[Main] Purchase successful (purchased)');
         if (mounted) {
           setState(() {
             _isPurchasing = false;
@@ -406,11 +421,32 @@ class _MyHomePageState extends State<MyHomePage>
             _adsStatus = AdsStatus.shown;
           });
           _disposeAds();
+          print('[Main] Ad-free pass activated');
           // 구매 완료 시 팝업 닫기는 Dialog 내부에서 처리함
         }
         break;
+      case PurchaseStatus.restored:
+        print('[Main] Purchase restored successfully');
+        if (mounted) {
+          setState(() {
+            _isPurchasing = false;
+            _hasAdFreePass = true;
+            _adsStatus = AdsStatus.shown;
+          });
+          _disposeAds();
+          print('[Main] Ad-free pass activated from restore');
+        }
+        break;
       case PurchaseStatus.error:
+        print('[Main] Purchase error: ${matchingPurchase.error?.message}');
+        if (mounted) {
+          setState(() {
+            _isPurchasing = false;
+          });
+        }
+        break;
       case PurchaseStatus.canceled:
+        print('[Main] Purchase canceled');
         if (mounted) {
           setState(() {
             _isPurchasing = false;
@@ -420,6 +456,7 @@ class _MyHomePageState extends State<MyHomePage>
     }
 
     if (matchingPurchase.pendingCompletePurchase) {
+      print('[Main] Completing purchase...');
       _iap.completePurchase(matchingPurchase);
     }
   }
@@ -443,6 +480,7 @@ class _MyHomePageState extends State<MyHomePage>
     _rewardedAd = null;
     _bannerAd?.dispose();
     _bannerAd = null;
+    _isBannerAdLoaded = false;
     _interstitialAd?.dispose();
     _interstitialAd = null;
   }
@@ -529,6 +567,7 @@ class _MyHomePageState extends State<MyHomePage>
       if (mounted) {
         setState(() {
           _bannerAd = null;
+          _isBannerAdLoaded = false;
         });
       }
 
@@ -539,10 +578,11 @@ class _MyHomePageState extends State<MyHomePage>
         listener: BannerAdListener(
           onAdLoaded: (ad) {
             print('Banner ad loaded');
-            // 로드 성공 시에만 _bannerAd 설정
+            // 로드 성공 시에만 _bannerAd 설정 및 플래그 설정
             if (mounted && ad is BannerAd) {
               setState(() {
                 _bannerAd = ad;
+                _isBannerAdLoaded = true;
               });
             }
           },
@@ -552,6 +592,7 @@ class _MyHomePageState extends State<MyHomePage>
             if (mounted) {
               setState(() {
                 _bannerAd = null;
+                _isBannerAdLoaded = false;
               });
             }
           },
@@ -1081,12 +1122,8 @@ class _MyHomePageState extends State<MyHomePage>
       return const SizedBox.shrink();
     }
 
-    if (_bannerAd == null) {
-      return const SizedBox.shrink();
-    }
-
-    // responseInfo가 null이 아니어야 로드 완료
-    if (_bannerAd!.responseInfo == null) {
+    // 광고가 로드되지 않았거나 null이면 표시하지 않음
+    if (_bannerAd == null || !_isBannerAdLoaded) {
       return const SizedBox.shrink();
     }
 
@@ -1280,7 +1317,7 @@ class _MyHomePageState extends State<MyHomePage>
               borderRadius: BorderRadius.circular(16),
             ),
             title: Text(l10n(context).loadingFail),
-            content: const Text('데이터를 불러오는데 실패했습니다.\n다시 시도하시겠습니까?'),
+            content: Text(l10n(context).failedToload),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -1291,7 +1328,7 @@ class _MyHomePageState extends State<MyHomePage>
                   Navigator.of(context).pop();
                   _loadAllApis();
                 },
-                child: const Text('예'),
+                child: Text(l10n(context).yes),
               ),
             ],
           ),
@@ -2403,9 +2440,7 @@ class _MyHomePageState extends State<MyHomePage>
             builder:
                 (context) => AlertDialog(
                   title: Text(l10n(context).needPermission),
-                  content: const Text(
-                    '알림을 받으려면 기기 설정에서 알림 권한을 허용해야 합니다.\n설정으로 이동하시겠습니까?',
-                  ),
+                  content: Text(l10n(context).permissionRequiredMessage),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),

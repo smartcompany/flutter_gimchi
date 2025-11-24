@@ -42,7 +42,40 @@ class AppLocalizationsZh extends AppLocalizations {
   String get needPermission => '需要通知权限';
 
   @override
+  String get permissionRequiredMessage => '要接收通知，需要在设备设置中允许通知权限。\n是否要前往设置？';
+
+  @override
   String get no => '否';
+
+  @override
+  String get yes => '是';
+
+  @override
+  String get useTrendBasedStrategy => '使用基于趋势的策略';
+
+  @override
+  String get error => '错误';
+
+  @override
+  String get dash => '-';
+
+  @override
+  String get kimchiStrategy => '韩元溢价策略';
+
+  @override
+  String get viewAllStrategyHistory => '查看所有策略历史';
+
+  @override
+  String get kimchiStrategyHistory => '韩元溢价交易策略历史';
+
+  @override
+  String get aiStrategyHistory => 'AI交易策略历史';
+
+  @override
+  String get strategy => '策略';
+
+  @override
+  String get noStrategyData => '没有策略数据';
 
   @override
   String get seeAdsAndStrategy => '观看广告后查看策略';
@@ -201,9 +234,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get failedToSaveSettings => '保存设置失败。';
 
   @override
-  String get strategy => '策略';
-
-  @override
   String get buyPrice => '买入价格';
 
   @override
@@ -310,10 +340,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get purchaseButton => '购买';
 
   @override
+  String get restoreButton => '恢复购买';
+
+  @override
+  String get restoreSuccess => '成功';
+
+  @override
+  String get restoreNoPurchases => '没有可恢复的购买记录';
+
+  @override
+  String get adLoadingMessage => '正在加载广告，请稍后再试。';
+
+  @override
   String get privacyPolicy => '隐私政策';
 
   @override
-  String get termsOfService => '服务条款';
+  String get termsOfService => '条款';
 
   @override
   String get todayStrategyDirect => '立即查看策略';
