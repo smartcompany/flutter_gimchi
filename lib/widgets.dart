@@ -136,41 +136,76 @@ class BlinkingMarker extends StatefulWidget {
 }
 
 class _BlinkingMarkerState extends State<BlinkingMarker>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+    with TickerProviderStateMixin {
+  late AnimationController _scaleController;
+  late AnimationController _shimmerController;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    // 크기 애니메이션 (왕복)
+    _scaleController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     )..repeat(reverse: true);
 
-    _animation = Tween<double>(
-      begin: 1.0,
-      end: 2.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 2).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
+    );
+
+    // 광택 애니메이션 (반복)
+    _shimmerController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _scaleController.dispose();
+    _shimmerController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _animation,
+      animation: Listenable.merge([_scaleController, _shimmerController]),
       builder: (context, child) {
         return Transform.scale(
-          scale: _animation.value,
+          scale: _scaleAnimation.value,
           child: SizedBox(
             width: widget.size,
             height: widget.size,
-            child: Image(image: widget.image),
+            child: Stack(
+              children: [
+                Image(image: widget.image),
+                // 광택 효과
+                Positioned.fill(
+                  child: ShaderMask(
+                    shaderCallback: (rect) {
+                      return LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white.withOpacity(0.0),
+                          Colors.white.withOpacity(0.8),
+                          Colors.white.withOpacity(0.0),
+                        ],
+                        stops: [
+                          _shimmerController.value - 0.2,
+                          _shimmerController.value,
+                          _shimmerController.value + 0.2,
+                        ],
+                      ).createShader(rect);
+                    },
+                    blendMode: BlendMode.srcATop,
+                    child: Image(image: widget.image),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
