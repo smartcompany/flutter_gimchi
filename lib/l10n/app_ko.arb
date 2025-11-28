@@ -24,6 +24,7 @@
   "noStrategyData": "전략 데이터가 없습니다",
   "seeAdsAndStrategy": "광고 보고 매매 전략 보기",
   "todayStrategyAfterAds": "광고 보고 매매 전략 보기",
+  "todayStrategyDirect": "바로 전략 보기",
   "aiReturn": "AI 매매 수익률",
   "gimchiReturn": "김프 매매 수익률",
   "throwTestException": "throwTestException",
@@ -125,5 +126,9 @@
   "adLoadingMessage": "광고를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.",
   "privacyPolicy": "개인정보 처리 방침",
   "termsOfService": "약관",
-  "todayStrategyDirect": "바로 전략 보기"
+  "nextBuyPoint": "다음 매수 시점",
+  "nextSellPoint": "다음 매도 시점",
+  "priceLabel": "가격",
+  "basePremium": "기준 프리미엄",
+  "kimchiPremiumShort": "김프"
 }

@@ -125,5 +125,10 @@
   "restoreNoPurchases": "No purchases to restore",
   "adLoadingMessage": "Loading ad. Please try again later.",
   "privacyPolicy": "Privacy Policy",
-  "termsOfService": "Terms"
+  "termsOfService": "Terms",
+  "nextBuyPoint": "Next Buy Point",
+  "nextSellPoint": "Next Sell Point",
+  "priceLabel": "Price",
+  "basePremium": "Base Premium",
+  "kimchiPremiumShort": "K-Prem"
 }

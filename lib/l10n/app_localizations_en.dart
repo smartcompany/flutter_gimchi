@@ -85,6 +85,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todayStrategyAfterAds => 'Watch Ad & View Strategy';
 
   @override
+  String get todayStrategyDirect => 'View Strategy Now';
+
+  @override
   String get aiReturn => 'AI ROI';
 
   @override
@@ -367,5 +370,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get termsOfService => 'Terms';
 
   @override
-  String get todayStrategyDirect => 'View Strategy Now';
+  String get nextBuyPoint => 'Next Buy Point';
+
+  @override
+  String get nextSellPoint => 'Next Sell Point';
+
+  @override
+  String get priceLabel => 'Price';
+
+  @override
+  String get basePremium => 'Base Premium';
+
+  @override
+  String get kimchiPremiumShort => 'K-Prem';
 }

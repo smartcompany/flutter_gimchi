@@ -293,6 +293,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                 simulationType,
                 nextPoint.isBuy,
                 nextPoint.price,
+                nextPoint.kimchiPremium,
               ),
             ),
             coordinateUnit: CoordinateUnit.point,

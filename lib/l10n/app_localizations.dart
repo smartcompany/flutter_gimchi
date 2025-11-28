@@ -250,6 +250,12 @@ abstract class AppLocalizations {
   /// **'광고 보고 매매 전략 보기'**
   String get todayStrategyAfterAds;
 
+  /// No description provided for @todayStrategyDirect.
+  ///
+  /// In ko, this message translates to:
+  /// **'바로 전략 보기'**
+  String get todayStrategyDirect;
+
   /// No description provided for @aiReturn.
   ///
   /// In ko, this message translates to:
@@ -784,11 +790,35 @@ abstract class AppLocalizations {
   /// **'약관'**
   String get termsOfService;
 
-  /// No description provided for @todayStrategyDirect.
+  /// No description provided for @nextBuyPoint.
   ///
   /// In ko, this message translates to:
-  /// **'바로 전략 보기'**
-  String get todayStrategyDirect;
+  /// **'다음 매수 시점'**
+  String get nextBuyPoint;
+
+  /// No description provided for @nextSellPoint.
+  ///
+  /// In ko, this message translates to:
+  /// **'다음 매도 시점'**
+  String get nextSellPoint;
+
+  /// No description provided for @priceLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'가격'**
+  String get priceLabel;
+
+  /// No description provided for @basePremium.
+  ///
+  /// In ko, this message translates to:
+  /// **'기준 프리미엄'**
+  String get basePremium;
+
+  /// No description provided for @kimchiPremiumShort.
+  ///
+  /// In ko, this message translates to:
+  /// **'김프'**
+  String get kimchiPremiumShort;
 }
 
 class _AppLocalizationsDelegate

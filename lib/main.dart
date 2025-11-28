@@ -1847,6 +1847,7 @@ class _MyHomePageState extends State<MyHomePage>
                         simulationType,
                         nextPoint.isBuy,
                         nextPoint.price,
+                        nextPoint.kimchiPremium,
                       ),
                     ),
                     coordinateUnit: CoordinateUnit.point,

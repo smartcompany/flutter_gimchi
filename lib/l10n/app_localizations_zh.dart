@@ -84,6 +84,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get todayStrategyAfterAds => '观看广告并查看策略';
 
   @override
+  String get todayStrategyDirect => '立即查看策略';
+
+  @override
   String get aiReturn => 'AI交易收益率';
 
   @override
@@ -358,5 +361,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get termsOfService => '条款';
 
   @override
-  String get todayStrategyDirect => '立即查看策略';
+  String get nextBuyPoint => '下一个买入点';
+
+  @override
+  String get nextSellPoint => '下一个卖出点';
+
+  @override
+  String get priceLabel => '价格';
+
+  @override
+  String get basePremium => '基准溢价';
+
+  @override
+  String get kimchiPremiumShort => '溢价';
 }

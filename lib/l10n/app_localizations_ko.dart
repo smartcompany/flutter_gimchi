@@ -85,6 +85,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get todayStrategyAfterAds => '광고 보고 매매 전략 보기';
 
   @override
+  String get todayStrategyDirect => '바로 전략 보기';
+
+  @override
   String get aiReturn => 'AI 매매 수익률';
 
   @override
@@ -360,5 +363,17 @@ class AppLocalizationsKo extends AppLocalizations {
   String get termsOfService => '약관';
 
   @override
-  String get todayStrategyDirect => '바로 전략 보기';
+  String get nextBuyPoint => '다음 매수 시점';
+
+  @override
+  String get nextSellPoint => '다음 매도 시점';
+
+  @override
+  String get priceLabel => '가격';
+
+  @override
+  String get basePremium => '기준 프리미엄';
+
+  @override
+  String get kimchiPremiumShort => '김프';
 }

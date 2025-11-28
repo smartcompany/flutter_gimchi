@@ -460,7 +460,8 @@ class SimulationModel {
   }
 
   // 다음 매수/매도 시점 가져오기 (현재 가격 기준으로 하나만 반환)
-  static ({double price, bool isBuy})? getNextTradingPoint({
+  static ({double price, bool isBuy, double kimchiPremium})?
+  getNextTradingPoint({
     required SimulationType simulationType,
     StrategyMap? latestStrategy,
     List<ChartData>? exchangeRates,
@@ -471,6 +472,12 @@ class SimulationModel {
     if (currentPrice == null || currentPrice == 0) {
       return null;
     }
+
+    // 현재 환율 (김프 계산용)
+    final currentExchangeRate =
+        (exchangeRates != null && exchangeRates.isNotEmpty)
+            ? exchangeRates.last.value
+            : 0.0;
 
     switch (simulationType) {
       case SimulationType.ai:
@@ -485,12 +492,22 @@ class SimulationModel {
           return null;
         }
 
-        // 현재 가격 > buyPrice → 매수 시점 표시 (buyPrice 위치)
-        // 현재 가격 <= buyPrice → 매도 시점 표시 (sellPrice 위치)
         if (currentPrice > buyPrice) {
-          return (price: buyPrice, isBuy: true);
+          final kp =
+              currentExchangeRate != 0
+                  ? ((buyPrice - currentExchangeRate) /
+                      currentExchangeRate *
+                      100)
+                  : 0.0;
+          return (price: buyPrice, isBuy: true, kimchiPremium: kp);
         } else {
-          return (price: sellPrice, isBuy: false);
+          final kp =
+              currentExchangeRate != 0
+                  ? ((sellPrice - currentExchangeRate) /
+                      currentExchangeRate *
+                      100)
+                  : 0.0;
+          return (price: sellPrice, isBuy: false, kimchiPremium: kp);
         }
 
       case SimulationType.kimchi:
@@ -506,29 +523,38 @@ class SimulationModel {
           return null;
         }
 
-        // 오늘 날짜 (targetDate로 사용) - _buildTodayComment와 동일하게 usdtChartData.last.time 사용
+        // 오늘 날짜 (targetDate로 사용)
         final todayUsdtTime = usdtChartData.last.time;
 
-        // 김치 프리미엄 매수/매도 가격 계산
-        final prices = getKimchiTradingPrices(
-          exchangeRateValue: exchangeRateValue,
-          premiumTrends: premiumTrends,
-          targetDate: todayUsdtTime,
+        // 김치 프리미엄 임계값 가져오기
+        Map<String, double>? trendData;
+        if (SimulationCondition.instance.useTrend) {
+          trendData = premiumTrends?[todayUsdtTime];
+        }
+        final (buyThreshold, sellThreshold) = getKimchiThresholds(
+          trendData: trendData,
         );
 
-        final buyPrice = prices.buyPrice;
-        final sellPrice = prices.sellPrice;
+        // 김치 프리미엄 매수/매도 가격 계산
+        final buyPrice = (exchangeRateValue * (1 + buyThreshold / 100));
+        final sellPrice = (exchangeRateValue * (1 + sellThreshold / 100));
 
         if (buyPrice == 0 || sellPrice == 0) {
           return null;
         }
 
-        // 현재 가격 > buyPrice → 매수 시점 표시 (buyPrice 위치)
-        // 현재 가격 <= buyPrice → 매도 시점 표시 (sellPrice 위치)
         if (currentPrice > buyPrice) {
-          return (price: buyPrice, isBuy: true);
+          return (
+            price: buyPrice,
+            isBuy: true,
+            kimchiPremium: buyThreshold, // 임계값 그대로 사용
+          );
         } else {
-          return (price: sellPrice, isBuy: false);
+          return (
+            price: sellPrice,
+            isBuy: false,
+            kimchiPremium: sellThreshold, // 임계값 그대로 사용
+          );
         }
     }
   }

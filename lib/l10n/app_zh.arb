@@ -125,5 +125,10 @@
   "restoreNoPurchases": "没有可恢复的购买记录",
   "adLoadingMessage": "正在加载广告，请稍后再试。",
   "privacyPolicy": "隐私政策",
-  "termsOfService": "条款"
+  "termsOfService": "条款",
+  "nextBuyPoint": "下一个买入点",
+  "nextSellPoint": "下一个卖出点",
+  "priceLabel": "价格",
+  "basePremium": "基准溢价",
+  "kimchiPremiumShort": "溢价"
 }

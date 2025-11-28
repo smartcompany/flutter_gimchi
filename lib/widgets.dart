@@ -88,20 +88,25 @@ String getTooltipMessage(
   SimulationType simulationType,
   bool isBuy,
   double price,
+  double? kimchiPremium,
 ) {
   String action;
   if (isBuy) {
-    action =
-        simulationType == SimulationType.ai
-            ? l10n.aiBuy
-            : l10n.kimchiPremiumBuy;
+    action = l10n.nextBuyPoint;
   } else {
-    action =
-        simulationType == SimulationType.ai
-            ? l10n.aiSell
-            : l10n.kimchiPremiumSell;
+    action = l10n.nextSellPoint;
   }
-  return '$action: ${price.toStringAsFixed(1)}';
+
+  String strategyName =
+      simulationType == SimulationType.ai ? 'AI' : l10n.kimchiPremiumShort;
+
+  String message = '[$strategyName] $action\n';
+  message += '${l10n.priceLabel} : ${price.toStringAsFixed(1)}\n';
+
+  if (kimchiPremium != null) {
+    message += '${l10n.basePremium} : ${kimchiPremium.toStringAsFixed(2)}%';
+  }
+  return message;
 }
 
 class StrategyCell extends StatelessWidget {
@@ -179,7 +184,7 @@ class _BlinkingMarkerState extends State<BlinkingMarker>
       vsync: this,
     )..repeat(reverse: true);
 
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 2).animate(
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.7).animate(
       CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
     );
 
@@ -245,6 +250,7 @@ class _BlinkingMarkerState extends State<BlinkingMarker>
         message: widget.tooltipMessage,
         triggerMode: TooltipTriggerMode.tap,
         preferBelow: false, // 위쪽에 표시
+        showDuration: const Duration(seconds: 5), // 5초간 표시
         child: marker,
       );
     }
