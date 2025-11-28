@@ -332,7 +332,7 @@ class _SimulationPageState extends State<SimulationPage>
       // 서버에서 받은 김치 프리미엄 트렌드 데이터 사용
       (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
         trendData: widget.premiumTrends?[date],
-      );
+    );
     }
 
     showDialog(
@@ -908,45 +908,45 @@ class _SimulationPageState extends State<SimulationPage>
 
   SafeArea bottomNavigationBar(BuildContext context) {
     return SafeArea(
-      child: SlideTransition(
-        position: _bottomBarOffset,
-        child: Container(
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white, Colors.grey[50]!],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+        child: SlideTransition(
+          position: _bottomBarOffset,
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, Colors.grey[50]!],
               ),
-              BoxShadow(
-                color: Colors.deepPurple.withOpacity(0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+                BoxShadow(
+                  color: Colors.deepPurple.withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              border: Border.all(
+                color: Colors.deepPurple.withOpacity(0.15),
+                width: 1.5,
               ),
-            ],
-            border: Border.all(
-              color: Colors.deepPurple.withOpacity(0.15),
-              width: 1.5,
             ),
-          ),
-          child: Padding(
+            child: Padding(
             padding: const EdgeInsets.only(
               top: 0,
               left: 24,
               right: 24,
               bottom: 24,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 // === 늘이기/줄이기 버튼 ===
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -968,81 +968,81 @@ class _SimulationPageState extends State<SimulationPage>
                     ),
                   ],
                 ),
-                // === 매매기간 ===
-                Row(
-                  children: [
-                    Text(
-                      l10n(context).tradingPerioid,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Spacer(),
-                    OutlinedButton.icon(
-                      icon: const Icon(
-                        Icons.show_chart,
-                        color: Colors.deepPurple,
-                        size: 18,
-                      ),
-                      label: Text(
-                        l10n(context).seeWithChart,
+                  // === 매매기간 ===
+                  Row(
+                    children: [
+                      Text(
+                        l10n(context).tradingPerioid,
                         style: const TextStyle(
-                          color: Colors.deepPurple,
+                          fontSize: 17,
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
                         ),
                       ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.deepPurple),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                      const Spacer(),
+                      OutlinedButton.icon(
+                        icon: const Icon(
+                          Icons.show_chart,
+                          color: Colors.deepPurple,
+                          size: 18,
                         ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        minimumSize: const Size(0, 32),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder:
-                                (_) => ChartOnlyPage.fromModel(
-                                  widget.chartOnlyPageModel!,
-                                  initialShowAITrading:
-                                      widget.simulationType ==
-                                      SimulationType.ai,
-                                  initialShowGimchiTrading:
-                                      widget.simulationType ==
-                                      SimulationType.kimchi,
-                                ),
-                            fullscreenDialog: true,
+                        label: Text(
+                          l10n(context).seeWithChart,
+                          style: const TextStyle(
+                            color: Colors.deepPurple,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
                           ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Builder(
-                  builder: (context) {
-                    if (results.isEmpty) return Text(l10n(context).dash);
-                    final startDate = results.first.buyDate?.toCustomString();
-                    final endDate = results.last.analysisDate.toCustomString();
-                    final text = '${startDate} ~ ${endDate}';
-
-                    return Text(
-                      text,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.deepPurple),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          minimumSize: const Size(0, 32),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => ChartOnlyPage.fromModel(
+                                    widget.chartOnlyPageModel!,
+                                    initialShowAITrading:
+                                        widget.simulationType ==
+                                        SimulationType.ai,
+                                    initialShowGimchiTrading:
+                                        widget.simulationType ==
+                                        SimulationType.kimchi,
+                                  ),
+                              fullscreenDialog: true,
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Builder(
+                    builder: (context) {
+                    if (results.isEmpty) return Text(l10n(context).dash);
+                      final startDate = results.first.buyDate?.toCustomString();
+                    final endDate = results.last.analysisDate.toCustomString();
+                      final text = '${startDate} ~ ${endDate}';
+
+                      return Text(
+                        text,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple,
+                        ),
+                      );
+                    },
+                  ),
                 if (isCardExpanded) ...[
                   const SizedBox(height: 12),
 

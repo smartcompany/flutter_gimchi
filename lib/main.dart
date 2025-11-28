@@ -191,7 +191,6 @@ class _MyHomePageState extends State<MyHomePage>
     enableDoubleTapZooming: true,
     zoomMode: ZoomMode.xy,
   );
-  late AnimationController _blinkController;
   List<ChartData> kimchiPremium = [];
   List<ChartData> usdtPrices = [];
   List<ChartData> exchangeRates = [];
@@ -256,12 +255,6 @@ class _MyHomePageState extends State<MyHomePage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     SimulationCondition.instance.load();
-
-    // 크기 변화 애니메이션 컨트롤러 초기화
-    _blinkController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
 
     if (!kIsWeb) {
       MobileAds.instance.initialize();
@@ -608,7 +601,6 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   void dispose() {
-    _blinkController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _purchaseSubscription?.cancel();
     _disposeAds();
@@ -1784,144 +1776,137 @@ class _MyHomePageState extends State<MyHomePage>
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Container(
             decoration: BoxDecoration(color: Colors.white),
-            child: AnimatedBuilder(
-              animation: _blinkController,
-              builder: (context, child) {
-                // 크기 변화: 1.0 ~ 1.4 사이에서 변화 (항상 보이도록 최소 크기 1.0 유지)
-                final scale = 1.0 + _blinkController.value * 0.4;
-                return SfCartesianChart(
-                  onTooltipRender: (TooltipArgs args) {
-                    final clickedPoint =
-                        args.dataPoints?[(args.pointIndex ?? 0) as int];
+            child: SfCartesianChart(
+              onTooltipRender: (TooltipArgs args) {
+                final clickedPoint =
+                    args.dataPoints?[(args.pointIndex ?? 0) as int];
 
-                    // Date로 부터 환율 정보를 얻는다.
-                    final exchangeRate = getExchangeRate(clickedPoint.x);
-                    // Date로 부터 USDT 정보를 얻는다.
-                    final usdtValue = getUsdtValue(clickedPoint.x);
-                    // 김치 프리미엄 계산은 USDT 값과 환율을 이용
-                    double kimchiPremiumValue =
-                        ((usdtValue - exchangeRate) / exchangeRate * 100);
+                // Date로 부터 환율 정보를 얻는다.
+                final exchangeRate = getExchangeRate(clickedPoint.x);
+                // Date로 부터 USDT 정보를 얻는다.
+                final usdtValue = getUsdtValue(clickedPoint.x);
+                // 김치 프리미엄 계산은 USDT 값과 환율을 이용
+                double kimchiPremiumValue =
+                    ((usdtValue - exchangeRate) / exchangeRate * 100);
 
-                    // 툴팁 텍스트를 기존 텍스트에 김치 프리미엄 값을 추가
-                    args.text =
-                        '${args.text}\n'
-                        'Gimchi: ${kimchiPremiumValue.toStringAsFixed(2)}%';
-                  },
-
-                  legend: const Legend(
-                    isVisible: true,
-                    position: LegendPosition.bottom,
-                  ),
-                  margin: const EdgeInsets.all(10),
-                  primaryXAxis: DateTimeAxis(
-                    edgeLabelPlacement: EdgeLabelPlacement.shift,
-                    intervalType: DateTimeIntervalType.days,
-                    dateFormat: DateFormat.yMd(),
-                    rangePadding: ChartRangePadding.additionalEnd,
-                    initialZoomFactor: 0.9,
-                    initialZoomPosition: 0.8,
-                    plotBands: kimchiPlotBands,
-                  ),
-                  primaryYAxis: NumericAxis(
-                    rangePadding: ChartRangePadding.auto,
-                    labelFormat: '{value}',
-                    numberFormat: NumberFormat("###,##0.0"),
-                    minimum: getUsdtMin(usdtChartData),
-                    maximum: getUsdtMax(usdtChartData),
-                  ),
-                  axes: <ChartAxis>[
-                    if (showKimchiPremium)
-                      NumericAxis(
-                        name: 'kimchiAxis',
-                        opposedPosition: true,
-                        labelFormat: '{value}%',
-                        numberFormat: NumberFormat("##0.0"),
-                        majorTickLines: const MajorTickLines(
-                          size: 2,
-                          color: Colors.red,
-                        ),
-                        rangePadding: ChartRangePadding.round,
-                        minimum: kimchiMin - 0.5,
-                        maximum: kimchiMax + 0.5,
-                      ),
-                  ],
-                  zoomPanBehavior: _zoomPanBehavior,
-                  tooltipBehavior: TooltipBehavior(enable: true),
-                  series: <CartesianSeries>[
-                    if (!(showAITrading || showGimchiTrading))
-                      // 일반 라인 차트 (USDT)
-                      LineSeries<USDTChartData, DateTime>(
-                        name: l10n(context).usdt,
-                        dataSource: usdtChartData,
-                        xValueMapper: (USDTChartData data, _) => data.time,
-                        yValueMapper: (USDTChartData data, _) => data.close,
-                        color: Colors.blue,
-                        animationDuration: 0,
-                      )
-                    else
-                      // 기존 캔들 차트
-                      CandleSeries<USDTChartData, DateTime>(
-                        name: l10n(context).usdt,
-                        dataSource: usdtChartData,
-                        xValueMapper: (USDTChartData data, _) => data.time,
-                        lowValueMapper: (USDTChartData data, _) => data.low,
-                        highValueMapper: (USDTChartData data, _) => data.high,
-                        openValueMapper: (USDTChartData data, _) => data.open,
-                        closeValueMapper: (USDTChartData data, _) => data.close,
-                        bearColor: Colors.blue,
-                        bullColor: Colors.red,
-                        animationDuration: 0,
-                      ),
-                    // 환율 그래프를 showExchangeRate가 true일 때만 표시
-                    if (showExchangeRate)
-                      LineSeries<ChartData, DateTime>(
-                        name: l10n(context).exchangeRate,
-                        dataSource: exchangeRates,
-                        xValueMapper: (ChartData data, _) => data.time,
-                        yValueMapper: (ChartData data, _) => data.value,
-                        color: Colors.green,
-                        animationDuration: 0,
-                      ),
-                    if (showKimchiPremium)
-                      LineSeries<ChartData, DateTime>(
-                        name: '${l10n(context).gimchiPremiem}(%)',
-                        dataSource: kimchiPremium,
-                        xValueMapper: (ChartData data, _) => data.time,
-                        yValueMapper: (ChartData data, _) => data.value,
-                        color: Colors.orange,
-                        yAxisName: 'kimchiAxis',
-                        animationDuration: 0,
-                      ),
-                    // 다음 매수/매도 시점 깜빡이는 마크
-                    if (nextPoint != null)
-                      ScatterSeries<
-                        ({DateTime date, double price, bool isBuy}),
-                        DateTime
-                      >(
-                        name: nextPoint.isBuy ? '매수' : '매도',
-                        dataSource: [
-                          (
-                            date: DateTime.now(),
-                            price: nextPoint.price,
-                            isBuy: nextPoint.isBuy,
-                          ),
-                        ],
-                        xValueMapper: (p, _) => p.date,
-                        yValueMapper: (p, _) => p.price,
-                        markerSettings: MarkerSettings(
-                          isVisible: true,
-                          shape: DataMarkerType.image,
-                          image:
-                              nextPoint.isBuy
-                                  ? ChartOnlyPage.buyMarkerImage
-                                  : ChartOnlyPage.sellMarkerImage,
-                          width: 24 * scale,
-                          height: 24 * scale,
-                        ),
-                      ),
-                  ],
-                );
+                // 툴팁 텍스트를 기존 텍스트에 김치 프리미엄 값을 추가
+                args.text =
+                    '${args.text}\n'
+                    'Gimchi: ${kimchiPremiumValue.toStringAsFixed(2)}%';
               },
+
+              legend: const Legend(
+                isVisible: true,
+                position: LegendPosition.bottom,
+              ),
+              margin: const EdgeInsets.all(10),
+              primaryXAxis: DateTimeAxis(
+                edgeLabelPlacement: EdgeLabelPlacement.shift,
+                intervalType: DateTimeIntervalType.days,
+                dateFormat: DateFormat.yMd(),
+                rangePadding: ChartRangePadding.additionalEnd,
+                initialZoomFactor: 0.9,
+                initialZoomPosition: 0.8,
+                plotBands: kimchiPlotBands,
+              ),
+              primaryYAxis: NumericAxis(
+                rangePadding: ChartRangePadding.auto,
+                labelFormat: '{value}',
+                numberFormat: NumberFormat("###,##0.0"),
+                minimum: getUsdtMin(usdtChartData),
+                maximum: getUsdtMax(usdtChartData),
+              ),
+              axes: <ChartAxis>[
+                if (showKimchiPremium)
+                  NumericAxis(
+                    name: 'kimchiAxis',
+                    opposedPosition: true,
+                    labelFormat: '{value}%',
+                    numberFormat: NumberFormat("##0.0"),
+                    majorTickLines: const MajorTickLines(
+                      size: 2,
+                      color: Colors.red,
+                    ),
+                    rangePadding: ChartRangePadding.round,
+                    minimum: kimchiMin - 0.5,
+                    maximum: kimchiMax + 0.5,
+                  ),
+              ],
+              zoomPanBehavior: _zoomPanBehavior,
+              tooltipBehavior: TooltipBehavior(enable: true),
+              series: <CartesianSeries>[
+                if (!(showAITrading || showGimchiTrading))
+                  // 일반 라인 차트 (USDT)
+                  LineSeries<USDTChartData, DateTime>(
+                    name: l10n(context).usdt,
+                    dataSource: usdtChartData,
+                    xValueMapper: (USDTChartData data, _) => data.time,
+                    yValueMapper: (USDTChartData data, _) => data.close,
+                    color: Colors.blue,
+                    animationDuration: 0,
+                  )
+                else
+                  // 기존 캔들 차트
+                  CandleSeries<USDTChartData, DateTime>(
+                    name: l10n(context).usdt,
+                    dataSource: usdtChartData,
+                    xValueMapper: (USDTChartData data, _) => data.time,
+                    lowValueMapper: (USDTChartData data, _) => data.low,
+                    highValueMapper: (USDTChartData data, _) => data.high,
+                    openValueMapper: (USDTChartData data, _) => data.open,
+                    closeValueMapper: (USDTChartData data, _) => data.close,
+                    bearColor: Colors.blue,
+                    bullColor: Colors.red,
+                    animationDuration: 0,
+                  ),
+                // 환율 그래프를 showExchangeRate가 true일 때만 표시
+                if (showExchangeRate)
+                  LineSeries<ChartData, DateTime>(
+                    name: l10n(context).exchangeRate,
+                    dataSource: exchangeRates,
+                    xValueMapper: (ChartData data, _) => data.time,
+                    yValueMapper: (ChartData data, _) => data.value,
+                    color: Colors.green,
+                    animationDuration: 0,
+                  ),
+                if (showKimchiPremium)
+                  LineSeries<ChartData, DateTime>(
+                    name: '${l10n(context).gimchiPremiem}(%)',
+                    dataSource: kimchiPremium,
+                    xValueMapper: (ChartData data, _) => data.time,
+                    yValueMapper: (ChartData data, _) => data.value,
+                    color: Colors.orange,
+                    yAxisName: 'kimchiAxis',
+                    animationDuration: 0,
+                  ),
+                // 다음 매수/매도 시점 깜빡이는 마크
+                if (nextPoint != null)
+                  ScatterSeries<
+                    ({DateTime date, double price, bool isBuy}),
+                    DateTime
+                  >(
+                    name: nextPoint.isBuy ? '매수' : '매도',
+                    dataSource: [
+                      (
+                        date: DateTime.now(),
+                        price: nextPoint.price,
+                        isBuy: nextPoint.isBuy,
+                      ),
+                    ],
+                    xValueMapper: (p, _) => p.date,
+                    yValueMapper: (p, _) => p.price,
+                    markerSettings: MarkerSettings(
+                      isVisible: true,
+                      shape: DataMarkerType.image,
+                      image:
+                          nextPoint.isBuy
+                              ? ChartOnlyPage.buyMarkerImage
+                              : ChartOnlyPage.sellMarkerImage,
+                      width: 24,
+                      height: 24,
+                    ),
+                  ),
+              ],
             ),
           ),
         ),
