@@ -1834,6 +1834,20 @@ class _MyHomePageState extends State<MyHomePage>
               ],
               zoomPanBehavior: _zoomPanBehavior,
               tooltipBehavior: TooltipBehavior(enable: true),
+              annotations: [
+                if (nextPoint != null)
+                  CartesianChartAnnotation(
+                    widget: BlinkingMarker(
+                      image:
+                          nextPoint.isBuy
+                              ? ChartOnlyPage.buyMarkerImage
+                              : ChartOnlyPage.sellMarkerImage,
+                    ),
+                    coordinateUnit: CoordinateUnit.point,
+                    x: DateTime.now(),
+                    y: nextPoint.price,
+                  ),
+              ],
               series: <CartesianSeries>[
                 if (!(showAITrading || showGimchiTrading))
                   // 일반 라인 차트 (USDT)
@@ -1878,33 +1892,6 @@ class _MyHomePageState extends State<MyHomePage>
                     color: Colors.orange,
                     yAxisName: 'kimchiAxis',
                     animationDuration: 0,
-                  ),
-                // 다음 매수/매도 시점 깜빡이는 마크
-                if (nextPoint != null)
-                  ScatterSeries<
-                    ({DateTime date, double price, bool isBuy}),
-                    DateTime
-                  >(
-                    name: nextPoint.isBuy ? '매수' : '매도',
-                    dataSource: [
-                      (
-                        date: DateTime.now(),
-                        price: nextPoint.price,
-                        isBuy: nextPoint.isBuy,
-                      ),
-                    ],
-                    xValueMapper: (p, _) => p.date,
-                    yValueMapper: (p, _) => p.price,
-                    markerSettings: MarkerSettings(
-                      isVisible: true,
-                      shape: DataMarkerType.image,
-                      image:
-                          nextPoint.isBuy
-                              ? ChartOnlyPage.buyMarkerImage
-                              : ChartOnlyPage.sellMarkerImage,
-                      width: 24,
-                      height: 24,
-                    ),
                   ),
               ],
             ),
