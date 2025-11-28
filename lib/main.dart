@@ -1842,6 +1842,12 @@ class _MyHomePageState extends State<MyHomePage>
                           nextPoint.isBuy
                               ? ChartOnlyPage.buyMarkerImage
                               : ChartOnlyPage.sellMarkerImage,
+                      tooltipMessage: getTooltipMessage(
+                        l10n(context),
+                        simulationType,
+                        nextPoint.isBuy,
+                        nextPoint.price,
+                      ),
                     ),
                     coordinateUnit: CoordinateUnit.point,
                     x: DateTime.now(),

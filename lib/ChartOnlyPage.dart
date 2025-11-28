@@ -288,6 +288,12 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                   nextPoint.isBuy
                       ? ChartOnlyPage.buyMarkerImage
                       : ChartOnlyPage.sellMarkerImage,
+              tooltipMessage: getTooltipMessage(
+                l10n,
+                simulationType,
+                nextPoint.isBuy,
+                nextPoint.price,
+              ),
             ),
             coordinateUnit: CoordinateUnit.point,
             x: DateTime.now(),

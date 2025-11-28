@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:usdt_signal/l10n/app_localizations.dart';
+import 'package:usdt_signal/simulation_page.dart'; // SimulationType 정의된 파일 import
 
 class InfoItem extends StatelessWidget {
   final String label;
@@ -81,6 +83,27 @@ class CheckBoxItem extends StatelessWidget {
   }
 }
 
+String getTooltipMessage(
+  AppLocalizations l10n,
+  SimulationType simulationType,
+  bool isBuy,
+  double price,
+) {
+  String action;
+  if (isBuy) {
+    action =
+        simulationType == SimulationType.ai
+            ? l10n.aiBuy
+            : l10n.kimchiPremiumBuy;
+  } else {
+    action =
+        simulationType == SimulationType.ai
+            ? l10n.aiSell
+            : l10n.kimchiPremiumSell;
+  }
+  return '$action: ${price.toStringAsFixed(1)}';
+}
+
 class StrategyCell extends StatelessWidget {
   final String text;
   final bool isHeader;
@@ -128,8 +151,14 @@ class HistoryRow extends StatelessWidget {
 class BlinkingMarker extends StatefulWidget {
   final ImageProvider image;
   final double size;
+  final String? tooltipMessage;
 
-  const BlinkingMarker({required this.image, this.size = 24.0, super.key});
+  const BlinkingMarker({
+    required this.image,
+    this.size = 24.0,
+    this.tooltipMessage,
+    super.key,
+  });
 
   @override
   State<BlinkingMarker> createState() => _BlinkingMarkerState();
@@ -170,7 +199,7 @@ class _BlinkingMarkerState extends State<BlinkingMarker>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
+    Widget marker = AnimatedBuilder(
       animation: Listenable.merge([_scaleController, _shimmerController]),
       builder: (context, child) {
         return Transform.scale(
@@ -210,5 +239,16 @@ class _BlinkingMarkerState extends State<BlinkingMarker>
         );
       },
     );
+
+    if (widget.tooltipMessage != null) {
+      return Tooltip(
+        message: widget.tooltipMessage,
+        triggerMode: TooltipTriggerMode.tap,
+        preferBelow: false, // 위쪽에 표시
+        child: marker,
+      );
+    }
+
+    return marker;
   }
 }
