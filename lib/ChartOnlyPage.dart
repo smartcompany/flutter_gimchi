@@ -300,6 +300,13 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
             x: DateTime.now(),
             y: nextPoint.price,
           ),
+        if (widget.usdtChartData.isNotEmpty)
+          CartesianChartAnnotation(
+            widget: const BlinkingDot(color: Colors.blue, size: 8),
+            coordinateUnit: CoordinateUnit.point,
+            x: widget.usdtChartData.last.time,
+            y: widget.usdtChartData.last.close,
+          ),
       ],
       series: [..._buildChartSeries(l10n)],
     );

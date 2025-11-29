@@ -1854,6 +1854,13 @@ class _MyHomePageState extends State<MyHomePage>
                     x: DateTime.now(),
                     y: nextPoint.price,
                   ),
+                if (usdtChartData.isNotEmpty)
+                  CartesianChartAnnotation(
+                    widget: const BlinkingDot(color: Colors.blue, size: 8),
+                    coordinateUnit: CoordinateUnit.point,
+                    x: usdtChartData.last.time,
+                    y: usdtChartData.last.close,
+                  ),
               ],
               series: <CartesianSeries>[
                 if (!(showAITrading || showGimchiTrading))
