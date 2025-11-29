@@ -262,14 +262,91 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
       return SimulationType.ai;
     }();
 
-    final nextPoint = SimulationModel.getNextTradingPoint(
-      simulationType: simulationType,
-      latestStrategy: widget.strategyList.last,
-      exchangeRates: widget.exchangeRates,
-      usdtChartData: widget.usdtChartData,
-      premiumTrends: widget.premiumTrends,
-      currentPrice: widget.usdtChartData.safeLast?.close,
-    );
+    // 매수/매도 포인트 계산
+    ({double price, double kimchiPremium})? buyPoint;
+    ({double price, double kimchiPremium})? sellPoint;
+
+    final currentExchangeRate =
+        (widget.exchangeRates.isNotEmpty)
+            ? widget.exchangeRates.last.value
+            : 0.0;
+
+    if (showAITrading || showGimchiTrading) {
+      if (simulationType == SimulationType.ai) {
+        if (widget.strategyList.isNotEmpty) {
+          final latestStrategy = widget.strategyList.last;
+          final buyPrice =
+              (latestStrategy['buy_price'] as num?)?.toDouble() ?? 0;
+          final sellPrice =
+              (latestStrategy['sell_price'] as num?)?.toDouble() ?? 0;
+
+          if (buyPrice > 0) {
+            final kp =
+                currentExchangeRate != 0
+                    ? ((buyPrice - currentExchangeRate) /
+                        currentExchangeRate *
+                        100)
+                    : 0.0;
+            buyPoint = (price: buyPrice, kimchiPremium: kp);
+          }
+          if (sellPrice > 0) {
+            final kp =
+                currentExchangeRate != 0
+                    ? ((sellPrice - currentExchangeRate) /
+                        currentExchangeRate *
+                        100)
+                    : 0.0;
+            sellPoint = (price: sellPrice, kimchiPremium: kp);
+          }
+        }
+      } else if (simulationType == SimulationType.kimchi) {
+        if (widget.exchangeRates.isNotEmpty &&
+            widget.usdtChartData.isNotEmpty) {
+          final exchangeRateValue = widget.exchangeRates.last.value;
+          if (exchangeRateValue > 0) {
+            final todayUsdtTime = widget.usdtChartData.last.time;
+            Map<String, double>? trendData;
+            if (SimulationCondition.instance.useTrend) {
+              trendData = widget.premiumTrends?[todayUsdtTime];
+            }
+            final (
+              buyThreshold,
+              sellThreshold,
+            ) = SimulationModel.getKimchiThresholds(trendData: trendData);
+
+            final buyPrice = exchangeRateValue * (1 + buyThreshold / 100);
+            final sellPrice = exchangeRateValue * (1 + sellThreshold / 100);
+
+            buyPoint = (price: buyPrice, kimchiPremium: buyThreshold);
+            sellPoint = (price: sellPrice, kimchiPremium: sellThreshold);
+          }
+        }
+      }
+    } else {
+      // 아무것도 체크 안되어 있을 때는 기존 로직대로 하나만 표시 (AI 기준)
+      final nextPoint = SimulationModel.getNextTradingPoint(
+        simulationType: SimulationType.ai,
+        latestStrategy: widget.strategyList.last,
+        exchangeRates: widget.exchangeRates,
+        usdtChartData: widget.usdtChartData,
+        premiumTrends: widget.premiumTrends,
+        currentPrice: widget.usdtChartData.safeLast?.close,
+      );
+
+      if (nextPoint != null) {
+        if (nextPoint.isBuy) {
+          buyPoint = (
+            price: nextPoint.price,
+            kimchiPremium: nextPoint.kimchiPremium,
+          );
+        } else {
+          sellPoint = (
+            price: nextPoint.price,
+            kimchiPremium: nextPoint.kimchiPremium,
+          );
+        }
+      }
+    }
 
     return SfCartesianChart(
       onTooltipRender: (TooltipArgs args) => _handleTooltipRender(args, l10n),
@@ -281,24 +358,37 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
       zoomPanBehavior: _zoomPanBehavior,
       tooltipBehavior: TooltipBehavior(enable: true),
       annotations: [
-        if (nextPoint != null)
+        if (buyPoint != null)
           CartesianChartAnnotation(
             widget: BlinkingMarker(
-              image:
-                  nextPoint.isBuy
-                      ? ChartOnlyPage.buyMarkerImage
-                      : ChartOnlyPage.sellMarkerImage,
+              image: ChartOnlyPage.buyMarkerImage,
               tooltipMessage: getTooltipMessage(
                 l10n,
                 simulationType,
-                nextPoint.isBuy,
-                nextPoint.price,
-                nextPoint.kimchiPremium,
+                true, // isBuy
+                buyPoint.price,
+                buyPoint.kimchiPremium,
               ),
             ),
             coordinateUnit: CoordinateUnit.point,
             x: DateTime.now(),
-            y: nextPoint.price,
+            y: buyPoint.price,
+          ),
+        if (sellPoint != null)
+          CartesianChartAnnotation(
+            widget: BlinkingMarker(
+              image: ChartOnlyPage.sellMarkerImage,
+              tooltipMessage: getTooltipMessage(
+                l10n,
+                simulationType,
+                false, // isBuy
+                sellPoint.price,
+                sellPoint.kimchiPremium,
+              ),
+            ),
+            coordinateUnit: CoordinateUnit.point,
+            x: DateTime.now(),
+            y: sellPoint.price,
           ),
         if (widget.usdtChartData.isNotEmpty)
           CartesianChartAnnotation(
