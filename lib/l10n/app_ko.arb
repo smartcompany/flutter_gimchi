@@ -136,5 +136,7 @@
   "initialCapital": "초기 자본: ₩1,000,000",
   "finalValue": "최종 가치",
   "aiSimulatedTradeTitle": "AI 모의 투자",
-  "kimchiSimulatedTradeTitle": "김프 모의 투자"
+  "kimchiSimulatedTradeTitle": "김프 모의 투자",
+  "profitRate": "수익률",
+  "evaluationAmount": "평가금액"
 }

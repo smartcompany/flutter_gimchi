@@ -392,4 +392,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get kimchiSimulatedTradeTitle => '김프 모의 투자';
+
+  @override
+  String get profitRate => '收益率';
+
+  @override
+  String get evaluationAmount => '评估金额';
 }

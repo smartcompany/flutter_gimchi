@@ -855,6 +855,18 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'김프 모의 투자'**
   String get kimchiSimulatedTradeTitle;
+
+  /// No description provided for @profitRate.
+  ///
+  /// In ko, this message translates to:
+  /// **'수익률'**
+  String get profitRate;
+
+  /// No description provided for @evaluationAmount.
+  ///
+  /// In ko, this message translates to:
+  /// **'평가금액'**
+  String get evaluationAmount;
 }
 
 class _AppLocalizationsDelegate

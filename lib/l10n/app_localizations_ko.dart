@@ -394,4 +394,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get kimchiSimulatedTradeTitle => '김프 모의 투자';
+
+  @override
+  String get profitRate => '수익률';
+
+  @override
+  String get evaluationAmount => '평가금액';
 }

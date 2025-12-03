@@ -136,5 +136,7 @@
   "initialCapital": "Initial: ₩1,000,000",
   "finalValue": "Final Value",
   "aiSimulatedTradeTitle": "AI Simulated Trade",
-  "kimchiSimulatedTradeTitle": "K-Premium Simulated Trade"
+  "kimchiSimulatedTradeTitle": "K-Premium Simulated Trade",
+  "profitRate": "Profit Rate",
+  "evaluationAmount": "Evaluation Amount"
 }

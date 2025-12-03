@@ -401,4 +401,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kimchiSimulatedTradeTitle => 'K-Premium Simulated Trade';
+
+  @override
+  String get profitRate => 'Profit Rate';
+
+  @override
+  String get evaluationAmount => 'Evaluation Amount';
 }

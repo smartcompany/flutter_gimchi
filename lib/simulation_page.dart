@@ -560,6 +560,9 @@ class _SimulationPageState extends State<SimulationPage>
                             widgets.add(const SizedBox(height: 12));
                             widgets.add(_buildSellCard(context, r));
                           }
+                          // 매도가 있든 없든 평가금액 표시
+                          widgets.add(const SizedBox(height: 12));
+                          widgets.add(_buildResultCard(context, r));
                           widgets.add(const SizedBox(height: 12));
                           return widgets;
                         }),
@@ -822,6 +825,27 @@ class _SimulationPageState extends State<SimulationPage>
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            // Stacked Final KRW (누적 최종 원화)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n(context).stackedFinalKRW,
+                  style: _BodyStyles.greyLabelText,
+                ),
+                Builder(
+                  builder: (context) {
+                    if (results.isEmpty) return const Text("-");
+                    final finalKRW = results.last.finalKRW;
+                    return Text(
+                      "₩${krwFormat.format(finalKRW.round())}",
+                      style: _CardStyles.headerCardValue,
+                    );
+                  },
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -967,6 +991,147 @@ class _SimulationPageState extends State<SimulationPage>
     );
   }
 
+  Widget _buildResultCard(BuildContext context, SimulationResult r) {
+    // 매도가 없는 경우 수익과 수익률을 다시 계산
+    double currentValue = r.finalKRW;
+    double profit = r.profit;
+    double profitRate = r.profitRate;
+    double? currentUsdtPrice; // 매도가 없는 경우 USDT 가격 저장
+
+    if (r.sellDate == null) {
+      // 매도가 안된 경우: 현재 USDT 가격 기준으로 평가금액 계산
+      final analysisDate = r.analysisDate;
+      final usdtData = widget.usdtMap[analysisDate];
+      currentUsdtPrice = usdtData?.close ?? 0.0;
+      final usdtAmount = r.finalUSDT ?? 0.0;
+      currentValue = currentUsdtPrice * usdtAmount;
+
+      // 이전 거래의 finalKRW 또는 초기 자본을 매수 금액으로 사용
+      final buyAmount = _getBuyAmountForResult(r);
+      profit = currentValue - buyAmount;
+      if (buyAmount > 0) {
+        profitRate = (profit / buyAmount) * 100;
+      }
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 왼쪽 아이콘
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.account_balance_wallet,
+              color: Colors.grey.shade600,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 16),
+          // 오른쪽 텍스트 영역
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 첫 번째 줄: 수익 금액과 수익률
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "${l10n(context).gain}: ",
+                        style: _CardStyles.cardDate.copyWith(
+                          color: Colors.black87,
+                        ),
+                      ),
+                      TextSpan(
+                        text:
+                            "${profit >= 0 ? '+' : ''}₩${krwFormat.format(profit.round())} ",
+                        style: _CardStyles.cardDate.copyWith(
+                          color:
+                              profit >= 0
+                                  ? const Color(0xFF2E7D32)
+                                  : const Color(0xFFC62828),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (profitRate != 0)
+                        TextSpan(
+                          text:
+                              "(${profitRate >= 0 ? '+' : ''}${profitRate.toStringAsFixed(2)}%)",
+                          style: _CardStyles.cardDate.copyWith(
+                            color:
+                                profitRate >= 0
+                                    ? const Color(0xFF2E7D32)
+                                    : const Color(0xFFC62828),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // 두 번째 줄: 최종원화 또는 평가금액
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text:
+                            r.sellDate == null
+                                ? "${l10n(context).evaluationAmount} "
+                                : "${l10n(context).finalKRW} ",
+                        style: _CardStyles.cardDate.copyWith(
+                          color: Colors.black87,
+                        ),
+                      ),
+                      TextSpan(
+                        text: "₩${krwFormat.format(currentValue.round())}",
+                        style: _CardStyles.cardDate.copyWith(
+                          color: Colors.black87,
+                        ),
+                      ),
+                      if (r.sellDate == null && currentUsdtPrice != null)
+                        TextSpan(
+                          text:
+                              " (${l10n(context).usdt}: ${currentUsdtPrice.toStringAsFixed(1)})",
+                          style: _CardStyles.cardDate.copyWith(
+                            color: Colors.black54,
+                            fontSize: 12,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 결과 카드에서 사용할 매수 금액 계산
+  double _getBuyAmountForResult(SimulationResult r) {
+    // 현재 결과의 인덱스 찾기
+    final index = results.indexOf(r);
+    if (index > 0) {
+      // 이전 거래의 finalKRW 사용
+      return results[index - 1].finalKRW;
+    } else {
+      // 첫 거래인 경우 초기 자본 사용
+      return 1000000.0;
+    }
+  }
+
   Widget _buildPerformanceMetrics(BuildContext context) {
     final double totalGain =
         results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0;
@@ -989,9 +1154,6 @@ class _SimulationPageState extends State<SimulationPage>
       }
     }
 
-    final finalValue = results.isNotEmpty ? results.last.finalKRW : 1000000;
-    final finalValueText = "₩${(finalValue / 1000000).toStringAsFixed(2)}M";
-
     return Row(
       children: [
         Expanded(
@@ -1007,14 +1169,6 @@ class _SimulationPageState extends State<SimulationPage>
             l10n(context).extimatedYearGain,
             annualYieldText,
             Colors.deepPurple,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildMetricCard(
-            l10n(context).finalValue,
-            finalValueText,
-            Colors.black87,
           ),
         ),
       ],

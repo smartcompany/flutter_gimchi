@@ -130,5 +130,7 @@
   "nextSellPoint": "下一个卖出点",
   "priceLabel": "价格",
   "basePremium": "基准溢价",
-  "kimchiPremiumShort": "溢价"
+  "kimchiPremiumShort": "溢价",
+  "profitRate": "收益率",
+  "evaluationAmount": "评估金额"
 }
