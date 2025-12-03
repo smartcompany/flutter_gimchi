@@ -101,6 +101,12 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [Locale('en'), Locale('ko'), Locale('zh')],
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+          child: child!,
+        );
+      },
       home: OnboardingLauncher(),
       debugShowCheckedModeBanner: false, // 이 줄을 추가!
     );

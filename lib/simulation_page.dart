@@ -467,6 +467,10 @@ class _SimulationPageState extends State<SimulationPage>
                           widgets.add(const SizedBox(height: 12));
                           return widgets;
                         }),
+                      // 버텀 시트 공간 확보 (화면 높이의 40% + 여유 공간)
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.35,
+                      ),
                     ],
                   ),
                 ),
