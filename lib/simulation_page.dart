@@ -427,7 +427,9 @@ class _SimulationPageState extends State<SimulationPage>
                 : null,
       ),
       body: SafeArea(
-        child:
+        child: Stack(
+          children: [
+            // 메인 콘텐츠
             loading
                 ? const Center(child: CircularProgressIndicator())
                 : error != null
@@ -465,24 +467,142 @@ class _SimulationPageState extends State<SimulationPage>
                           widgets.add(const SizedBox(height: 12));
                           return widgets;
                         }),
-                      const SizedBox(height: 24),
-                      Text(
-                        l10n(context).performanceMetrics,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black54,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildPerformanceMetrics(context),
-                      const SizedBox(height: 24),
-                      _buildViewHistoryButton(context),
-                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
+            // 버텀 시트 (오버레이)
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: _buildBottomSheet(context),
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildBottomSheet(BuildContext context) {
+    if (loading || results.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return DraggableScrollableSheet(
+      initialChildSize: 0.4, // 초기 크기 (모든 컨텐츠가 보이도록)
+      minChildSize: 0.12, // 최소 크기
+      maxChildSize: 0.4, // 최대 크기 (초기 크기와 동일)
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 10,
+                offset: Offset(0, -2),
+              ),
+            ],
+          ),
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              // 스크롤이 끝에 도달했을 때 시트가 확장되지 않도록 함
+              if (notification is ScrollEndNotification) {
+                if (scrollController.position.pixels == 0) {
+                  // 스크롤이 맨 위에 있을 때만 드래그 가능
+                }
+              }
+              return false;
+            },
+            child: ListView(
+              controller: scrollController,
+              physics: const ClampingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              children: [
+                // 드래그 핸들
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                // 성과 지표 & 차트로 보기 버튼
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n(context).performanceMetrics,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    OutlinedButton.icon(
+                      icon: const Icon(
+                        Icons.show_chart,
+                        color: Colors.deepPurple,
+                        size: 16,
+                      ),
+                      label: Text(
+                        l10n(context).seeWithChart,
+                        style: const TextStyle(
+                          color: Colors.deepPurple,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.deepPurple),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        minimumSize: const Size(0, 32),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder:
+                                (_) => ChartOnlyPage.fromModel(
+                                  widget.chartOnlyPageModel!,
+                                  initialShowAITrading:
+                                      widget.simulationType ==
+                                      SimulationType.ai,
+                                  initialShowGimchiTrading:
+                                      widget.simulationType ==
+                                      SimulationType.kimchi,
+                                ),
+                            fullscreenDialog: true,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _buildPerformanceMetrics(context),
+                const SizedBox(height: 24),
+                _buildViewHistoryButton(context),
+                // 하단 SafeArea 고려
+                SizedBox(height: MediaQuery.of(context).padding.bottom),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -534,6 +654,91 @@ class _SimulationPageState extends State<SimulationPage>
                       ),
                     ],
                   ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            // 차트 라인 (플레이스홀더)
+            Container(
+              height: 2,
+              width: 100,
+              color: Colors.deepPurple.withOpacity(0.5),
+            ),
+            const SizedBox(height: 20),
+            // Period
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n(context).tradingPerioid,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                ),
+                Builder(
+                  builder: (context) {
+                    if (results.isEmpty) return const Text("-");
+                    final startDate =
+                        results.first.buyDate?.toCustomString() ?? "";
+                    final endDate = results.last.analysisDate.toCustomString();
+                    return Text(
+                      "$startDate - $endDate",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Total Gain
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n(context).totalGain,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                ),
+                Builder(
+                  builder: (context) {
+                    final double totalGain =
+                        results.isNotEmpty
+                            ? (results.last.finalKRW - 1000000)
+                            : 0;
+                    final double totalGainPercent =
+                        results.isNotEmpty
+                            ? (results.last.finalKRW / 1000000 * 100 - 100)
+                            : 0;
+                    return RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text:
+                                "${totalGain >= 0 ? '+' : ''}${krwFormat.format(totalGain.round())} ",
+                            style: TextStyle(
+                              color:
+                                  totalGain >= 0
+                                      ? const Color(0xFF2E7D32)
+                                      : const Color(0xFFC62828),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          TextSpan(
+                            text: "(${totalGainPercent.toStringAsFixed(2)}%)",
+                            style: TextStyle(
+                              color:
+                                  totalGain >= 0
+                                      ? const Color(0xFF2E7D32)
+                                      : const Color(0xFFC62828),
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
