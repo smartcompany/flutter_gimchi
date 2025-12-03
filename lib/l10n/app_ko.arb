@@ -130,5 +130,11 @@
   "nextSellPoint": "다음 매도 시점",
   "priceLabel": "가격",
   "basePremium": "기준 프리미엄",
-  "kimchiPremiumShort": "김프"
+  "kimchiPremiumShort": "김프",
+  "tradeTimeline": "매매 타임라인",
+  "performanceMetrics": "성과 지표",
+  "initialCapital": "초기 자본: ₩1,000,000",
+  "finalValue": "최종 가치",
+  "aiSimulatedTradeTitle": "AI 모의 투자",
+  "kimchiSimulatedTradeTitle": "김프 모의 투자"
 }

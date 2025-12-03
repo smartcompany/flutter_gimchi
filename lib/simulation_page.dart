@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:usdt_signal/ChartOnlyPage.dart'; // ChartOnlyPageModel import 추가
 import 'package:usdt_signal/api_service.dart';
-import 'package:usdt_signal/l10n/app_localizations.dart';
 import 'package:usdt_signal/simulation_model.dart';
 import 'package:usdt_signal/strategy_history_page.dart';
 import 'utils.dart';
@@ -202,38 +201,16 @@ class _SimulationPageState extends State<SimulationPage>
   final NumberFormat krwFormat = NumberFormat("#,##0.#", "ko_KR");
   double totalProfitRate = 0; // 총 수익률 변수 추가
 
-  late AnimationController _bottomBarController;
-  late Animation<Offset> _bottomBarOffset;
-
   @override
   void initState() {
     super.initState();
     runSimulation();
 
     // 애니메이션 컨트롤러 및 애니메이션 초기화
-    _bottomBarController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    );
-    _bottomBarOffset = Tween<Offset>(
-      begin: const Offset(0, 1.0), // 아래에서 시작
-      end: Offset.zero, // 제자리
-    ).animate(
-      CurvedAnimation(
-        parent: _bottomBarController,
-        curve: Curves.easeOutBack, // 중력 느낌의 곡선
-      ),
-    );
-
-    // 페이지가 열릴 때 애니메이션 실행
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _bottomBarController.forward();
-    });
   }
 
   @override
   void dispose() {
-    _bottomBarController.dispose();
     super.dispose();
   }
 
@@ -332,7 +309,7 @@ class _SimulationPageState extends State<SimulationPage>
       // 서버에서 받은 김치 프리미엄 트렌드 데이터 사용
       (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
         trendData: widget.premiumTrends?[date],
-    );
+      );
     }
 
     showDialog(
@@ -420,18 +397,20 @@ class _SimulationPageState extends State<SimulationPage>
           widget.simulationType == SimulationType.kimchi
               ? l10n(context).gimchBaseTrade
               : l10n(context).aiBaseTrade,
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        foregroundColor: Colors.black87,
+        iconTheme: const IconThemeData(color: Colors.black87),
         actions:
             widget.simulationType == SimulationType.kimchi
                 ? [
                   IconButton(
                     icon: const Icon(Icons.settings, color: Colors.deepPurple),
-                    tooltip: l10n(context).changeStrategy,
                     onPressed: () async {
                       final success =
                           await SimulationPage.showKimchiStrategyUpdatePopup(
@@ -453,849 +432,419 @@ class _SimulationPageState extends State<SimulationPage>
                 ? const Center(child: CircularProgressIndicator())
                 : error != null
                 ? Center(child: Text('${l10n(context).error}: $error'))
-                : ListView(
+                : SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
-                  children: [
-                    Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      color: Colors.white,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 18.0,
-                          horizontal: 16,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                  colors: [
-                                    Colors.deepPurple.withOpacity(0.05),
-                                    Colors.deepPurple.withOpacity(0.02),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Colors.deepPurple.withOpacity(0.2),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    SimulationType.ai == widget.simulationType
-                                        ? Icons.psychology
-                                        : Icons.trending_up,
-                                    color: Colors.deepPurple,
-                                    size: 24,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      SimulationType.ai == widget.simulationType
-                                          ? AppLocalizations.of(
-                                            context,
-                                          )!.aiTradingSimulation
-                                          : AppLocalizations.of(
-                                            context,
-                                          )!.gimchTradingSimulation,
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.deepPurple,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            ...results.map(
-                              (r) => Container(
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [Colors.white, Colors.grey[100]!],
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.08),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                    BoxShadow(
-                                      color: Colors.deepPurple.withOpacity(
-                                        0.05,
-                                      ),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                  border: Border.all(
-                                    color: Colors.deepPurple.withOpacity(0.1),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                    horizontal: 16,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 8,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.deepPurple.withOpacity(
-                                            0.03,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          border: Border.all(
-                                            color: Colors.deepPurple
-                                                .withOpacity(0.1),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          '${l10n(context).buy}→${r.buyDate?.toCustomString()}\n${l10n(context).sell}→${r.sellDate?.toCustomString() ?? l10n(context).unFilled}',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                            color: Colors.deepPurple,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2), // ← 간격 줄이기
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 12,
-                                                    vertical: 8,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: Colors.green.withOpacity(
-                                                  0.1,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                border: Border.all(
-                                                  color: Colors.green
-                                                      .withOpacity(0.3),
-                                                  width: 1,
-                                                ),
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons.trending_up,
-                                                    color: Colors.green,
-                                                    size: 16,
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Expanded(
-                                                    child: Text(
-                                                      '${l10n(context).buy}: ${krwFormat.format(r.buyPrice)}',
-                                                      style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.green,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          setupStretegyButton(
-                                            context,
-                                            r.buyDate,
-                                          ),
-                                        ],
-                                      ),
-                                      if (r.sellDate != null) ...[
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 12,
-                                                      vertical: 8,
-                                                    ),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.red.withOpacity(
-                                                    0.1,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                  border: Border.all(
-                                                    color: Colors.red
-                                                        .withOpacity(0.3),
-                                                    width: 1,
-                                                  ),
-                                                ),
-                                                child: Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.trending_down,
-                                                      color: Colors.red,
-                                                      size: 16,
-                                                    ),
-                                                    const SizedBox(width: 8),
-                                                    Expanded(
-                                                      child: Text(
-                                                        '${l10n(context).sell}: ${krwFormat.format(r.sellPrice!)}',
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.red,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            setupStretegyButton(
-                                              context,
-                                              r.sellDate!,
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 12,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: [
-                                                Colors.deepPurple.withOpacity(
-                                                  0.1,
-                                                ),
-                                                Colors.deepPurple.withOpacity(
-                                                  0.05,
-                                                ),
-                                              ],
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                            border: Border.all(
-                                              color: Colors.deepPurple
-                                                  .withOpacity(0.2),
-                                              width: 1,
-                                            ),
-                                          ),
-                                          child: Column(
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    '${l10n(context).gain}:',
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 14,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    '${krwFormat.format(r.profit.round())} (${r.profitRate.toStringAsFixed(2)})%',
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 16,
-                                                      color: Colors.deepPurple,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 8),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    '${l10n(context).finalKRW}:',
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 14,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    '${krwFormat.format(r.finalKRW.round())}',
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 16,
-                                                      color: Colors.deepPurple,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ] else if (r.finalUSDT != null) ...[
-                                        const SizedBox(height: 12),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 12,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: [
-                                                Colors.orange.withOpacity(0.05),
-                                                Colors.orange.withOpacity(0.02),
-                                              ],
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                            border: Border.all(
-                                              color: Colors.orange.withOpacity(
-                                                0.3,
-                                              ),
-                                              width: 1,
-                                            ),
-                                          ),
-                                          child: Column(
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons.schedule,
-                                                    color: Colors.orange,
-                                                    size: 20,
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Text(
-                                                    '미체결 상태',
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 16,
-                                                      color: Colors.orange,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 12),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      Icon(
-                                                        Icons
-                                                            .account_balance_wallet,
-                                                        color: Colors.blue,
-                                                        size: 16,
-                                                      ),
-                                                      const SizedBox(width: 8),
-                                                      Text(
-                                                        '${l10n(context).usdt}:',
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 14,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Text(
-                                                    '${r.finalUSDT?.toStringAsFixed(4)} USDT',
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 16,
-                                                      color: Colors.blue,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 8),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      Icon(
-                                                        Icons.trending_up,
-                                                        color: Colors.green,
-                                                        size: 16,
-                                                      ),
-                                                      const SizedBox(width: 8),
-                                                      Text(
-                                                        '${l10n(context).sellIfCurrentPrice}:',
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 14,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Text(
-                                                    '${krwFormat.format(r.finalKRW.round())}',
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 16,
-                                                      color: Colors.green,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeaderCard(context),
+                      const SizedBox(height: 24),
+                      Text(
+                        l10n(context).tradeTimeline,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black54,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 80), // 하단 고정 영역과 겹치지 않게 여유 공간
-                  ],
+                      const SizedBox(height: 12),
+                      if (results.isEmpty)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Text(l10n(context).noStrategyData),
+                          ),
+                        )
+                      else
+                        ...results.expand((r) {
+                          List<Widget> widgets = [_buildBuyCard(context, r)];
+                          if (r.sellDate != null) {
+                            widgets.add(const SizedBox(height: 12));
+                            widgets.add(_buildSellCard(context, r));
+                          }
+                          widgets.add(const SizedBox(height: 12));
+                          return widgets;
+                        }),
+                      const SizedBox(height: 24),
+                      Text(
+                        l10n(context).performanceMetrics,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildPerformanceMetrics(context),
+                      const SizedBox(height: 24),
+                      _buildViewHistoryButton(context),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
       ),
-      bottomNavigationBar: bottomNavigationBar(context),
     );
   }
 
-  SafeArea bottomNavigationBar(BuildContext context) {
-    return SafeArea(
-        child: SlideTransition(
-          position: _bottomBarOffset,
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.white, Colors.grey[50]!],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+  Widget _buildHeaderCard(BuildContext context) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurple.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    widget.simulationType == SimulationType.ai
+                        ? Icons.psychology
+                        : Icons.trending_up,
+                    color: Colors.deepPurple,
+                    size: 20,
+                  ),
                 ),
-                BoxShadow(
-                  color: Colors.deepPurple.withOpacity(0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.simulationType == SimulationType.ai
+                            ? l10n(context).aiSimulatedTradeTitle
+                            : l10n(context).kimchiSimulatedTradeTitle,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        l10n(context).initialCapital,
+                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                      ),
+                    ],
+                  ),
                 ),
               ],
-              border: Border.all(
-                color: Colors.deepPurple.withOpacity(0.15),
-                width: 1.5,
-              ),
             ),
-            child: Padding(
-            padding: const EdgeInsets.only(
-              top: 0,
-              left: 24,
-              right: 24,
-              bottom: 24,
-            ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                // === 늘이기/줄이기 버튼 ===
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        isCardExpanded
-                            ? Icons.keyboard_arrow_down
-                            : Icons.keyboard_arrow_up,
-                        color: Colors.deepPurple,
-                        size: 36,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          isCardExpanded = !isCardExpanded;
-                        });
-                      },
-                      tooltip: isCardExpanded ? '줄이기' : '늘리기',
-                    ),
-                  ],
-                ),
-                  // === 매매기간 ===
-                  Row(
-                    children: [
-                      Text(
-                        l10n(context).tradingPerioid,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Spacer(),
-                      OutlinedButton.icon(
-                        icon: const Icon(
-                          Icons.show_chart,
-                          color: Colors.deepPurple,
-                          size: 18,
-                        ),
-                        label: Text(
-                          l10n(context).seeWithChart,
-                          style: const TextStyle(
-                            color: Colors.deepPurple,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.deepPurple),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          minimumSize: const Size(0, 32),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder:
-                                  (_) => ChartOnlyPage.fromModel(
-                                    widget.chartOnlyPageModel!,
-                                    initialShowAITrading:
-                                        widget.simulationType ==
-                                        SimulationType.ai,
-                                    initialShowGimchiTrading:
-                                        widget.simulationType ==
-                                        SimulationType.kimchi,
-                                  ),
-                              fullscreenDialog: true,
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Builder(
-                    builder: (context) {
-                    if (results.isEmpty) return Text(l10n(context).dash);
-                      final startDate = results.first.buyDate?.toCustomString();
-                    final endDate = results.last.analysisDate.toCustomString();
-                      final text = '${startDate} ~ ${endDate}';
-
-                      return Text(
-                        text,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple,
-                        ),
-                      );
-                    },
-                  ),
-                if (isCardExpanded) ...[
-                  const SizedBox(height: 12),
-
-                  // === 누적 최종 원화 ===
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        l10n(context).stackedFinalKRW,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        '${krwFormat.format(results.isNotEmpty ? results.last.finalKRW.round() : 1000000)}${l10n(context).currencyWonSuffix}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // === 구분선 ===
-                  Container(
-                    height: 1,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          Colors.deepPurple.withOpacity(0.3),
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // === 총 수익률/연 수익률 강조 ===
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n(context).totalGain,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.deepPurple.withOpacity(0.05),
-                                  Colors.deepPurple.withOpacity(0.02),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.deepPurple.withOpacity(0.2),
-                                width: 1,
-                              ),
-                            ),
-                            child: Text(
-                              '${(results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0).toStringAsFixed(2)}%',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22,
-                                color: Colors.deepPurple,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            l10n(context).extimatedYearGain,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Builder(
-                            builder: (context) {
-                              if (results.isEmpty) {
-                                return Text(
-                                  l10n(context).dash,
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.deepPurple,
-                                  ),
-                                );
-                              }
-                              final firstDate = results.first.buyDate;
-                              final lastDate = results.last.analysisDate;
-                              if (firstDate == null) {
-                                return Text(
-                                  l10n(context).dash,
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.deepPurple,
-                                  ),
-                                );
-                              }
-                              final days =
-                                  lastDate.difference(firstDate).inDays;
-                              if (days < 1) {
-                                return Text(
-                                  l10n(context).dash,
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.deepPurple,
-                                  ),
-                                );
-                              }
-                              final years = days / 365.0;
-                              final totalReturn =
-                                  results.last.finalKRW / 1000000;
-                              final annualYield =
-                                  (years > 0)
-                                      ? (pow(totalReturn, 1 / years) - 1) * 100
-                                      : 0.0;
-                              return Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.deepPurple.withOpacity(0.05),
-                                      Colors.deepPurple.withOpacity(0.02),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.deepPurple.withOpacity(0.2),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  '${annualYield.isNaN || annualYield.isInfinite ? 0 : annualYield.toStringAsFixed(2)}%',
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.deepPurple,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // === 전체 전략 히스토리 보기 버튼 ===
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder:
-                              (context) => DraggableScrollableSheet(
-                                initialChildSize: 0.9,
-                                minChildSize: 0.5,
-                                maxChildSize: 0.95,
-                                builder:
-                                    (context, scrollController) => Container(
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(20),
-                                          topRight: Radius.circular(20),
-                                        ),
-                                      ),
-                                      child: StrategyHistoryPage(
-                                        simulationType: widget.simulationType,
-                                        usdExchangeRates:
-                                            widget.usdExchangeRates,
-                                        usdtMap: widget.usdtMap,
-                                        strategies: widget.strategyList,
-                                        premiumTrends: widget.premiumTrends,
-                                      ),
-                                    ),
-                              ),
-                        );
-                      },
-                      icon: const Icon(Icons.history, color: Colors.white),
-                      label: Text(
-                        l10n(context).viewAllStrategyHistory,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
+          ],
         ),
       ),
     );
   }
 
-  OutlinedButton setupStretegyButton(BuildContext context, DateTime? date) {
-    // 버튼 스타일에서 padding, minimumSize 조정
-    final buttonStyle = OutlinedButton.styleFrom(
-      foregroundColor: Colors.deepPurple,
-      side: const BorderSide(color: Colors.deepPurple),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), // ← 더 얇게
-      textStyle: const TextStyle(fontSize: 14),
-    );
-
+  Widget _buildStrategyButton(
+    BuildContext context,
+    DateTime? date,
+    Color color,
+  ) {
     return OutlinedButton(
       onPressed: () {
-        _showStrategyDialog(context, date!);
+        if (date != null) {
+          _showStrategyDialog(context, date);
+        }
       },
-      style: buttonStyle,
-      child: Text(l10n(context).seeStrategy),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: color,
+        side: BorderSide(color: color.withOpacity(0.5)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        minimumSize: const Size(0, 32),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: Text(
+        l10n(context).seeStrategy,
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildBuyCard(BuildContext context, SimulationResult r) {
+    final color = const Color(0xFF00695C); // Teal 800
+    final bgColor = const Color(0xFFE0F2F1); // Teal 50
+    final iconBgColor = const Color(0xFFB2DFDB); // Teal 100
+
+    return GestureDetector(
+      onTap: () {
+        if (r.buyDate != null) {
+          _showStrategyDialog(context, r.buyDate!);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.1)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: iconBgColor.withOpacity(0.5),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.north_east, color: color, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n(context).buy,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  r.buyDate?.toCustomString() ?? "-",
+                  style: TextStyle(
+                    color: color.withOpacity(0.7),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Text(
+              "₩${krwFormat.format(r.buyPrice)}",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: color,
+              ),
+            ),
+            const SizedBox(width: 12),
+            _buildStrategyButton(context, r.buyDate, color),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSellCard(BuildContext context, SimulationResult r) {
+    final color = const Color(0xFFC62828); // Red 800
+    final bgColor = const Color(0xFFFFEBEE); // Red 50
+    final iconBgColor = const Color(0xFFFFCDD2); // Red 100
+
+    return GestureDetector(
+      onTap: () {
+        if (r.sellDate != null) {
+          _showStrategyDialog(context, r.sellDate!);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.1)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: iconBgColor.withOpacity(0.5),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.south_east, color: color, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n(context).sell,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  r.sellDate?.toCustomString() ?? "-",
+                  style: TextStyle(
+                    color: color.withOpacity(0.7),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Text(
+              r.sellPrice != null ? "₩${krwFormat.format(r.sellPrice!)}" : "-",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: color,
+              ),
+            ),
+            const SizedBox(width: 12),
+            _buildStrategyButton(context, r.sellDate, color),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPerformanceMetrics(BuildContext context) {
+    final double totalGain =
+        results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0;
+
+    String annualYieldText = "0.00%";
+    if (results.isNotEmpty) {
+      final firstDate = results.first.buyDate;
+      final lastDate = results.last.analysisDate;
+      if (firstDate != null) {
+        final days = lastDate.difference(firstDate).inDays;
+        if (days >= 1) {
+          final years = days / 365.0;
+          final totalReturn = results.last.finalKRW / 1000000;
+          final annualYield =
+              (years > 0) ? (pow(totalReturn, 1 / years) - 1) * 100 : 0.0;
+          if (!annualYield.isNaN && !annualYield.isInfinite) {
+            annualYieldText = "${annualYield.toStringAsFixed(2)}%";
+          }
+        }
+      }
+    }
+
+    final finalValue = results.isNotEmpty ? results.last.finalKRW : 1000000;
+    final finalValueText = "₩${(finalValue / 1000000).toStringAsFixed(2)}M";
+
+    return Row(
+      children: [
+        Expanded(
+          child: _buildMetricCard(
+            l10n(context).totalGain,
+            "${totalGain.toStringAsFixed(2)}%",
+            const Color(0xFF2E7D32),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildMetricCard(
+            l10n(context).extimatedYearGain,
+            annualYieldText,
+            Colors.deepPurple,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildMetricCard(
+            l10n(context).finalValue,
+            finalValueText,
+            Colors.black87,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMetricCard(String label, String value, Color valueColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: valueColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildViewHistoryButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder:
+                (context) => DraggableScrollableSheet(
+                  initialChildSize: 0.9,
+                  minChildSize: 0.5,
+                  maxChildSize: 0.95,
+                  builder:
+                      (context, scrollController) => Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20),
+                          ),
+                        ),
+                        child: StrategyHistoryPage(
+                          simulationType: widget.simulationType,
+                          usdExchangeRates: widget.usdExchangeRates,
+                          usdtMap: widget.usdtMap,
+                          strategies: widget.strategyList,
+                          premiumTrends: widget.premiumTrends,
+                        ),
+                      ),
+                ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.deepPurple,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0,
+        ),
+        child: Text(
+          l10n(context).viewAllStrategyHistory,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      ),
     );
   }
 

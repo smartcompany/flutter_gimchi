@@ -819,6 +819,42 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'김프'**
   String get kimchiPremiumShort;
+
+  /// No description provided for @tradeTimeline.
+  ///
+  /// In ko, this message translates to:
+  /// **'매매 타임라인'**
+  String get tradeTimeline;
+
+  /// No description provided for @performanceMetrics.
+  ///
+  /// In ko, this message translates to:
+  /// **'성과 지표'**
+  String get performanceMetrics;
+
+  /// No description provided for @initialCapital.
+  ///
+  /// In ko, this message translates to:
+  /// **'초기 자본: ₩1,000,000'**
+  String get initialCapital;
+
+  /// No description provided for @finalValue.
+  ///
+  /// In ko, this message translates to:
+  /// **'최종 가치'**
+  String get finalValue;
+
+  /// No description provided for @aiSimulatedTradeTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 모의 투자'**
+  String get aiSimulatedTradeTitle;
+
+  /// No description provided for @kimchiSimulatedTradeTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'김프 모의 투자'**
+  String get kimchiSimulatedTradeTitle;
 }
 
 class _AppLocalizationsDelegate

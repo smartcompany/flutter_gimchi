@@ -130,5 +130,11 @@
   "nextSellPoint": "Next Sell Point",
   "priceLabel": "Price",
   "basePremium": "Base Premium",
-  "kimchiPremiumShort": "K-Prem"
+  "kimchiPremiumShort": "K-Prem",
+  "tradeTimeline": "Trade Timeline",
+  "performanceMetrics": "Performance Metrics",
+  "initialCapital": "Initial: ₩1,000,000",
+  "finalValue": "Final Value",
+  "aiSimulatedTradeTitle": "AI Simulated Trade",
+  "kimchiSimulatedTradeTitle": "K-Premium Simulated Trade"
 }

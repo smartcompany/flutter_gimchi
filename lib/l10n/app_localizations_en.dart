@@ -383,4 +383,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kimchiPremiumShort => 'K-Prem';
+
+  @override
+  String get tradeTimeline => 'Trade Timeline';
+
+  @override
+  String get performanceMetrics => 'Performance Metrics';
+
+  @override
+  String get initialCapital => 'Initial: ₩1,000,000';
+
+  @override
+  String get finalValue => 'Final Value';
+
+  @override
+  String get aiSimulatedTradeTitle => 'AI Simulated Trade';
+
+  @override
+  String get kimchiSimulatedTradeTitle => 'K-Premium Simulated Trade';
 }

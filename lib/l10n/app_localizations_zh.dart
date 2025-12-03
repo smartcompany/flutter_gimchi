@@ -374,4 +374,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get kimchiPremiumShort => '溢价';
+
+  @override
+  String get tradeTimeline => '매매 타임라인';
+
+  @override
+  String get performanceMetrics => '성과 지표';
+
+  @override
+  String get initialCapital => '초기 자본: ₩1,000,000';
+
+  @override
+  String get finalValue => '최종 가치';
+
+  @override
+  String get aiSimulatedTradeTitle => 'AI 모의 투자';
+
+  @override
+  String get kimchiSimulatedTradeTitle => '김프 모의 투자';
 }
