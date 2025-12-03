@@ -779,9 +779,9 @@ class _SimulationPageState extends State<SimulationPage>
   }
 
   Widget _buildBuyCard(BuildContext context, SimulationResult r) {
-    final color = const Color(0xFF00695C); // Teal 800
-    final bgColor = const Color(0xFFE0F2F1); // Teal 50
-    final iconBgColor = const Color(0xFFB2DFDB); // Teal 100
+    final color = const Color(0xFFC62828); // Red 800
+    final bgColor = const Color(0xFFFFEBEE); // Red 50
+    final iconBgColor = const Color(0xFFFFCDD2); // Red 100
 
     return GestureDetector(
       onTap: () {
@@ -847,9 +847,9 @@ class _SimulationPageState extends State<SimulationPage>
   }
 
   Widget _buildSellCard(BuildContext context, SimulationResult r) {
-    final color = const Color(0xFFC62828); // Red 800
-    final bgColor = const Color(0xFFFFEBEE); // Red 50
-    final iconBgColor = const Color(0xFFFFCDD2); // Red 100
+    final color = const Color(0xFF1565C0); // Blue 700
+    final bgColor = const Color(0xFFE3F2FD); // Blue 50
+    final iconBgColor = const Color(0xFFBBDEFB); // Blue 100
 
     return GestureDetector(
       onTap: () {

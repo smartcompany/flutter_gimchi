@@ -2195,87 +2195,88 @@ class _MyHomePageState extends State<MyHomePage>
                     fontSize: 18,
                   ),
                 ),
-                // 라운드 버튼으로 요약
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.lightbulb, color: Colors.deepPurple),
-                    label: Text(
-                      title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Colors.deepPurple,
-                      ),
+                // 전략보기 버튼
+                OutlinedButton.icon(
+                  icon: const Icon(
+                    Icons.lightbulb_outline,
+                    color: Colors.deepPurple,
+                    size: 16,
+                  ),
+                  label: Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.deepPurple,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple.shade50, // 연보라색 배경
-                      foregroundColor: Colors.deepPurple,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 8,
-                      ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.deepPurple),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder:
-                            (context) => AlertDialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              title: Row(
-                                children: [
-                                  const Icon(
-                                    Icons.lightbulb,
-                                    color: Colors.orange,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(title),
-                                ],
-                              ),
-                              content: SingleChildScrollView(
-                                child: Text(
-                                  strategy != null &&
-                                          strategy is String &&
-                                          strategy.isNotEmpty
-                                      ? strategy
-                                      : l10n(context).strategySummaryEmpty,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    height: 1.5,
-                                  ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    minimumSize: const Size(0, 32),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder:
+                          (context) => AlertDialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            title: Row(
+                              children: [
+                                const Icon(
+                                  Icons.lightbulb,
+                                  color: Colors.orange,
                                 ),
-                              ),
-                              actions: [
-                                if (type == SimulationType.kimchi)
-                                  TextButton(
-                                    onPressed: () async {
-                                      Navigator.of(context).pop();
-                                      await SimulationPage.showKimchiStrategyUpdatePopup(
-                                        context,
-                                        showUseTrend: true,
-                                      );
-                                    },
-                                    child: Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.changeStrategy,
-                                    ),
-                                  ),
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: Text(l10n(context).close),
-                                ),
+                                const SizedBox(width: 8),
+                                Text(title),
                               ],
                             ),
-                      );
-                    },
-                  ),
+                            content: SingleChildScrollView(
+                              child: Text(
+                                strategy != null &&
+                                        strategy is String &&
+                                        strategy.isNotEmpty
+                                    ? strategy
+                                    : l10n(context).strategySummaryEmpty,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ),
+                            actions: [
+                              if (type == SimulationType.kimchi)
+                                TextButton(
+                                  onPressed: () async {
+                                    Navigator.of(context).pop();
+                                    await SimulationPage.showKimchiStrategyUpdatePopup(
+                                      context,
+                                      showUseTrend: true,
+                                    );
+                                  },
+                                  child: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.changeStrategy,
+                                  ),
+                                ),
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text(l10n(context).close),
+                              ),
+                            ],
+                          ),
+                    );
+                  },
                 ),
               ],
             ),
