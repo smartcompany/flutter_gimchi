@@ -7,6 +7,112 @@ import 'package:usdt_signal/simulation_model.dart';
 import 'package:usdt_signal/strategy_history_page.dart';
 import 'utils.dart';
 
+// ============================================================================
+// 폰트 스타일 상수 정의
+// ============================================================================
+
+/// 제목/헤더 스타일
+class _TitleStyles {
+  // AppBar 제목
+  static const appBarTitle = TextStyle(
+    fontWeight: FontWeight.bold,
+    color: Colors.black87,
+  );
+
+  // 섹션 제목 (Trade Timeline, Performance Metrics 등)
+  static const sectionTitle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+    color: Colors.black54,
+  );
+
+  // 헤더 카드 제목
+  static const headerCardTitle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+    color: Colors.black87,
+  );
+
+  // 다이얼로그 제목
+  static const dialogTitle = TextStyle(
+    fontWeight: FontWeight.bold,
+    fontSize: 18,
+  );
+}
+
+/// 본문/일반 텍스트 스타일
+class _BodyStyles {
+  // 일반 본문 텍스트
+  static const bodyText = TextStyle(fontSize: 18, color: Colors.black87);
+
+  // 라벨 텍스트 (헤더 카드의 라벨 등)
+  static const labelText = TextStyle(fontSize: 16, color: Colors.black54);
+
+  // 회색 라벨 텍스트
+  static TextStyle greyLabelText = TextStyle(
+    fontSize: 16,
+    color: Colors.grey[600],
+  );
+}
+
+/// 버튼 텍스트 스타일
+class _ButtonStyles {
+  // 작은 버튼 (전략보기, 차트로 보기 등)
+  static const smallButton = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.bold,
+  );
+
+  // 큰 버튼 (전체 히스토리 보기 등)
+  static const largeButton = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+  );
+}
+
+/// 카드 내부 텍스트 스타일
+class _CardStyles {
+  // 매수/매도 카드 제목
+  static const cardTitle = TextStyle(fontSize: 15, fontWeight: FontWeight.bold);
+
+  // 매수/매도 카드 날짜
+  static const cardDate = TextStyle(fontSize: 15, fontWeight: FontWeight.w500);
+
+  // 매수/매도 카드 가격
+  static const cardPrice = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+
+  // 성과 지표 라벨
+  static TextStyle metricLabel = TextStyle(
+    fontSize: 14,
+    color: Colors.grey[600],
+    fontWeight: FontWeight.w600,
+  );
+
+  // 성과 지표 값
+  static const metricValue = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+  );
+
+  // 헤더 카드 값 (Period, Total Gain 등)
+  static const headerCardValue = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+  );
+}
+
+/// 다이얼로그 텍스트 스타일
+class _DialogStyles {
+  // 다이얼로그 섹션 제목
+  static const sectionTitle = TextStyle(
+    fontWeight: FontWeight.bold,
+    fontSize: 15,
+  );
+
+  // 다이얼로그 본문
+  static const bodyText = TextStyle(fontSize: 14, color: Colors.black87);
+}
+
 enum SimulationType { ai, kimchi }
 
 class SimulationPage extends StatefulWidget {
@@ -330,10 +436,7 @@ class _SimulationPageState extends State<SimulationPage>
                   children: [
                     Text(
                       '${displayDate.toCustomString()} ${l10n(context).strategy}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
+                      style: _TitleStyles.dialogTitle,
                     ),
                     const Spacer(),
                     IconButton(
@@ -361,12 +464,12 @@ class _SimulationPageState extends State<SimulationPage>
                   const SizedBox(height: 10),
                   Text(
                     l10n(context).summary,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    style: _DialogStyles.sectionTitle,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     strategy['summary'] ?? '',
-                    style: const TextStyle(color: Colors.black87, fontSize: 14),
+                    style: _DialogStyles.bodyText,
                   ),
                 ] else ...[
                   Text(
@@ -397,10 +500,7 @@ class _SimulationPageState extends State<SimulationPage>
           widget.simulationType == SimulationType.kimchi
               ? l10n(context).gimchBaseTrade
               : l10n(context).aiBaseTrade,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+          style: _TitleStyles.appBarTitle,
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -443,11 +543,7 @@ class _SimulationPageState extends State<SimulationPage>
                       const SizedBox(height: 24),
                       Text(
                         l10n(context).tradeTimeline,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black54,
-                        ),
+                        style: _TitleStyles.sectionTitle,
                       ),
                       const SizedBox(height: 12),
                       if (results.isEmpty)
@@ -544,11 +640,7 @@ class _SimulationPageState extends State<SimulationPage>
                   children: [
                     Text(
                       l10n(context).performanceMetrics,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black54,
-                      ),
+                      style: _TitleStyles.sectionTitle,
                     ),
                     OutlinedButton.icon(
                       icon: const Icon(
@@ -558,10 +650,8 @@ class _SimulationPageState extends State<SimulationPage>
                       ),
                       label: Text(
                         l10n(context).seeWithChart,
-                        style: const TextStyle(
+                        style: _ButtonStyles.smallButton.copyWith(
                           color: Colors.deepPurple,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
@@ -645,16 +735,12 @@ class _SimulationPageState extends State<SimulationPage>
                         widget.simulationType == SimulationType.ai
                             ? l10n(context).aiSimulatedTradeTitle
                             : l10n(context).kimchiSimulatedTradeTitle,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+                        style: _TitleStyles.headerCardTitle,
                       ),
                       const SizedBox(height: 2),
                       Text(
                         l10n(context).initialCapital,
-                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                        style: _BodyStyles.labelText,
                       ),
                     ],
                   ),
@@ -675,7 +761,7 @@ class _SimulationPageState extends State<SimulationPage>
               children: [
                 Text(
                   l10n(context).tradingPerioid,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  style: _BodyStyles.greyLabelText,
                 ),
                 Builder(
                   builder: (context) {
@@ -685,10 +771,7 @@ class _SimulationPageState extends State<SimulationPage>
                     final endDate = results.last.analysisDate.toCustomString();
                     return Text(
                       "$startDate - $endDate",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
+                      style: _CardStyles.headerCardValue,
                     );
                   },
                 ),
@@ -699,10 +782,7 @@ class _SimulationPageState extends State<SimulationPage>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  l10n(context).totalGain,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                ),
+                Text(l10n(context).totalGain, style: _BodyStyles.greyLabelText),
                 Builder(
                   builder: (context) {
                     final double totalGain =
@@ -719,24 +799,20 @@ class _SimulationPageState extends State<SimulationPage>
                           TextSpan(
                             text:
                                 "${totalGain >= 0 ? '+' : ''}${krwFormat.format(totalGain.round())} ",
-                            style: TextStyle(
+                            style: _CardStyles.cardPrice.copyWith(
                               color:
                                   totalGain >= 0
                                       ? const Color(0xFF2E7D32)
                                       : const Color(0xFFC62828),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
                             ),
                           ),
                           TextSpan(
                             text: "(${totalGainPercent.toStringAsFixed(2)}%)",
-                            style: TextStyle(
+                            style: _CardStyles.headerCardValue.copyWith(
                               color:
                                   totalGain >= 0
                                       ? const Color(0xFF2E7D32)
                                       : const Color(0xFFC62828),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 14,
                             ),
                           ),
                         ],
@@ -771,10 +847,7 @@ class _SimulationPageState extends State<SimulationPage>
         minimumSize: const Size(0, 32),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      child: Text(
-        l10n(context).seeStrategy,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-      ),
+      child: Text(l10n(context).seeStrategy, style: _ButtonStyles.smallButton),
     );
   }
 
@@ -812,19 +885,13 @@ class _SimulationPageState extends State<SimulationPage>
               children: [
                 Text(
                   l10n(context).buy,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
+                  style: _CardStyles.cardTitle.copyWith(color: color),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   r.buyDate?.toCustomString() ?? "-",
-                  style: TextStyle(
+                  style: _CardStyles.cardDate.copyWith(
                     color: color.withOpacity(0.7),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -832,11 +899,7 @@ class _SimulationPageState extends State<SimulationPage>
             const Spacer(),
             Text(
               "₩${krwFormat.format(r.buyPrice)}",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: color,
-              ),
+              style: _CardStyles.cardPrice.copyWith(color: color),
             ),
             const SizedBox(width: 12),
             _buildStrategyButton(context, r.buyDate, color),
@@ -880,19 +943,13 @@ class _SimulationPageState extends State<SimulationPage>
               children: [
                 Text(
                   l10n(context).sell,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
+                  style: _CardStyles.cardTitle.copyWith(color: color),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   r.sellDate?.toCustomString() ?? "-",
-                  style: TextStyle(
+                  style: _CardStyles.cardDate.copyWith(
                     color: color.withOpacity(0.7),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -900,11 +957,7 @@ class _SimulationPageState extends State<SimulationPage>
             const Spacer(),
             Text(
               r.sellPrice != null ? "₩${krwFormat.format(r.sellPrice!)}" : "-",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: color,
-              ),
+              style: _CardStyles.cardPrice.copyWith(color: color),
             ),
             const SizedBox(width: 12),
             _buildStrategyButton(context, r.sellDate, color),
@@ -984,22 +1037,11 @@ class _SimulationPageState extends State<SimulationPage>
       ),
       child: Column(
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text(label, style: _CardStyles.metricLabel),
           const SizedBox(height: 8),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: valueColor,
-            ),
+            style: _CardStyles.metricValue.copyWith(color: valueColor),
           ),
         ],
       ),
@@ -1051,7 +1093,7 @@ class _SimulationPageState extends State<SimulationPage>
         ),
         child: Text(
           l10n(context).viewAllStrategyHistory,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: _ButtonStyles.largeButton,
         ),
       ),
     );
@@ -1132,14 +1174,13 @@ class _StrategyDialogRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
+            style: _BodyStyles.labelText.copyWith(
               color: Colors.deepPurple,
+              fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(width: 8),
-          Text(value, style: const TextStyle(fontSize: 14)),
+          Text(value, style: _BodyStyles.bodyText),
         ],
       ),
     );

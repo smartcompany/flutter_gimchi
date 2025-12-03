@@ -184,28 +184,34 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
 
     return Stack(
       children: [
-        Material(
-          elevation: 2,
-          borderRadius: BorderRadius.circular(16),
+        Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: Colors.grey.shade200, width: 1),
+          ),
+          color: Colors.white,
           child: Container(
             height: chartHeight,
             width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
             child: _buildMainChart(l10n, kimchiPlotBands),
           ),
         ),
-        // 오른쪽 상단에 리셋 아이콘 버튼 추가
+        // 왼쪽 상단에 리셋 버튼 추가
         Positioned(
           top: 10,
           left: 10,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white, // 원하는 배경색
-              borderRadius: BorderRadius.circular(18), // 완전한 원형
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: IconButton(
               icon: const Icon(
@@ -214,6 +220,8 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                 size: 18,
               ),
               tooltip: l10n.resetChart,
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(),
               onPressed: () {
                 setState(() {
                   _zoomPanBehavior.reset();
@@ -222,23 +230,27 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
             ),
           ),
         ),
-        // 확대 버튼 (오른쪽 상단)
+        // 오른쪽 상단에 닫기 버튼
         Positioned(
           top: 10,
-          right: 3,
+          right: 10,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white, // 원하는 배경색
-              borderRadius: BorderRadius.circular(18), // 완전한 원형
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: IconButton(
-              icon: const Icon(
-                Icons.close_fullscreen,
-                color: Colors.deepPurple,
-                size: 18,
-              ),
+              icon: const Icon(Icons.close, color: Colors.deepPurple, size: 18),
               tooltip: l10n.backToPreviousChart,
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -662,15 +674,18 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
 
   Widget _buildCheckboxCard(AppLocalizations l10n) {
     return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200, width: 1),
+      ),
       color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         child: Wrap(
-          alignment: WrapAlignment.spaceEvenly,
-          spacing: 8,
-          runSpacing: 2,
+          alignment: WrapAlignment.start,
+          spacing: 16,
+          runSpacing: 12,
           children: [
             CheckBoxItem(
               value: showExchangeRate,
@@ -762,33 +777,43 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                       });
                     },
                   ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.help_outline,
-                      color: Colors.blue,
-                      size: 20,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      shape: BoxShape.circle,
                     ),
-                    tooltip: l10n.kimchiPremiumBackgroundDescriptionTooltip,
-                    padding: const EdgeInsets.all(0), // 아이콘 버튼 여백 최소화
-                    constraints: const BoxConstraints(), // 아이콘 버튼 크기 최소화
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder:
-                            (_) => AlertDialog(
-                              title: Text(l10n.whatIsKimchiPremiumBackground),
-                              content: Text(
-                                l10n.kimchiPremiumBackgroundDescription,
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: Text(l10n.confirm),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.help_outline,
+                        color: Colors.blue,
+                        size: 16,
+                      ),
+                      tooltip: l10n.kimchiPremiumBackgroundDescriptionTooltip,
+                      padding: const EdgeInsets.all(4),
+                      constraints: const BoxConstraints(
+                        minWidth: 24,
+                        minHeight: 24,
+                      ),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder:
+                              (_) => AlertDialog(
+                                title: Text(l10n.whatIsKimchiPremiumBackground),
+                                content: Text(
+                                  l10n.kimchiPremiumBackgroundDescription,
                                 ),
-                              ],
-                            ),
-                      );
-                    },
+                                actions: [
+                                  TextButton(
+                                    onPressed:
+                                        () => Navigator.of(context).pop(),
+                                    child: Text(l10n.confirm),
+                                  ),
+                                ],
+                              ),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),

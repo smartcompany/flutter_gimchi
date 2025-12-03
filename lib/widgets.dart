@@ -69,13 +69,14 @@ class CheckBoxItem extends StatelessWidget {
           onChanged: onChanged,
           activeColor: color,
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
         Text(
           label,
           style: TextStyle(
-            fontSize: 14,
-            color: color,
-            fontWeight: FontWeight.w500,
+            fontSize: 13,
+            color: value ? color : Colors.grey[700],
+            fontWeight: value ? FontWeight.w600 : FontWeight.w500,
           ),
         ),
       ],
