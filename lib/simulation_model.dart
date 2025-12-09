@@ -33,8 +33,10 @@ class SimulationModel {
   static List<SimulationResult> simulateResults(
     List<ChartData> usdExchangeRates,
     List<StrategyMap> strategyList,
-    Map<DateTime, USDTChartData> usdtMap,
-  ) {
+    Map<DateTime, USDTChartData> usdtMap, {
+    double? buyFee,
+    double? sellFee,
+  }) {
     // 날짜 오름차순 정렬
     strategyList.sort((a, b) {
       final dateA = a['analysis_date'];
@@ -92,6 +94,10 @@ class SimulationModel {
           buyDate = date;
           // 매수 예상가가 고가 보다 낮은 경우는 고가로 매수가 현실적
           buyPrice = min(buyStrategyPrice, highPrice);
+          // 수수료 적용: 실제 매수 금액 = 매수 금액 * (1 + 수수료율)
+          if (buyFee != null && buyFee > 0) {
+            buyPrice = buyPrice * (1 + buyFee / 100);
+          }
         }
         if (buyDate == null) continue;
       }
@@ -114,6 +120,8 @@ class SimulationModel {
           simResults,
           buyDate,
           usdExchangeRateMap,
+          buyFee: buyFee,
+          sellFee: sellFee,
         );
 
         buyDate = null;
@@ -155,8 +163,10 @@ class SimulationModel {
     double totalKRW,
     List<SimulationResult> simResults,
     DateTime? buyDate,
-    Map<DateTime, double> usdExchangeRateMap,
-  ) {
+    Map<DateTime, double> usdExchangeRateMap, {
+    double? buyFee,
+    double? sellFee,
+  }) {
     print('Sell condition met: sellDate=$sellDate anaysisDate=$date');
 
     double usdtAmount = totalKRW / buyPrice;
@@ -164,12 +174,24 @@ class SimulationModel {
     double? profit;
     double? profitRate;
 
-    finalKRW = usdtAmount * (sellPrice ?? 0); // 매도 시 최종 원화 계산
+    // 매도 시 수수료 적용: 실제 매도 금액 = 매도 금액 * (1 - 수수료율)
+    double actualSellPrice = sellPrice ?? 0;
+    if (sellFee != null && sellFee > 0) {
+      final originalPrice = actualSellPrice;
+      actualSellPrice = actualSellPrice * (1 - sellFee / 100);
+      print(
+        '매도 수수료 적용: 원래 가격=$originalPrice, 수수료율=$sellFee%, 실제 매도 가격=$actualSellPrice',
+      );
+    } else {
+      print('매도 수수료 미적용: sellFee=$sellFee');
+    }
+
+    finalKRW = usdtAmount * actualSellPrice; // 매도 시 최종 원화 계산
     profit = finalKRW - totalKRW;
     profitRate = profit / totalKRW * 100;
     totalKRW = finalKRW; // 누적 투자금 갱신(복리)
     print(
-      'Transaction complete: finalKRW=$finalKRW, profit=$profit, profitRate=$profitRate',
+      'Transaction complete: finalKRW=$finalKRW, profit=$profit, profitRate=$profitRate, sellPrice(원래)=${sellPrice ?? 0}, actualSellPrice(수수료적용)=$actualSellPrice',
     );
 
     simResults.add(
@@ -217,8 +239,10 @@ class SimulationModel {
     List<ChartData> usdExchangeRates,
     List<StrategyMap> strategyList,
     Map<DateTime, USDTChartData> usdtMap,
-    Map<DateTime, Map<String, double>>? premiumTrends,
-  ) {
+    Map<DateTime, Map<String, double>>? premiumTrends, {
+    double? buyFee,
+    double? sellFee,
+  }) {
     List<SimulationResult> simResults = [];
     double initialKRW = 1000000;
     double totalKRW = initialKRW;
@@ -276,6 +300,10 @@ class SimulationModel {
           if (buyTargetPrice >= usdtLow) {
             // 100원에 매수 하려고 했는데 고가가 90원이라면 그냥 90원에 매수 하겠지
             buyPrice = min(buyTargetPrice, usdtHigh);
+            // 수수료 적용: 실제 매수 금액 = 매수 금액 * (1 + 수수료율)
+            if (buyFee != null && buyFee > 0) {
+              buyPrice = buyPrice * (1 + buyFee / 100);
+            }
             buyDate = date;
 
             print(
@@ -294,13 +322,24 @@ class SimulationModel {
         sellDate = date;
         // 매도 가격이 100원인데 저가가 110원 이면 그냥 110원에 매도 그래서 둘중 높은값
         sellPrice = max(sellTargetPrice, usdtLow);
+        // 매도 시 수수료 적용: 실제 매도 금액 = 매도 금액 * (1 - 수수료율)
+        double actualSellPrice = sellPrice;
+        if (sellFee != null && sellFee > 0) {
+          final originalPrice = actualSellPrice;
+          actualSellPrice = actualSellPrice * (1 - sellFee / 100);
+          print(
+            '매도 수수료 적용: 원래 가격=$originalPrice, 수수료율=$sellFee%, 실제 매도 가격=$actualSellPrice',
+          );
+        } else {
+          print('매도 수수료 미적용: sellFee=$sellFee');
+        }
         print(
-          'Sell condition met: sellDate=$sellDate, buyDate=$buyDate, buyPrice=$buyPrice, sellPrice=$sellPrice',
+          'Sell condition met: sellDate=$sellDate, buyDate=$buyDate, buyPrice=$buyPrice, sellPrice(원래)=$sellPrice, actualSellPrice(수수료적용)=$actualSellPrice',
         );
 
         // 수익 계산
         final usdtAmount = totalKRW / buyPrice;
-        final finalKRW = usdtAmount * sellPrice;
+        final finalKRW = usdtAmount * actualSellPrice;
         final profit = finalKRW - totalKRW;
         final profitRate = profit / totalKRW * 100;
 

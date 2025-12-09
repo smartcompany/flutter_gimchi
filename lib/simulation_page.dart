@@ -125,6 +125,9 @@ class SimulationPage extends StatefulWidget {
   // ChartOnlyPageModel을 직접 받는 생성자 추가
   final ChartOnlyPageModel? chartOnlyPageModel;
 
+  // Settings 데이터
+  final Map<String, dynamic>? settings;
+
   const SimulationPage({
     super.key,
     required this.simulationType,
@@ -133,6 +136,7 @@ class SimulationPage extends StatefulWidget {
     required this.usdExchangeRates,
     this.premiumTrends,
     this.chartOnlyPageModel,
+    this.settings,
   });
 
   static Future<bool> showKimchiStrategyUpdatePopup(
@@ -270,7 +274,7 @@ class SimulationPage extends StatefulWidget {
       final sameAsAI = result['sameAsAI'] as bool;
       final useTrend = result['useTrend'] as bool;
 
-      final isSuccess = await ApiService.saveAndSyncUserData({
+      final isSuccess = await ApiService.shared.saveAndSyncUserData({
         UserDataKey.gimchiBuyPercent: buy,
         UserDataKey.gimchiSellPercent: sell,
       });
@@ -332,11 +336,30 @@ class _SimulationPageState extends State<SimulationPage>
       final usdExchangeRates = widget.usdExchangeRates;
       final strategyList = widget.strategyList;
 
+      // Settings에서 수수료 정보 추출
+      double? buyFee;
+      double? sellFee;
+      if (widget.settings != null) {
+        final upbitFees =
+            widget.settings!['upbit_fees'] as Map<String, dynamic>?;
+        if (upbitFees != null) {
+          buyFee = (upbitFees['buy_fee'] as num?)?.toDouble();
+          sellFee = (upbitFees['sell_fee'] as num?)?.toDouble();
+          print('시뮬레이션 수수료 설정: buyFee=$buyFee%, sellFee=$sellFee%');
+        } else {
+          print('시뮬레이션 수수료 설정: upbit_fees가 null입니다.');
+        }
+      } else {
+        print('시뮬레이션 수수료 설정: settings가 null입니다.');
+      }
+
       if (widget.simulationType == SimulationType.ai) {
         final simResults = SimulationModel.simulateResults(
           usdExchangeRates,
           strategyList,
           usdtMap,
+          buyFee: buyFee,
+          sellFee: sellFee,
         );
 
         setState(() {
@@ -350,6 +373,8 @@ class _SimulationPageState extends State<SimulationPage>
           strategyList,
           usdtMap,
           widget.premiumTrends,
+          buyFee: buyFee,
+          sellFee: sellFee,
         );
 
         setState(() {
@@ -845,6 +870,41 @@ class _SimulationPageState extends State<SimulationPage>
                   },
                 ),
               ],
+            ),
+            // 수수료 적용 여부 표시
+            Builder(
+              builder: (context) {
+                if (widget.settings == null) return const SizedBox.shrink();
+                final upbitFees =
+                    widget.settings!['upbit_fees'] as Map<String, dynamic>?;
+                if (upbitFees == null) return const SizedBox.shrink();
+                final buyFee = (upbitFees['buy_fee'] as num?)?.toDouble();
+                final sellFee = (upbitFees['sell_fee'] as num?)?.toDouble();
+                if (buyFee == null || sellFee == null)
+                  return const SizedBox.shrink();
+
+                return Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 14,
+                        color: Colors.grey[600],
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        "업비트 수수료 적용 (매수 ${buyFee}%, 매도 ${sellFee}%)",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),

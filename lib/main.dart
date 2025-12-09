@@ -189,7 +189,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     with WidgetsBindingObserver, TickerProviderStateMixin {
-  final ApiService api = ApiService();
   final GlobalKey chartKey = GlobalKey();
   final ZoomPanBehavior _zoomPanBehavior = ZoomPanBehavior(
     enablePinching: true,
@@ -507,7 +506,7 @@ class _MyHomePageState extends State<MyHomePage>
         return;
       }
 
-      final usdt = await api.fetchLatestUSDTData();
+      final usdt = await ApiService.shared.fetchLatestUSDTData();
       if (usdt != null && usdtChartData.isNotEmpty) {
         setState(() {
           usdtChartData.safeLast?.close = usdt;
@@ -518,7 +517,7 @@ class _MyHomePageState extends State<MyHomePage>
         });
       }
 
-      final exchangeRate = await api.fetchLatestExchangeRate();
+      final exchangeRate = await ApiService.shared.fetchLatestExchangeRate();
       if (exchangeRate != null) {
         exchangeRates.safeLast?.value = exchangeRate;
       }
@@ -538,15 +537,7 @@ class _MyHomePageState extends State<MyHomePage>
     try {
       MapEntry<String, String>? adUnitEntry;
 
-      if (kDebugMode) {
-        if (Platform.isIOS) {
-          adUnitEntry = await ApiService.fetchBannerAdUnitId();
-        } else if (Platform.isAndroid) {
-          adUnitEntry = await ApiService.fetchBannerAdUnitId();
-        }
-      } else {
-        adUnitEntry = await ApiService.fetchBannerAdUnitId();
-      }
+      adUnitEntry = ApiService.shared.bannerAdUnitId;
 
       if (adUnitEntry == null || adUnitEntry.value.isEmpty) {
         print('배너 광고 ID를 받아오지 못했습니다.');
@@ -644,7 +635,7 @@ class _MyHomePageState extends State<MyHomePage>
 
       // 서버에 토큰을 저장(POST)해야 푸시를 받을 수 있습니다.
       if (token != null) {
-        await ApiService.saveFcmTokenToServer(token);
+        await ApiService.shared.saveFcmTokenToServer(token);
       }
     } catch (e) {
       print('FCM 토큰을 가져오는 중 오류 발생: $e');
@@ -702,10 +693,13 @@ class _MyHomePageState extends State<MyHomePage>
     });
 
     try {
+      // Settings 로드
+      await ApiService.shared.loadSettings();
+
       final results = await Future.wait([
-        api.fetchExchangeRateData(),
-        api.fetchUSDTData(),
-        api.fetchKimchiPremiumData(),
+        ApiService.shared.fetchExchangeRateData(),
+        ApiService.shared.fetchUSDTData(),
+        ApiService.shared.fetchKimchiPremiumData(),
       ]);
 
       print("api들 로딩 완료");
@@ -714,7 +708,7 @@ class _MyHomePageState extends State<MyHomePage>
       usdtMap = results[1] as Map<DateTime, USDTChartData>;
       kimchiPremium = results[2] as List<ChartData>;
 
-      final exchangeRate = await api.fetchLatestExchangeRate();
+      final exchangeRate = await ApiService.shared.fetchLatestExchangeRate();
       if (exchangeRate != null) {
         exchangeRates.safeLast?.value = exchangeRate;
       }
@@ -770,7 +764,7 @@ class _MyHomePageState extends State<MyHomePage>
             'ca-app-pub-3940256099942544/1712485313',
           );
           */
-          adUnitEntry = await ApiService.fetchRewardedAdUnitId();
+          adUnitEntry = ApiService.shared.rewardedAdUnitId;
         } else if (Platform.isAndroid) {
           /*
           adUnitEntry = MapEntry(
@@ -778,10 +772,10 @@ class _MyHomePageState extends State<MyHomePage>
             'ca-app-pub-3940256099942544/5224354917',
           );
           */
-          adUnitEntry = await ApiService.fetchRewardedAdUnitId();
+          adUnitEntry = ApiService.shared.rewardedAdUnitId;
         }
       } else {
-        adUnitEntry = await ApiService.fetchRewardedAdUnitId();
+        adUnitEntry = ApiService.shared.rewardedAdUnitId;
       }
 
       if (adUnitEntry == null || adUnitEntry.value.isEmpty) {
@@ -1240,7 +1234,7 @@ class _MyHomePageState extends State<MyHomePage>
   Future<void> _loadStrategyInBackground() async {
     try {
       // 김치 프리미엄 트렌드와 함께 전략 데이터 가져오기
-      final response = await api.fetchStrategyWithKimchiTrends();
+      final response = await ApiService.shared.fetchStrategyWithKimchiTrends();
 
       if (mounted && response != null) {
         setState(() {
@@ -2328,6 +2322,7 @@ class _MyHomePageState extends State<MyHomePage>
                                     usdExchangeRates: exchangeRates,
                                     premiumTrends: premiumTrends,
                                     chartOnlyPageModel: chartOnlyPageModel,
+                                    settings: ApiService.shared.settings,
                                   ),
                               fullscreenDialog: true,
                             ),
@@ -2455,7 +2450,7 @@ class _MyHomePageState extends State<MyHomePage>
       }
 
       // 알림 타입이 변경될 때 서버에 저장
-      final isSuccess = await ApiService.saveAndSyncUserData({
+      final isSuccess = await ApiService.shared.saveAndSyncUserData({
         UserDataKey.pushType: updatedType.name,
       });
 

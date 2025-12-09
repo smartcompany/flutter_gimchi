@@ -120,7 +120,7 @@ class SimulationCondition {
     try {
       final token = await _getFcmToken();
       if (token != null) {
-        await ApiService.saveFcmTokenToServer(token);
+        await ApiService.shared.saveFcmTokenToServer(token);
       }
     } catch (e) {
       print('FCM 토큰 업데이트 실패: $e');

@@ -22,6 +22,12 @@ class USDTChartData {
 }
 
 class ApiService {
+  // 싱글톤 인스턴스
+  static final ApiService shared = ApiService._internal();
+
+  // Private 생성자
+  ApiService._internal();
+
   static const int days = 200;
   static const String host = "https://rate-history.vercel.app";
   static const String upbitUsdtUrl = "$host/api/usdt-history?days=all";
@@ -35,6 +41,9 @@ class ApiService {
   static const String latestUsdtUrl =
       'https://api.upbit.com/v1/ticker?markets=KRW-USDT';
   static const latestExchangeRateUrl = '$host/api/rate-history';
+
+  // Settings 캐시
+  Map<String, dynamic>? settings;
 
   Future<double?> fetchLatestUSDTData() async {
     try {
@@ -199,7 +208,7 @@ class ApiService {
   }
 
   // FCM 토큰을 서버에 저장하는 함수
-  static Future<void> saveFcmTokenToServer(String token) async {
+  Future<void> saveFcmTokenToServer(String token) async {
     try {
       final userId = await getOrCreateUserId();
       final response = await http.post(
@@ -222,11 +231,27 @@ class ApiService {
     }
   }
 
-  static Future<MapEntry<String, String>?> fetchRewardedAdUnitId() async {
+  // Settings 내부 로드 메서드
+  Future<Map<String, dynamic>?> loadSettings() async {
     try {
       final response = await http.get(Uri.parse(settingsUrl));
       if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+
+        settings = json;
+        return json;
+      }
+    } catch (e) {
+      print('Settings fetch 실패: $e');
+    }
+    return null;
+  }
+
+  // Rewarded Ad Unit ID getter
+  MapEntry<String, String>? get rewardedAdUnitId {
+    try {
+      final json = settings;
+      if (json != null) {
         if (Platform.isIOS) {
           final key = json['ios_ad'] as String?;
           final iosRef = json['ref']?['ios'] as Map<String, dynamic>?;
@@ -250,16 +275,16 @@ class ApiService {
         }
       }
     } catch (e) {
-      print('광고 ID fetch 실패: $e');
+      print('광고 ID 가져오기 실패: $e');
     }
     return null;
   }
 
-  static Future<MapEntry<String, String>?> fetchBannerAdUnitId() async {
+  // Banner Ad Unit ID getter
+  MapEntry<String, String>? get bannerAdUnitId {
     try {
-      final response = await http.get(Uri.parse(settingsUrl));
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
+      final json = settings;
+      if (json != null) {
         if (Platform.isIOS) {
           final key = json['ios_banner_ad'] as String?;
           final iosRef = json['ref']?['ios'] as Map<String, dynamic>?;
@@ -283,12 +308,12 @@ class ApiService {
         }
       }
     } catch (e) {
-      print('배너 광고 ID fetch 실패: $e');
+      print('배너 광고 ID 가져오기 실패: $e');
     }
     return null;
   }
 
-  static Future<bool> saveAndSyncUserData(
+  Future<bool> saveAndSyncUserData(
     Map<UserDataKey, dynamic> newUserData,
   ) async {
     final userId = await getOrCreateUserId();
