@@ -160,6 +160,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get extimatedYearGain => '추정 연 수익률';
 
   @override
+  String get annualYieldDescription =>
+      '추정 연 수익률은 현재 매매 내역의 수익률을 복리 기준으로 1년치로 환산한 값입니다.\n\n예를 들어, 6개월 동안 5%의 수익률을 얻었다면, 이를 1년 기준으로 환산하면 약 10.25%의 연 수익률이 됩니다.';
+
+  @override
   String get chartTrendAnalysis => '차트 추세 분석';
 
   @override

@@ -1139,6 +1139,56 @@ class _SimulationPageState extends State<SimulationPage>
                     ],
                   ),
                 ),
+                // 수수료 표시 (매도가 있는 경우만)
+                Builder(
+                  builder: (context) {
+                    if (r.sellDate == null) return const SizedBox.shrink();
+                    if (widget.settings == null) return const SizedBox.shrink();
+                    final upbitFees =
+                        widget.settings!['upbit_fees'] as Map<String, dynamic>?;
+                    if (upbitFees == null) return const SizedBox.shrink();
+                    final buyFee = (upbitFees['buy_fee'] as num?)?.toDouble();
+                    final sellFee = (upbitFees['sell_fee'] as num?)?.toDouble();
+                    if (buyFee == null ||
+                        sellFee == null ||
+                        (buyFee == 0 && sellFee == 0))
+                      return const SizedBox.shrink();
+
+                    // 매수 수수료 계산
+                    // buyPrice는 USDT 단가이고, 실제 매수 금액은 totalKRW입니다
+                    // 매수 시: 실제 매수 금액 기준으로 수수료 계산
+                    // 이전 거래의 finalKRW 또는 초기 자본을 매수 금액으로 사용
+                    final buyAmount = _getBuyAmountForResult(r);
+                    final buyFeeAmount = buyAmount * (buyFee / 100);
+
+                    // 매도 수수료 계산
+                    // sellPrice는 USDT 단가이고, 실제 매도 금액은 usdtAmount * sellPrice입니다
+                    // 매도 시: 실제 매도 금액 기준으로 수수료 계산
+                    // usdtAmount = buyAmount / buyPrice (buyPrice는 수수료 포함 가격)
+                    final usdtAmount = buyAmount / r.buyPrice;
+                    // 실제 매도 금액 = usdtAmount * sellPrice (sellPrice는 수수료 미적용 가격)
+                    final sellAmount = usdtAmount * (r.sellPrice ?? 0);
+                    final sellFeeAmount = sellAmount * (sellFee / 100);
+
+                    print(
+                      '수수료 계산: buyAmount=$buyAmount, buyFeeAmount=$buyFeeAmount, sellAmount=$sellAmount, sellFeeAmount=$sellFeeAmount, totalFee=${buyFeeAmount + sellFeeAmount}',
+                    );
+
+                    // 총 수수료
+                    final totalFee = buyFeeAmount + sellFeeAmount;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        "수수료: ₩${krwFormat.format(totalFee.round())}",
+                        style: _CardStyles.cardDate.copyWith(
+                          color: Colors.black54,
+                          fontSize: 13,
+                        ),
+                      ),
+                    );
+                  },
+                ),
                 const SizedBox(height: 8),
                 // 두 번째 줄: 최종원화 또는 평가금액
                 RichText(
@@ -1229,13 +1279,21 @@ class _SimulationPageState extends State<SimulationPage>
             l10n(context).extimatedYearGain,
             annualYieldText,
             Colors.deepPurple,
+            showInfoIcon: true,
+            onInfoTap: () => _showAnnualYieldInfoDialog(context),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMetricCard(String label, String value, Color valueColor) {
+  Widget _buildMetricCard(
+    String label,
+    String value,
+    Color valueColor, {
+    bool showInfoIcon = false,
+    VoidCallback? onInfoTap,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
@@ -1251,7 +1309,23 @@ class _SimulationPageState extends State<SimulationPage>
       ),
       child: Column(
         children: [
-          Text(label, style: _CardStyles.metricLabel),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(label, style: _CardStyles.metricLabel),
+              if (showInfoIcon) ...[
+                const SizedBox(width: 4),
+                GestureDetector(
+                  onTap: onInfoTap,
+                  child: Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ],
+          ),
           const SizedBox(height: 8),
           Text(
             value,
@@ -1259,6 +1333,42 @@ class _SimulationPageState extends State<SimulationPage>
           ),
         ],
       ),
+    );
+  }
+
+  void _showAnnualYieldInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.deepPurple),
+              const SizedBox(width: 8),
+              Text(
+                l10n(context).extimatedYearGain,
+                style: _TitleStyles.dialogTitle,
+              ),
+            ],
+          ),
+          content: Text(
+            l10n(context).annualYieldDescription,
+            style: _DialogStyles.bodyText,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                l10n(context).confirm,
+                style: TextStyle(color: Colors.deepPurple),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

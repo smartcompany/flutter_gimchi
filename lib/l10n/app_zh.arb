@@ -52,6 +52,7 @@
   "currencyWonSuffix": " 韩元",
   "totalGain": "总收益率",
   "extimatedYearGain": "预估年收益率",
+  "annualYieldDescription": "预估年收益率是将当前交易记录的收益率按复利基准换算为一年期的值。\n\n例如，如果在6个月内获得5%的收益率，换算为一年基准则约为10.25%的年收益率。",
   "chartTrendAnalysis": "图表趋势分析",
   "aiSell": "AI 卖出",
   "kimchiPremiumSell": "泡菜溢价卖出",

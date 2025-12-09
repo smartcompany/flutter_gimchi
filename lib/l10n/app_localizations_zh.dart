@@ -159,6 +159,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get extimatedYearGain => '预估年收益率';
 
   @override
+  String get annualYieldDescription =>
+      '预估年收益率是将当前交易记录的收益率按复利基准换算为一年期的值。\n\n例如，如果在6个月内获得5%的收益率，换算为一年基准则约为10.25%的年收益率。';
+
+  @override
   String get chartTrendAnalysis => '图表趋势分析';
 
   @override

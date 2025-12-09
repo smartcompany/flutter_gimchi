@@ -160,6 +160,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get extimatedYearGain => 'Est. %/yr';
 
   @override
+  String get annualYieldDescription =>
+      'Estimated annual yield is the current trading performance converted to an annualized rate using compound interest.\n\nFor example, if you earned 5% over 6 months, this would be approximately 10.25% when annualized.';
+
+  @override
   String get chartTrendAnalysis => 'Chart Trend Analysis';
 
   @override

@@ -694,7 +694,9 @@ class _MyHomePageState extends State<MyHomePage>
 
     try {
       // Settings 로드
-      await ApiService.shared.loadSettings();
+      final loadedSettings = await ApiService.shared.loadSettings();
+      print('main.dart에서 Settings 로드 완료: $loadedSettings');
+      print('ApiService.shared.settings: ${ApiService.shared.settings}');
 
       final results = await Future.wait([
         ApiService.shared.fetchExchangeRateData(),
@@ -2314,16 +2316,29 @@ class _MyHomePageState extends State<MyHomePage>
 
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder:
-                                  (_) => SimulationPage(
-                                    simulationType: type,
-                                    usdtMap: usdtMap,
-                                    strategyList: strategyList,
-                                    usdExchangeRates: exchangeRates,
-                                    premiumTrends: premiumTrends,
-                                    chartOnlyPageModel: chartOnlyPageModel,
-                                    settings: ApiService.shared.settings,
-                                  ),
+                              builder: (_) {
+                                final settings = ApiService.shared.settings;
+                                print(
+                                  'SimulationPage에 전달하는 settings: $settings',
+                                );
+                                if (settings != null) {
+                                  final upbitFees =
+                                      settings['upbit_fees']
+                                          as Map<String, dynamic>?;
+                                  print(
+                                    'SimulationPage에 전달하는 upbit_fees: $upbitFees',
+                                  );
+                                }
+                                return SimulationPage(
+                                  simulationType: type,
+                                  usdtMap: usdtMap,
+                                  strategyList: strategyList,
+                                  usdExchangeRates: exchangeRates,
+                                  premiumTrends: premiumTrends,
+                                  chartOnlyPageModel: chartOnlyPageModel,
+                                  settings: settings,
+                                );
+                              },
                               fullscreenDialog: true,
                             ),
                           );

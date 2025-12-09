@@ -234,15 +234,32 @@ class ApiService {
   // Settings 내부 로드 메서드
   Future<Map<String, dynamic>?> loadSettings() async {
     try {
+      print('Settings 로드 시작: $settingsUrl');
       final response = await http.get(Uri.parse(settingsUrl));
+      print('Settings 응답 상태: ${response.statusCode}');
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
+        print('Settings 로드 성공: $json');
+
+        // upbit_fees 확인
+        final upbitFees = json['upbit_fees'] as Map<String, dynamic>?;
+        if (upbitFees != null) {
+          print('upbit_fees 발견: $upbitFees');
+          print(
+            'buy_fee: ${upbitFees['buy_fee']}, sell_fee: ${upbitFees['sell_fee']}',
+          );
+        } else {
+          print('경고: upbit_fees가 없습니다!');
+        }
 
         settings = json;
         return json;
+      } else {
+        print('Settings 로드 실패: ${response.statusCode} - ${response.body}');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('Settings fetch 실패: $e');
+      print('스택 트레이스: $stackTrace');
     }
     return null;
   }
