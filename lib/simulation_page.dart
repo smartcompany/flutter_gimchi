@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:usdt_signal/ChartOnlyPage.dart'; // ChartOnlyPageModel import 추가
@@ -8,50 +9,87 @@ import 'package:usdt_signal/strategy_history_page.dart';
 import 'utils.dart';
 
 // ============================================================================
-// 폰트 스타일 상수 정의
+// Liquid Glass 디자인 스타일 정의
 // ============================================================================
+
+/// Liquid Glass 색상 팔레트
+class _GlassColors {
+  // 그라데이션 색상
+  static const primaryGradient = [
+    Color(0xFF667EEA), // 보라색
+    Color(0xFF764BA2), // 진한 보라색
+  ];
+
+  static const secondaryGradient = [
+    Color(0xFFF093FB), // 핑크
+    Color(0xFFF5576C), // 코랄
+  ];
+
+  static const backgroundGradient = [
+    Color(0xFFE0E7FF), // 연한 보라
+    Color(0xFFF3E8FF), // 연한 핑크
+    Color(0xFFFFF1F2), // 연한 핑크 화이트
+  ];
+
+  // Glass 효과 색상
+  static const glassWhite = Color(0xFFFFFFFF);
+  static const glassOverlay = Color(0x40FFFFFF);
+  static const glassBorder = Color(0x30FFFFFF);
+
+  // 텍스트 색상
+  static const textPrimary = Color(0xFF1E293B);
+  static const textSecondary = Color(0xFF64748B);
+  static const textLight = Color(0xFFFFFFFF);
+}
 
 /// 제목/헤더 스타일
 class _TitleStyles {
   // AppBar 제목
   static const appBarTitle = TextStyle(
     fontWeight: FontWeight.bold,
-    color: Colors.black87,
+    color: _GlassColors.textPrimary,
   );
 
   // 섹션 제목 (Trade Timeline, Performance Metrics 등)
   static const sectionTitle = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.bold,
-    color: Colors.black54,
+    color: _GlassColors.textPrimary,
   );
 
   // 헤더 카드 제목
   static const headerCardTitle = TextStyle(
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: FontWeight.bold,
-    color: Colors.black87,
+    color: _GlassColors.textPrimary,
   );
 
   // 다이얼로그 제목
   static const dialogTitle = TextStyle(
     fontWeight: FontWeight.bold,
     fontSize: 18,
+    color: _GlassColors.textPrimary,
   );
 }
 
 /// 본문/일반 텍스트 스타일
 class _BodyStyles {
   // 일반 본문 텍스트
-  static const bodyText = TextStyle(fontSize: 18, color: Colors.black87);
+  static const bodyText = TextStyle(
+    fontSize: 18,
+    color: _GlassColors.textPrimary,
+  );
 
   // 라벨 텍스트 (헤더 카드의 라벨 등)
-  static const labelText = TextStyle(fontSize: 16, color: Colors.black54);
+  static const labelText = TextStyle(
+    fontSize: 16,
+    color: _GlassColors.textSecondary,
+  );
 
   // 회색 라벨 텍스트
-  static TextStyle greyLabelText = TextStyle(
+  static const greyLabelText = TextStyle(
     fontSize: 16,
-    color: Colors.grey[600],
+    color: _GlassColors.textSecondary,
   );
 }
 
@@ -73,31 +111,45 @@ class _ButtonStyles {
 /// 카드 내부 텍스트 스타일
 class _CardStyles {
   // 매수/매도 카드 제목
-  static const cardTitle = TextStyle(fontSize: 15, fontWeight: FontWeight.bold);
+  static const cardTitle = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.bold,
+    color: _GlassColors.textPrimary,
+  );
 
   // 매수/매도 카드 날짜
-  static const cardDate = TextStyle(fontSize: 15, fontWeight: FontWeight.w500);
+  static const cardDate = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w500,
+    color: _GlassColors.textSecondary,
+  );
 
   // 매수/매도 카드 가격
-  static const cardPrice = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+  static const cardPrice = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+    color: _GlassColors.textPrimary,
+  );
 
   // 성과 지표 라벨
-  static TextStyle metricLabel = TextStyle(
+  static const metricLabel = TextStyle(
     fontSize: 14,
-    color: Colors.grey[600],
+    color: _GlassColors.textSecondary,
     fontWeight: FontWeight.w600,
   );
 
   // 성과 지표 값
   static const metricValue = TextStyle(
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: FontWeight.bold,
+    color: _GlassColors.textPrimary,
   );
 
   // 헤더 카드 값 (Period, Total Gain 등)
   static const headerCardValue = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
+    color: _GlassColors.textPrimary,
   );
 }
 
@@ -447,68 +499,102 @@ class _SimulationPageState extends State<SimulationPage>
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          backgroundColor: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      '${displayDate.toCustomString()} ${l10n(context).strategy}',
-                      style: _TitleStyles.dialogTitle,
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.deepPurple),
-                      onPressed: () => Navigator.of(context).pop(),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      _GlassColors.glassWhite.withOpacity(0.95),
+                      _GlassColors.glassWhite.withOpacity(0.85),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: _GlassColors.glassBorder,
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _GlassColors.primaryGradient[0].withOpacity(0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                if (widget.simulationType == SimulationType.ai &&
-                    strategy != null &&
-                    strategy.isNotEmpty) ...[
-                  _StrategyDialogRow(
-                    label: l10n(context).buyPrice,
-                    value: '${strategy['buy_price']}',
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 24,
+                    horizontal: 20,
                   ),
-                  _StrategyDialogRow(
-                    label: l10n(context).sellPrice,
-                    value: '${strategy['sell_price']}',
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            '${displayDate.toCustomString()} ${l10n(context).strategy}',
+                            style: _TitleStyles.dialogTitle,
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.close,
+                              color: Colors.deepPurple,
+                            ),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      if (widget.simulationType == SimulationType.ai &&
+                          strategy != null &&
+                          strategy.isNotEmpty) ...[
+                        _StrategyDialogRow(
+                          label: l10n(context).buyPrice,
+                          value: '${strategy['buy_price']}',
+                        ),
+                        _StrategyDialogRow(
+                          label: l10n(context).sellPrice,
+                          value: '${strategy['sell_price']}',
+                        ),
+                        _StrategyDialogRow(
+                          label: l10n(context).expectedGain,
+                          value: '${strategy['expected_return']}',
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          l10n(context).summary,
+                          style: _DialogStyles.sectionTitle,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          strategy['summary'] ?? '',
+                          style: _DialogStyles.bodyText,
+                        ),
+                      ] else ...[
+                        Text(
+                          widget.simulationType == SimulationType.kimchi
+                              ? l10n(context).kimchiStrategyComment(
+                                double.parse(buyThreshold.toStringAsFixed(1)),
+                                double.parse(sellThreshold.toStringAsFixed(1)),
+                              )
+                              : (strategy != null && strategy.isNotEmpty)
+                              ? '${strategy['summary'] ?? '전략 정보'}'
+                              : '해당 날짜에 대한 전략이 없습니다.',
+                        ),
+                      ],
+                    ],
                   ),
-                  _StrategyDialogRow(
-                    label: l10n(context).expectedGain,
-                    value: '${strategy['expected_return']}',
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    l10n(context).summary,
-                    style: _DialogStyles.sectionTitle,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    strategy['summary'] ?? '',
-                    style: _DialogStyles.bodyText,
-                  ),
-                ] else ...[
-                  Text(
-                    widget.simulationType == SimulationType.kimchi
-                        ? l10n(context).kimchiStrategyComment(
-                          double.parse(buyThreshold.toStringAsFixed(1)),
-                          double.parse(sellThreshold.toStringAsFixed(1)),
-                        )
-                        : (strategy != null && strategy.isNotEmpty)
-                        ? '${strategy['summary'] ?? '전략 정보'}'
-                        : '해당 날짜에 대한 전략이 없습니다.',
-                  ),
-                ],
-              ],
+                ),
+              ),
             ),
           ),
         );
@@ -519,7 +605,8 @@ class _SimulationPageState extends State<SimulationPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F5FA),
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
           widget.simulationType == SimulationType.kimchi
@@ -527,10 +614,30 @@ class _SimulationPageState extends State<SimulationPage>
               : l10n(context).aiBaseTrade,
           style: _TitleStyles.appBarTitle,
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.black87),
+        iconTheme: const IconThemeData(color: _GlassColors.textPrimary),
+        flexibleSpace: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    _GlassColors.glassWhite.withOpacity(0.8),
+                    _GlassColors.glassWhite.withOpacity(0.6),
+                  ],
+                ),
+                border: Border(
+                  bottom: BorderSide(color: _GlassColors.glassBorder, width: 1),
+                ),
+              ),
+            ),
+          ),
+        ),
         actions:
             widget.simulationType == SimulationType.kimchi
                 ? [
@@ -551,61 +658,70 @@ class _SimulationPageState extends State<SimulationPage>
                 ]
                 : null,
       ),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // 메인 콘텐츠
-            loading
-                ? const Center(child: CircularProgressIndicator())
-                : error != null
-                ? Center(child: Text('${l10n(context).error}: $error'))
-                : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildHeaderCard(context),
-                      const SizedBox(height: 24),
-                      Text(
-                        l10n(context).tradeTimeline,
-                        style: _TitleStyles.sectionTitle,
-                      ),
-                      const SizedBox(height: 12),
-                      if (results.isEmpty)
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24.0),
-                            child: Text(l10n(context).noStrategyData),
-                          ),
-                        )
-                      else
-                        ...results.expand((r) {
-                          List<Widget> widgets = [_buildBuyCard(context, r)];
-                          if (r.sellDate != null) {
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: _GlassColors.backgroundGradient,
+          ),
+        ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              // 메인 콘텐츠
+              loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : error != null
+                  ? Center(child: Text('${l10n(context).error}: $error'))
+                  : SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildHeaderCard(context),
+                        const SizedBox(height: 24),
+                        Text(
+                          l10n(context).tradeTimeline,
+                          style: _TitleStyles.sectionTitle,
+                        ),
+                        const SizedBox(height: 12),
+                        if (results.isEmpty)
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Text(l10n(context).noStrategyData),
+                            ),
+                          )
+                        else
+                          ...results.expand((r) {
+                            List<Widget> widgets = [_buildBuyCard(context, r)];
+                            if (r.sellDate != null) {
+                              widgets.add(const SizedBox(height: 12));
+                              widgets.add(_buildSellCard(context, r));
+                            }
+                            // 매도가 있든 없든 평가금액 표시
                             widgets.add(const SizedBox(height: 12));
-                            widgets.add(_buildSellCard(context, r));
-                          }
-                          // 매도가 있든 없든 평가금액 표시
-                          widgets.add(const SizedBox(height: 12));
-                          widgets.add(_buildResultCard(context, r));
-                          widgets.add(const SizedBox(height: 12));
-                          return widgets;
-                        }),
-                      // 버텀 시트 공간 확보 (화면 높이의 40% + 여유 공간)
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.35,
-                      ),
-                    ],
+                            widgets.add(_buildResultCard(context, r));
+                            widgets.add(const SizedBox(height: 12));
+                            return widgets;
+                          }),
+                        // 버텀 시트 공간 확보 (화면 높이의 40% + 여유 공간)
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.35,
+                        ),
+                      ],
+                    ),
                   ),
+              // 버텀 시트 (오버레이)
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: _buildBottomSheet(context),
                 ),
-            // 버텀 시트 (오버레이)
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: _buildBottomSheet(context),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -620,107 +736,126 @@ class _SimulationPageState extends State<SimulationPage>
       minChildSize: 0.12, // 최소 크기
       maxChildSize: 0.4, // 최대 크기 (초기 크기와 동일)
       builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 10,
-                offset: Offset(0, -2),
-              ),
-            ],
+        return ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
           ),
-          child: NotificationListener<ScrollNotification>(
-            onNotification: (notification) {
-              // 스크롤이 끝에 도달했을 때 시트가 확장되지 않도록 함
-              if (notification is ScrollEndNotification) {
-                if (scrollController.position.pixels == 0) {
-                  // 스크롤이 맨 위에 있을 때만 드래그 가능
-                }
-              }
-              return false;
-            },
-            child: ListView(
-              controller: scrollController,
-              physics: const ClampingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              children: [
-                // 드래그 핸들
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                // 성과 지표 & 차트로 보기 버튼
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      l10n(context).performanceMetrics,
-                      style: _TitleStyles.sectionTitle,
-                    ),
-                    OutlinedButton.icon(
-                      icon: const Icon(
-                        Icons.show_chart,
-                        color: Colors.deepPurple,
-                        size: 16,
-                      ),
-                      label: Text(
-                        l10n(context).seeWithChart,
-                        style: _ButtonStyles.smallButton.copyWith(
-                          color: Colors.deepPurple,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.deepPurple),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        minimumSize: const Size(0, 32),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder:
-                                (_) => ChartOnlyPage.fromModel(
-                                  widget.chartOnlyPageModel!,
-                                  initialShowAITrading:
-                                      widget.simulationType ==
-                                      SimulationType.ai,
-                                  initialShowGimchiTrading:
-                                      widget.simulationType ==
-                                      SimulationType.kimchi,
-                                ),
-                            fullscreenDialog: true,
-                          ),
-                        );
-                      },
-                    ),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    _GlassColors.glassWhite.withOpacity(0.9),
+                    _GlassColors.glassWhite.withOpacity(0.7),
                   ],
                 ),
-                const SizedBox(height: 12),
-                _buildPerformanceMetrics(context),
-                const SizedBox(height: 24),
-                _buildViewHistoryButton(context),
-                // 하단 SafeArea 고려
-                SizedBox(height: MediaQuery.of(context).padding.bottom),
-              ],
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+                border: Border(
+                  top: BorderSide(color: _GlassColors.glassBorder, width: 1.5),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: _GlassColors.primaryGradient[0].withOpacity(0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  // 스크롤이 끝에 도달했을 때 시트가 확장되지 않도록 함
+                  if (notification is ScrollEndNotification) {
+                    if (scrollController.position.pixels == 0) {
+                      // 스크롤이 맨 위에 있을 때만 드래그 가능
+                    }
+                  }
+                  return false;
+                },
+                child: ListView(
+                  controller: scrollController,
+                  physics: const ClampingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  children: [
+                    // 드래그 핸들
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    // 성과 지표 & 차트로 보기 버튼
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          l10n(context).performanceMetrics,
+                          style: _TitleStyles.sectionTitle,
+                        ),
+                        OutlinedButton.icon(
+                          icon: const Icon(
+                            Icons.show_chart,
+                            color: Colors.deepPurple,
+                            size: 16,
+                          ),
+                          label: Text(
+                            l10n(context).seeWithChart,
+                            style: _ButtonStyles.smallButton.copyWith(
+                              color: Colors.deepPurple,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Colors.deepPurple),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            minimumSize: const Size(0, 32),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => ChartOnlyPage.fromModel(
+                                      widget.chartOnlyPageModel!,
+                                      initialShowAITrading:
+                                          widget.simulationType ==
+                                          SimulationType.ai,
+                                      initialShowGimchiTrading:
+                                          widget.simulationType ==
+                                          SimulationType.kimchi,
+                                    ),
+                                fullscreenDialog: true,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPerformanceMetrics(context),
+                    const SizedBox(height: 24),
+                    _buildViewHistoryButton(context),
+                    // 하단 SafeArea 고려
+                    SizedBox(height: MediaQuery.of(context).padding.bottom),
+                  ],
+                ),
+              ),
             ),
           ),
         );
@@ -729,118 +864,219 @@ class _SimulationPageState extends State<SimulationPage>
   }
 
   Widget _buildHeaderCard(BuildContext context) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.deepPurple.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    widget.simulationType == SimulationType.ai
-                        ? Icons.psychology
-                        : Icons.trending_up,
-                    color: Colors.deepPurple,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.simulationType == SimulationType.ai
-                            ? l10n(context).aiSimulatedTradeTitle
-                            : l10n(context).kimchiSimulatedTradeTitle,
-                        style: _TitleStyles.headerCardTitle,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        l10n(context).initialCapital,
-                        style: _BodyStyles.labelText,
-                      ),
-                    ],
-                  ),
-                ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                _GlassColors.glassWhite.withOpacity(0.7),
+                _GlassColors.glassWhite.withOpacity(0.5),
               ],
             ),
-            const SizedBox(height: 20),
-            // 차트 라인 (플레이스홀더)
-            Container(
-              height: 2,
-              width: 100,
-              color: Colors.deepPurple.withOpacity(0.5),
-            ),
-            const SizedBox(height: 20),
-            // Period
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: _GlassColors.glassBorder, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  l10n(context).tradingPerioid,
-                  style: _BodyStyles.greyLabelText,
-                ),
-                Builder(
-                  builder: (context) {
-                    if (results.isEmpty) return const Text("-");
-                    final startDate =
-                        results.first.buyDate?.toCustomString() ?? "";
-                    final endDate = results.last.analysisDate.toCustomString();
-                    return Text(
-                      "$startDate - $endDate",
-                      style: _CardStyles.headerCardValue,
-                    );
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            // Total Gain
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(l10n(context).totalGain, style: _BodyStyles.greyLabelText),
-                Builder(
-                  builder: (context) {
-                    final double totalGain =
-                        results.isNotEmpty
-                            ? (results.last.finalKRW - 1000000)
-                            : 0;
-                    final double totalGainPercent =
-                        results.isNotEmpty
-                            ? (results.last.finalKRW / 1000000 * 100 - 100)
-                            : 0;
-                    return RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text:
-                                "${totalGain >= 0 ? '+' : ''}${krwFormat.format(totalGain.round())} ",
-                            style: _CardStyles.cardPrice.copyWith(
-                              color:
-                                  totalGain >= 0
-                                      ? const Color(0xFF2E7D32)
-                                      : const Color(0xFFC62828),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: _GlassColors.primaryGradient,
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: _GlassColors.primaryGradient[0].withOpacity(
+                              0.3,
                             ),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
                           ),
-                          TextSpan(
-                            text: "(${totalGainPercent.toStringAsFixed(2)}%)",
-                            style: _CardStyles.headerCardValue.copyWith(
-                              color:
-                                  totalGain >= 0
-                                      ? const Color(0xFF2E7D32)
-                                      : const Color(0xFFC62828),
+                        ],
+                      ),
+                      child: Icon(
+                        widget.simulationType == SimulationType.ai
+                            ? Icons.psychology
+                            : Icons.trending_up,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.simulationType == SimulationType.ai
+                                ? l10n(context).aiSimulatedTradeTitle
+                                : l10n(context).kimchiSimulatedTradeTitle,
+                            style: _TitleStyles.headerCardTitle,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            l10n(context).initialCapital,
+                            style: _BodyStyles.labelText,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // 차트 라인 (플레이스홀더)
+                Container(
+                  height: 3,
+                  width: 100,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: _GlassColors.primaryGradient,
+                    ),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Period
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n(context).tradingPerioid,
+                      style: _BodyStyles.greyLabelText,
+                    ),
+                    Builder(
+                      builder: (context) {
+                        if (results.isEmpty) return const Text("-");
+                        final startDate =
+                            results.first.buyDate?.toCustomString() ?? "";
+                        final endDate =
+                            results.last.analysisDate.toCustomString();
+                        return Text(
+                          "$startDate - $endDate",
+                          style: _CardStyles.headerCardValue,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Total Gain
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n(context).totalGain,
+                      style: _BodyStyles.greyLabelText,
+                    ),
+                    Builder(
+                      builder: (context) {
+                        final double totalGain =
+                            results.isNotEmpty
+                                ? (results.last.finalKRW - 1000000)
+                                : 0;
+                        final double totalGainPercent =
+                            results.isNotEmpty
+                                ? (results.last.finalKRW / 1000000 * 100 - 100)
+                                : 0;
+                        return RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text:
+                                    "${totalGain >= 0 ? '+' : ''}${krwFormat.format(totalGain.round())} ",
+                                style: _CardStyles.cardPrice.copyWith(
+                                  color:
+                                      totalGain >= 0
+                                          ? const Color(0xFF2E7D32)
+                                          : const Color(0xFFC62828),
+                                ),
+                              ),
+                              TextSpan(
+                                text:
+                                    "(${totalGainPercent.toStringAsFixed(2)}%)",
+                                style: _CardStyles.headerCardValue.copyWith(
+                                  color:
+                                      totalGain >= 0
+                                          ? const Color(0xFF2E7D32)
+                                          : const Color(0xFFC62828),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Stacked Final KRW (누적 최종 원화)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n(context).stackedFinalKRW,
+                      style: _BodyStyles.greyLabelText,
+                    ),
+                    Builder(
+                      builder: (context) {
+                        if (results.isEmpty) return const Text("-");
+                        final finalKRW = results.last.finalKRW;
+                        return Text(
+                          "₩${krwFormat.format(finalKRW.round())}",
+                          style: _CardStyles.headerCardValue,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                // 수수료 적용 여부 표시
+                Builder(
+                  builder: (context) {
+                    if (widget.settings == null) return const SizedBox.shrink();
+                    final upbitFees =
+                        widget.settings!['upbit_fees'] as Map<String, dynamic>?;
+                    if (upbitFees == null) return const SizedBox.shrink();
+                    final buyFee = (upbitFees['buy_fee'] as num?)?.toDouble();
+                    final sellFee = (upbitFees['sell_fee'] as num?)?.toDouble();
+                    if (buyFee == null || sellFee == null)
+                      return const SizedBox.shrink();
+
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 14,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            l10n(context).upbitFeeApplied(buyFee, sellFee),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                              fontStyle: FontStyle.italic,
                             ),
                           ),
                         ],
@@ -850,63 +1086,7 @@ class _SimulationPageState extends State<SimulationPage>
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            // Stacked Final KRW (누적 최종 원화)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n(context).stackedFinalKRW,
-                  style: _BodyStyles.greyLabelText,
-                ),
-                Builder(
-                  builder: (context) {
-                    if (results.isEmpty) return const Text("-");
-                    final finalKRW = results.last.finalKRW;
-                    return Text(
-                      "₩${krwFormat.format(finalKRW.round())}",
-                      style: _CardStyles.headerCardValue,
-                    );
-                  },
-                ),
-              ],
-            ),
-            // 수수료 적용 여부 표시
-            Builder(
-              builder: (context) {
-                if (widget.settings == null) return const SizedBox.shrink();
-                final upbitFees =
-                    widget.settings!['upbit_fees'] as Map<String, dynamic>?;
-                if (upbitFees == null) return const SizedBox.shrink();
-                final buyFee = (upbitFees['buy_fee'] as num?)?.toDouble();
-                final sellFee = (upbitFees['sell_fee'] as num?)?.toDouble();
-                if (buyFee == null || sellFee == null)
-                  return const SizedBox.shrink();
-
-                return Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        size: 14,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        l10n(context).upbitFeeApplied(buyFee, sellFee),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -917,28 +1097,52 @@ class _SimulationPageState extends State<SimulationPage>
     DateTime? date,
     Color color,
   ) {
-    return OutlinedButton(
-      onPressed: () {
-        if (date != null) {
-          _showStrategyDialog(context, date);
-        }
-      },
-      style: OutlinedButton.styleFrom(
-        foregroundColor: color,
-        side: BorderSide(color: color.withOpacity(0.5)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        minimumSize: const Size(0, 32),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [color.withOpacity(0.2), color.withOpacity(0.1)],
+            ),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: color.withOpacity(0.5), width: 1.5),
+          ),
+          child: OutlinedButton(
+            onPressed: () {
+              if (date != null) {
+                _showStrategyDialog(context, date);
+              }
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: color,
+              side: BorderSide.none,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: const Size(0, 32),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              l10n(context).seeStrategy,
+              style: _ButtonStyles.smallButton.copyWith(fontSize: 11),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
       ),
-      child: Text(l10n(context).seeStrategy, style: _ButtonStyles.smallButton),
     );
   }
 
   Widget _buildBuyCard(BuildContext context, SimulationResult r) {
-    final color = const Color(0xFFC62828); // Red 800
-    final bgColor = const Color(0xFFFFEBEE); // Red 50
-    final iconBgColor = const Color(0xFFFFCDD2); // Red 100
+    final gradient = [
+      const Color(0xFFFF6B6B).withOpacity(0.9),
+      const Color(0xFFFF8E8E).withOpacity(0.7),
+    ];
 
     return GestureDetector(
       onTap: () {
@@ -946,57 +1150,99 @@ class _SimulationPageState extends State<SimulationPage>
           _showStrategyDialog(context, r.buyDate!);
         }
       },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.1)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: iconBgColor.withOpacity(0.5),
-                shape: BoxShape.circle,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [gradient[0], gradient[1]],
               ),
-              child: Icon(Icons.north_east, color: color, size: 20),
-            ),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n(context).buy,
-                  style: _CardStyles.cardTitle.copyWith(color: color),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  r.buyDate?.toCustomString() ?? "-",
-                  style: _CardStyles.cardDate.copyWith(
-                    color: color.withOpacity(0.7),
-                  ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: gradient[0].withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
-            const Spacer(),
-            Text(
-              "₩${krwFormat.format(r.buyPrice)}",
-              style: _CardStyles.cardPrice.copyWith(color: color),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.5),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.north_east,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n(context).buy,
+                      style: _CardStyles.cardTitle.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      r.buyDate?.toCustomString() ?? "-",
+                      style: _CardStyles.cardDate.copyWith(
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Expanded(
+                  flex: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Text(
+                      "₩${krwFormat.format(r.buyPrice)}",
+                      style: _CardStyles.cardPrice.copyWith(
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.right,
+                      maxLines: 2,
+                      overflow: TextOverflow.visible,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _buildStrategyButton(context, r.buyDate, Colors.white),
+              ],
             ),
-            const SizedBox(width: 12),
-            _buildStrategyButton(context, r.buyDate, color),
-          ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildSellCard(BuildContext context, SimulationResult r) {
-    final color = const Color(0xFF1565C0); // Blue 700
-    final bgColor = const Color(0xFFE3F2FD); // Blue 50
-    final iconBgColor = const Color(0xFFBBDEFB); // Blue 100
+    final gradient = [
+      const Color(0xFF4ECDC4).withOpacity(0.9),
+      const Color(0xFF44A08D).withOpacity(0.7),
+    ];
 
     return GestureDetector(
       onTap: () {
@@ -1004,48 +1250,91 @@ class _SimulationPageState extends State<SimulationPage>
           _showStrategyDialog(context, r.sellDate!);
         }
       },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.1)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: iconBgColor.withOpacity(0.5),
-                shape: BoxShape.circle,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [gradient[0], gradient[1]],
               ),
-              child: Icon(Icons.south_east, color: color, size: 20),
-            ),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n(context).sell,
-                  style: _CardStyles.cardTitle.copyWith(color: color),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  r.sellDate?.toCustomString() ?? "-",
-                  style: _CardStyles.cardDate.copyWith(
-                    color: color.withOpacity(0.7),
-                  ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: gradient[0].withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
-            const Spacer(),
-            Text(
-              r.sellPrice != null ? "₩${krwFormat.format(r.sellPrice!)}" : "-",
-              style: _CardStyles.cardPrice.copyWith(color: color),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.5),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.south_east,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n(context).sell,
+                      style: _CardStyles.cardTitle.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      r.sellDate?.toCustomString() ?? "-",
+                      style: _CardStyles.cardDate.copyWith(
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Expanded(
+                  flex: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Text(
+                      r.sellPrice != null
+                          ? "₩${krwFormat.format(r.sellPrice!)}"
+                          : "-",
+                      style: _CardStyles.cardPrice.copyWith(
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.right,
+                      maxLines: 2,
+                      overflow: TextOverflow.visible,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _buildStrategyButton(context, r.sellDate, Colors.white),
+              ],
             ),
-            const SizedBox(width: 12),
-            _buildStrategyButton(context, r.sellDate, color),
-          ],
+          ),
         ),
       ),
     );
@@ -1180,9 +1469,9 @@ class _SimulationPageState extends State<SimulationPage>
                     return Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
-                        l10n(context).feeWithAmount(
-                          krwFormat.format(totalFee.round()),
-                        ),
+                        l10n(
+                          context,
+                        ).feeWithAmount(krwFormat.format(totalFee.round())),
                         style: _CardStyles.cardDate.copyWith(
                           color: Colors.black54,
                           fontSize: 13,
@@ -1296,44 +1585,58 @@ class _SimulationPageState extends State<SimulationPage>
     bool showInfoIcon = false,
     VoidCallback? onInfoTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(label, style: _CardStyles.metricLabel),
-              if (showInfoIcon) ...[
-                const SizedBox(width: 4),
-                GestureDetector(
-                  onTap: onInfoTap,
-                  child: Icon(
-                    Icons.info_outline,
-                    size: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                _GlassColors.glassWhite.withOpacity(0.7),
+                _GlassColors.glassWhite.withOpacity(0.5),
               ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _GlassColors.glassBorder, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: _CardStyles.metricValue.copyWith(color: valueColor),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(label, style: _CardStyles.metricLabel),
+                  if (showInfoIcon) ...[
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: onInfoTap,
+                      child: Icon(
+                        Icons.info_outline,
+                        size: 16,
+                        color: _GlassColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style: _CardStyles.metricValue.copyWith(color: valueColor),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

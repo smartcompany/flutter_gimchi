@@ -1,12 +1,12 @@
 // ignore_for_file: depend_on_referenced_packages
 
+import 'dart:async';
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart' as fl_chat_core;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart' as fl_chat_ui;
-import 'utils.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
-import 'dart:async';
 import 'utils.dart';
 
 class AnonymousChatPage extends StatefulWidget {
@@ -170,6 +170,30 @@ Color getAnonColor(String authorId) {
   return colors[(anonNum - 1) % colors.length];
 }
 
+String _parseMessageText(String text) {
+  // JSON 형식인지 확인
+  final trimmed = text.trim();
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    try {
+      final json = jsonDecode(trimmed);
+      // JSON 객체에서 text 필드 추출
+      if (json is Map<String, dynamic>) {
+        final sender = json['sender'] as String?;
+        final messageText = json['text'] as String?;
+        if (messageText != null) {
+          return sender != null ? '$sender: $messageText' : messageText;
+        }
+        // text 필드가 없으면 전체 JSON을 보기 좋게 포맷
+        return json.entries.map((e) => '${e.key}: ${e.value}').join('\n');
+      }
+    } catch (e) {
+      // JSON 파싱 실패 시 원본 텍스트 반환
+      return text;
+    }
+  }
+  return text;
+}
+
 Widget USTextMessageBuilder(
   BuildContext context,
   fl_chat_core.TextMessage message,
@@ -194,6 +218,9 @@ Widget USTextMessageBuilder(
           ? Colors.blue[200]
           : colors[(getAnonNum(message.authorId) - 1) % colors.length];
 
+  // 메시지 텍스트 파싱
+  final displayText = _parseMessageText(message.text);
+
   return Container(
     margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
     padding: const EdgeInsets.all(12),
@@ -201,6 +228,6 @@ Widget USTextMessageBuilder(
       color: bgColor,
       borderRadius: BorderRadius.circular(12),
     ),
-    child: Text(message.text, style: const TextStyle(fontSize: 16)),
+    child: Text(displayText, style: const TextStyle(fontSize: 16)),
   );
 }

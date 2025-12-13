@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -150,26 +151,69 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8F5FA),
+        backgroundColor: Colors.transparent,
+        extendBodyBehindAppBar: true,
         appBar: AppBar(
           title: Text(
             l10n(context).chartTrendAnalysis,
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E293B),
+            ),
           ),
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
-          foregroundColor: Colors.black87,
+          iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
+          flexibleSpace: ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withOpacity(0.8),
+                      Colors.white.withOpacity(0.6),
+                    ],
+                  ),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
-            child: Column(
-              children: [
-                _buildChartCard(chartHeight, l10n(context)),
-                const SizedBox(height: 8),
-                _buildCheckboxCard(l10n(context)),
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFE0E7FF), // 연한 보라
+                Color(0xFFF3E8FF), // 연한 핑크
+                Color(0xFFFFF1F2), // 연한 핑크 화이트
               ],
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12.0,
+                vertical: 8,
+              ),
+              child: Column(
+                children: [
+                  _buildChartCard(chartHeight, l10n(context)),
+                  const SizedBox(height: 8),
+                  _buildCheckboxCard(l10n(context)),
+                ],
+              ),
             ),
           ),
         ),
@@ -184,49 +228,86 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
 
     return Stack(
       children: [
-        Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: Colors.grey.shade200, width: 1),
-          ),
-          color: Colors.white,
-          child: Container(
-            height: chartHeight,
-            width: double.infinity,
-            child: _buildMainChart(l10n, kimchiPlotBands),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              height: chartHeight,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(0.9),
+                    Colors.white.withOpacity(0.7),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF667EEA).withOpacity(0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: _buildMainChart(l10n, kimchiPlotBands),
+            ),
           ),
         ),
         // 왼쪽 상단에 리셋 버튼 추가
         Positioned(
           top: 10,
           left: 10,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withOpacity(0.3),
+                      Colors.white.withOpacity(0.2),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.5),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: IconButton(
-              icon: const Icon(
-                Icons.refresh,
-                color: Colors.deepPurple,
-                size: 18,
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.refresh,
+                    color: Color(0xFF764BA2),
+                    size: 18,
+                  ),
+                  tooltip: l10n.resetChart,
+                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(),
+                  onPressed: () {
+                    setState(() {
+                      _zoomPanBehavior.reset();
+                    });
+                  },
+                ),
               ),
-              tooltip: l10n.resetChart,
-              padding: const EdgeInsets.all(8),
-              constraints: const BoxConstraints(),
-              onPressed: () {
-                setState(() {
-                  _zoomPanBehavior.reset();
-                });
-              },
             ),
           ),
         ),
@@ -234,26 +315,47 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         Positioned(
           top: 10,
           right: 10,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withOpacity(0.3),
+                      Colors.white.withOpacity(0.2),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.5),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.deepPurple, size: 18),
-              tooltip: l10n.backToPreviousChart,
-              padding: const EdgeInsets.all(8),
-              constraints: const BoxConstraints(),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.close,
+                    color: Color(0xFF764BA2),
+                    size: 18,
+                  ),
+                  tooltip: l10n.backToPreviousChart,
+                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
             ),
           ),
         ),
@@ -673,152 +775,177 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
   }
 
   Widget _buildCheckboxCard(AppLocalizations l10n) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade200, width: 1),
-      ),
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        child: Wrap(
-          alignment: WrapAlignment.start,
-          spacing: 16,
-          runSpacing: 12,
-          children: [
-            CheckBoxItem(
-              value: showExchangeRate,
-              label: l10n.exchangeRate,
-              color: Colors.green,
-              onChanged:
-                  (val) => setState(() => showExchangeRate = val ?? true),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.9),
+                Colors.white.withOpacity(0.7),
+              ],
             ),
-            CheckBoxItem(
-              value: showKimchiPremium,
-              label: l10n.kimchiPremium,
-              color: Colors.orange,
-              onChanged:
-                  (val) => setState(() => showKimchiPremium = val ?? true),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.3),
+              width: 1.5,
             ),
-            CheckBoxItem(
-              value: showAITrading,
-              label: l10n.aiBuySell,
-              color: Colors.deepPurple,
-              onChanged: (val) {
-                setState(() {
-                  showAITrading = val ?? false;
-                  if (showAITrading) {
-                    showGimchiTrading = false; // AI 매매가 켜지면 김프 매매는 꺼짐
-                    showKimchiPremium = false; // AI 매매가 켜지면 김치 프리미엄은 꺼짐
-                    showExchangeRate = false; // AI 매매가 켜지면 환율은 꺼짐
-
-                    aiTradeResults = SimulationModel.simulateResults(
-                      widget.exchangeRates,
-                      widget.strategyList,
-                      widget.usdtMap,
-                    );
-                    _autoZoomToAITrades();
-                  } else {
-                    aiTradeResults = [];
-                  }
-                });
-              },
-            ),
-            CheckBoxItem(
-              value: showGimchiTrading,
-              label: l10n.kimchiPremiumBuySell,
-              color: Colors.teal,
-              onChanged: (val) async {
-                setState(() {
-                  showGimchiTrading = val ?? false;
-                });
-                if (showGimchiTrading) {
-                  setState(() {
-                    showAITrading = false; // 김프 매매가 켜지면 AI 매매는 꺼짐
-                    showKimchiPremium = false;
-                    showExchangeRate = false; // 김프 매매가 켜지면 환율은 꺼짐
-                  });
-
-                  final results = SimulationModel.gimchiSimulateResults(
-                    widget.exchangeRates,
-                    widget.strategyList,
-                    widget.usdtMap,
-                    null, // premiumTrends는 서버에서 받아와야 함
-                  );
-                  setState(() {
-                    aiTradeResults = results;
-                  });
-                  _autoZoomToAITrades();
-                } else {
-                  setState(() {
-                    aiTradeResults = [];
-                  });
-                }
-              },
-            ),
-            // === 프리미엄 배경 PlotBand 표시/숨김 체크박스 + 도움말 버튼 추가 ===
-            SizedBox(
-              height: 36, // 다른 CheckBoxItem 높이와 맞추기 (필요시 조정)
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  CheckBoxItem(
-                    value: showKimchiPlotBands,
-                    label: l10n.kimchiPremiumBackground,
-                    color: Colors.blue,
-                    onChanged: (val) {
-                      setState(() {
-                        showKimchiPlotBands = val ?? true;
-                        if (showKimchiPlotBands) {
-                          showKimchiPremium = false; // 배경이 켜지면 김치 프리미엄도 켜짐
-                        }
-                      });
-                    },
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.help_outline,
-                        color: Colors.blue,
-                        size: 16,
-                      ),
-                      tooltip: l10n.kimchiPremiumBackgroundDescriptionTooltip,
-                      padding: const EdgeInsets.all(4),
-                      constraints: const BoxConstraints(
-                        minWidth: 24,
-                        minHeight: 24,
-                      ),
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder:
-                              (_) => AlertDialog(
-                                title: Text(l10n.whatIsKimchiPremiumBackground),
-                                content: Text(
-                                  l10n.kimchiPremiumBackgroundDescription,
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed:
-                                        () => Navigator.of(context).pop(),
-                                    child: Text(l10n.confirm),
-                                  ),
-                                ],
-                              ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF667EEA).withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            child: Wrap(
+              alignment: WrapAlignment.start,
+              spacing: 16,
+              runSpacing: 12,
+              children: [
+                CheckBoxItem(
+                  value: showExchangeRate,
+                  label: l10n.exchangeRate,
+                  color: Colors.green,
+                  onChanged:
+                      (val) => setState(() => showExchangeRate = val ?? true),
+                ),
+                CheckBoxItem(
+                  value: showKimchiPremium,
+                  label: l10n.kimchiPremium,
+                  color: Colors.orange,
+                  onChanged:
+                      (val) => setState(() => showKimchiPremium = val ?? true),
+                ),
+                CheckBoxItem(
+                  value: showAITrading,
+                  label: l10n.aiBuySell,
+                  color: Colors.deepPurple,
+                  onChanged: (val) {
+                    setState(() {
+                      showAITrading = val ?? false;
+                      if (showAITrading) {
+                        showGimchiTrading = false; // AI 매매가 켜지면 김프 매매는 꺼짐
+                        showKimchiPremium = false; // AI 매매가 켜지면 김치 프리미엄은 꺼짐
+                        showExchangeRate = false; // AI 매매가 켜지면 환율은 꺼짐
+
+                        aiTradeResults = SimulationModel.simulateResults(
+                          widget.exchangeRates,
+                          widget.strategyList,
+                          widget.usdtMap,
+                        );
+                        _autoZoomToAITrades();
+                      } else {
+                        aiTradeResults = [];
+                      }
+                    });
+                  },
+                ),
+                CheckBoxItem(
+                  value: showGimchiTrading,
+                  label: l10n.kimchiPremiumBuySell,
+                  color: Colors.teal,
+                  onChanged: (val) async {
+                    setState(() {
+                      showGimchiTrading = val ?? false;
+                    });
+                    if (showGimchiTrading) {
+                      setState(() {
+                        showAITrading = false; // 김프 매매가 켜지면 AI 매매는 꺼짐
+                        showKimchiPremium = false;
+                        showExchangeRate = false; // 김프 매매가 켜지면 환율은 꺼짐
+                      });
+
+                      final results = SimulationModel.gimchiSimulateResults(
+                        widget.exchangeRates,
+                        widget.strategyList,
+                        widget.usdtMap,
+                        null, // premiumTrends는 서버에서 받아와야 함
+                      );
+                      setState(() {
+                        aiTradeResults = results;
+                      });
+                      _autoZoomToAITrades();
+                    } else {
+                      setState(() {
+                        aiTradeResults = [];
+                      });
+                    }
+                  },
+                ),
+                // === 프리미엄 배경 PlotBand 표시/숨김 체크박스 + 도움말 버튼 추가 ===
+                SizedBox(
+                  height: 36, // 다른 CheckBoxItem 높이와 맞추기 (필요시 조정)
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CheckBoxItem(
+                        value: showKimchiPlotBands,
+                        label: l10n.kimchiPremiumBackground,
+                        color: Colors.blue,
+                        onChanged: (val) {
+                          setState(() {
+                            showKimchiPlotBands = val ?? true;
+                            if (showKimchiPlotBands) {
+                              showKimchiPremium = false; // 배경이 켜지면 김치 프리미엄도 켜짐
+                            }
+                          });
+                        },
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.help_outline,
+                            color: Colors.blue,
+                            size: 16,
+                          ),
+                          tooltip:
+                              l10n.kimchiPremiumBackgroundDescriptionTooltip,
+                          padding: const EdgeInsets.all(4),
+                          constraints: const BoxConstraints(
+                            minWidth: 24,
+                            minHeight: 24,
+                          ),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder:
+                                  (_) => AlertDialog(
+                                    title: Text(
+                                      l10n.whatIsKimchiPremiumBackground,
+                                    ),
+                                    content: Text(
+                                      l10n.kimchiPremiumBackgroundDescription,
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed:
+                                            () => Navigator.of(context).pop(),
+                                        child: Text(l10n.confirm),
+                                      ),
+                                    ],
+                                  ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
