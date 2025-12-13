@@ -139,5 +139,27 @@
   "aiSimulatedTradeTitle": "AI 모의 투자",
   "kimchiSimulatedTradeTitle": "김프 모의 투자",
   "profitRate": "수익률",
-  "evaluationAmount": "평가금액"
+  "evaluationAmount": "평가금액",
+  "fee": "수수료",
+  "upbitFeeApplied": "업비트 수수료 적용 (매수 {buyFee}%, 매도 {sellFee}%)",
+  "@upbitFeeApplied": {
+    "description": "업비트 수수료 적용 안내",
+    "placeholders": {
+      "buyFee": {
+        "type": "double"
+      },
+      "sellFee": {
+        "type": "double"
+      }
+    }
+  },
+  "feeWithAmount": "수수료: ₩{amount}",
+  "@feeWithAmount": {
+    "description": "수수료 금액 표시",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  }
 }

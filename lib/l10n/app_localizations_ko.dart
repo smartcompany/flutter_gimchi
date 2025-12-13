@@ -404,4 +404,17 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get evaluationAmount => '평가금액';
+
+  @override
+  String get fee => '수수료';
+
+  @override
+  String upbitFeeApplied(double buyFee, double sellFee) {
+    return '업비트 수수료 적용 (매수 $buyFee%, 매도 $sellFee%)';
+  }
+
+  @override
+  String feeWithAmount(String amount) {
+    return '수수료: ₩$amount';
+  }
 }

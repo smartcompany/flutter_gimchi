@@ -894,7 +894,7 @@ class _SimulationPageState extends State<SimulationPage>
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        "업비트 수수료 적용 (매수 ${buyFee}%, 매도 ${sellFee}%)",
+                        l10n(context).upbitFeeApplied(buyFee, sellFee),
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],
@@ -1180,7 +1180,9 @@ class _SimulationPageState extends State<SimulationPage>
                     return Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
-                        "수수료: ₩${krwFormat.format(totalFee.round())}",
+                        l10n(context).feeWithAmount(
+                          krwFormat.format(totalFee.round()),
+                        ),
                         style: _CardStyles.cardDate.copyWith(
                           color: Colors.black54,
                           fontSize: 13,

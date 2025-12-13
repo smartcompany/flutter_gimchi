@@ -475,7 +475,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('닫기'),
+                child: Text(l10n(context).close),
               ),
             ],
           ),

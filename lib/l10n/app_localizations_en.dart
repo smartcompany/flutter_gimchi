@@ -411,4 +411,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get evaluationAmount => 'Evaluation Amount';
+
+  @override
+  String get fee => 'Fee';
+
+  @override
+  String upbitFeeApplied(double buyFee, double sellFee) {
+    return 'Upbit fee applied (Buy $buyFee%, Sell $sellFee%)';
+  }
+
+  @override
+  String feeWithAmount(String amount) {
+    return 'Fee: ₩$amount';
+  }
 }

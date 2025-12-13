@@ -402,4 +402,17 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get evaluationAmount => '评估金额';
+
+  @override
+  String get fee => '手续费';
+
+  @override
+  String upbitFeeApplied(double buyFee, double sellFee) {
+    return '已应用Upbit手续费 (买入 $buyFee%, 卖出 $sellFee%)';
+  }
+
+  @override
+  String feeWithAmount(String amount) {
+    return '手续费: ₩$amount';
+  }
 }

@@ -139,5 +139,27 @@
   "aiSimulatedTradeTitle": "AI Simulated Trade",
   "kimchiSimulatedTradeTitle": "K-Premium Simulated Trade",
   "profitRate": "Profit Rate",
-  "evaluationAmount": "Evaluation Amount"
+  "evaluationAmount": "Evaluation Amount",
+  "fee": "Fee",
+  "upbitFeeApplied": "Upbit fee applied (Buy {buyFee}%, Sell {sellFee}%)",
+  "@upbitFeeApplied": {
+    "description": "Upbit fee application notice",
+    "placeholders": {
+      "buyFee": {
+        "type": "double"
+      },
+      "sellFee": {
+        "type": "double"
+      }
+    }
+  },
+  "feeWithAmount": "Fee: ₩{amount}",
+  "@feeWithAmount": {
+    "description": "Fee amount display",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  }
 }

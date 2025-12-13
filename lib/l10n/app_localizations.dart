@@ -873,6 +873,24 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'평가금액'**
   String get evaluationAmount;
+
+  /// No description provided for @fee.
+  ///
+  /// In ko, this message translates to:
+  /// **'수수료'**
+  String get fee;
+
+  /// 업비트 수수료 적용 안내
+  ///
+  /// In ko, this message translates to:
+  /// **'업비트 수수료 적용 (매수 {buyFee}%, 매도 {sellFee}%)'**
+  String upbitFeeApplied(double buyFee, double sellFee);
+
+  /// 수수료 금액 표시
+  ///
+  /// In ko, this message translates to:
+  /// **'수수료: ₩{amount}'**
+  String feeWithAmount(String amount);
 }
 
 class _AppLocalizationsDelegate

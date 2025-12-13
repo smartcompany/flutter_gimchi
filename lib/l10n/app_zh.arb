@@ -133,5 +133,27 @@
   "basePremium": "基准溢价",
   "kimchiPremiumShort": "溢价",
   "profitRate": "收益率",
-  "evaluationAmount": "评估金额"
+  "evaluationAmount": "评估金额",
+  "fee": "手续费",
+  "upbitFeeApplied": "已应用Upbit手续费 (买入 {buyFee}%, 卖出 {sellFee}%)",
+  "@upbitFeeApplied": {
+    "description": "Upbit手续费应用通知",
+    "placeholders": {
+      "buyFee": {
+        "type": "double"
+      },
+      "sellFee": {
+        "type": "double"
+      }
+    }
+  },
+  "feeWithAmount": "手续费: ₩{amount}",
+  "@feeWithAmount": {
+    "description": "手续费金额显示",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  }
 }
