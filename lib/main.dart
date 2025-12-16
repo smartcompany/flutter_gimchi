@@ -258,6 +258,7 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addObserver(this);
     SimulationCondition.instance.load();
 
@@ -279,6 +280,10 @@ class _MyHomePageState extends State<MyHomePage>
 
   void _initializeDataPipelines() {
     Future(() async {
+      // Settings 로드 후 다른 API들과 In-App Purchase 초기화
+
+      await ApiService.shared.loadSettings();
+
       await _initAPIs();
       await _initInAppPurchase();
 
@@ -290,6 +295,7 @@ class _MyHomePageState extends State<MyHomePage>
         return;
       }
 
+      // Settings는 이미 로드되었으므로 바로 광고 로드
       _loadRewardedAd();
       _loadBannerAd();
     });
@@ -425,6 +431,10 @@ class _MyHomePageState extends State<MyHomePage>
         break;
       case PurchaseStatus.restored:
         print('[Main] Purchase restored successfully');
+        if (kDebugMode) {
+          break;
+        }
+
         if (mounted) {
           setState(() {
             _isPurchasing = false;
@@ -541,8 +551,14 @@ class _MyHomePageState extends State<MyHomePage>
 
       if (adUnitEntry == null || adUnitEntry.value.isEmpty) {
         print('배너 광고 ID를 받아오지 못했습니다.');
+        print('Settings 상태: ${ApiService.shared.settings}');
+        print(
+          'Android Banner AD Key: ${ApiService.shared.settings?['android_banner_ad']}',
+        );
         return;
       }
+
+      print('배너 광고 로드 시도 - Type: ${adUnitEntry.key}, ID: ${adUnitEntry.value}');
 
       // 적응형 배너 크기 가져오기
       final AdSize? adSize =
@@ -693,11 +709,7 @@ class _MyHomePageState extends State<MyHomePage>
     });
 
     try {
-      // Settings 로드
-      final loadedSettings = await ApiService.shared.loadSettings();
-      print('main.dart에서 Settings 로드 완료: $loadedSettings');
-      print('ApiService.shared.settings: ${ApiService.shared.settings}');
-
+      // Settings 로드 후 다른 API들을 동시에 진행
       final results = await Future.wait([
         ApiService.shared.fetchExchangeRateData(),
         ApiService.shared.fetchUSDTData(),
@@ -782,11 +794,15 @@ class _MyHomePageState extends State<MyHomePage>
 
       if (adUnitEntry == null || adUnitEntry.value.isEmpty) {
         print('광고 ID를 받아오지 못했습니다.');
+        print('Settings 상태: ${ApiService.shared.settings}');
+        print('Android AD Key: ${ApiService.shared.settings?['android_ad']}');
         setState(() {
           _adsStatus = AdsStatus.shown; // 광고 ID가 없으면 바로 전략 공개
         });
         return;
       }
+
+      print('광고 로드 시도 - Type: ${adUnitEntry.key}, ID: ${adUnitEntry.value}');
 
       if (adUnitEntry.key == 'rewarded_ad') {
         // 보상형 광고 로드
