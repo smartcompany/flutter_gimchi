@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../utils.dart';
+import 'liquid_glass_dialog.dart';
 
 class PurchaseConfirmationDialog extends StatefulWidget {
   final ProductDetails product;
@@ -265,20 +267,19 @@ class _PurchaseConfirmationDialogState
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    return LiquidGlassDialog(
       title: Row(
         children: [
           const Icon(
             Icons.remove_circle_outline,
             color: Colors.deepPurple,
-            size: 28,
+            size: 24,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               l10n(context).removeAdsCta,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
         ],

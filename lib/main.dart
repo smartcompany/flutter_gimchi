@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -8,6 +9,7 @@ import 'ChartOnlyPage.dart';
 import 'simulation_page.dart';
 import 'simulation_model.dart';
 import 'dart:io';
+import 'dialogs/liquid_glass_dialog.dart';
 import 'package:flutter/foundation.dart'; // kIsWeb을 사용하기 위해 import
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -681,24 +683,21 @@ class _MyHomePageState extends State<MyHomePage>
 
   void showPushAlert(RemoteMessage message) {
     if (message.notification != null && context.mounted) {
-      showDialog(
+      LiquidGlassDialog.show(
         context: context,
-        builder:
-            (_) => AlertDialog(
-              title: Text(
-                message.notification!.title ?? '알림',
-                style: const TextStyle(fontSize: 16),
-              ),
-              content: Text(message.notification!.body ?? ''),
-              actions: [
-                TextButton(
-                  onPressed: () async {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(l10n(context).close),
-                ),
-              ],
-            ),
+        title: Text(
+          message.notification!.title ?? '알림',
+          style: const TextStyle(fontSize: 18),
+        ),
+        content: Text(message.notification!.body ?? ''),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+            },
+            child: Text(l10n(context).close),
+          ),
+        ],
       );
     }
   }
@@ -1318,30 +1317,24 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   void _showRetryDialog() {
-    showDialog(
+    LiquidGlassDialog.show(
       context: context,
       barrierDismissible: false,
-      builder:
-          (_) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: Text(l10n(context).loadingFail),
-            content: Text(l10n(context).failedToload),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n(context).no),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _loadAllApis();
-                },
-                child: Text(l10n(context).yes),
-              ),
-            ],
-          ),
+      title: Text(l10n(context).loadingFail),
+      content: Text(l10n(context).failedToload),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n(context).no),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+            _loadAllApis();
+          },
+          child: Text(l10n(context).yes),
+        ),
+      ],
     );
   }
 
@@ -1471,8 +1464,9 @@ class _MyHomePageState extends State<MyHomePage>
         Scaffold(
           backgroundColor: const Color(0xFFF8F5FA),
           appBar: AppBar(
-            backgroundColor: const Color(0xFFF8F5FA), // Scaffold와 동일한 배경색
-            elevation: 0, // 그림자 제거
+            toolbarHeight: 48,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
             centerTitle: true,
             leading: !kIsWeb ? _buildChatIcon() : null,
             title: Row(
@@ -1482,7 +1476,8 @@ class _MyHomePageState extends State<MyHomePage>
                   l10n(context).usdt_signal,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade900, // 더 명확한 대비
+                    fontSize: 18,
+                    color: Colors.grey.shade900,
                   ),
                 ),
                 Container(
@@ -1521,6 +1516,30 @@ class _MyHomePageState extends State<MyHomePage>
                   ),
                 ),
               ],
+            ),
+            iconTheme: IconThemeData(color: Colors.grey.shade900, size: 22),
+            flexibleSpace: ClipRRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color(0xFFF8F5FA).withOpacity(0.85),
+                        const Color(0xFFF8F5FA).withOpacity(0.7),
+                      ],
+                    ),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Colors.grey.shade300.withOpacity(0.3),
+                        width: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
             actions: [
               if (!kIsWeb) ...[
@@ -2235,58 +2254,47 @@ class _MyHomePageState extends State<MyHomePage>
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   onPressed: () {
-                    showDialog(
+                    LiquidGlassDialog.show(
                       context: context,
-                      builder:
-                          (context) => AlertDialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            title: Row(
-                              children: [
-                                const Icon(
-                                  Icons.lightbulb,
-                                  color: Colors.orange,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(title),
-                              ],
-                            ),
-                            content: SingleChildScrollView(
-                              child: Text(
-                                strategy != null &&
-                                        strategy is String &&
-                                        strategy.isNotEmpty
-                                    ? strategy
-                                    : l10n(context).strategySummaryEmpty,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  height: 1.5,
-                                ),
-                              ),
-                            ),
-                            actions: [
-                              if (type == SimulationType.kimchi)
-                                TextButton(
-                                  onPressed: () async {
-                                    Navigator.of(context).pop();
-                                    await SimulationPage.showKimchiStrategyUpdatePopup(
-                                      context,
-                                      showUseTrend: true,
-                                    );
-                                  },
-                                  child: Text(
-                                    AppLocalizations.of(
-                                      context,
-                                    )!.changeStrategy,
-                                  ),
-                                ),
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: Text(l10n(context).close),
-                              ),
-                            ],
+                      title: Row(
+                        children: [
+                          const Icon(
+                            Icons.lightbulb,
+                            color: Colors.orange,
+                            size: 24,
                           ),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text(title)),
+                        ],
+                      ),
+                      content: SingleChildScrollView(
+                        child: Text(
+                          strategy != null &&
+                                  strategy is String &&
+                                  strategy.isNotEmpty
+                              ? strategy
+                              : l10n(context).strategySummaryEmpty,
+                        ),
+                      ),
+                      actions: [
+                        if (type == SimulationType.kimchi)
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.of(context).pop();
+                              await SimulationPage.showKimchiStrategyUpdatePopup(
+                                context,
+                                showUseTrend: true,
+                              );
+                            },
+                            child: Text(
+                              AppLocalizations.of(context)!.changeStrategy,
+                            ),
+                          ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text(l10n(context).close),
+                        ),
+                      ],
                     );
                   },
                 ),
@@ -2454,23 +2462,20 @@ class _MyHomePageState extends State<MyHomePage>
               updatedType == TodayCommentAlarmType.kimchi)) {
         final status = await Permission.notification.status;
         if (!status.isGranted) {
-          final goToSettings = await showDialog<bool>(
+          final goToSettings = await LiquidGlassDialog.show<bool>(
             context: context,
-            builder:
-                (context) => AlertDialog(
-                  title: Text(l10n(context).needPermission),
-                  content: Text(l10n(context).permissionRequiredMessage),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: Text(l10n(context).cancel),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(true),
-                      child: Text(l10n(context).moveToSetting),
-                    ),
-                  ],
-                ),
+            title: Text(l10n(context).needPermission),
+            content: Text(l10n(context).permissionRequiredMessage),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(l10n(context).cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(l10n(context).moveToSetting),
+              ),
+            ],
           );
           if (goToSettings == true) {
             await openAppSettings();

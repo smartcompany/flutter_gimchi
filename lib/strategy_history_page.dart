@@ -6,6 +6,7 @@ import 'simulation_model.dart';
 import 'api_service.dart';
 import 'l10n/app_localizations.dart';
 import 'utils.dart';
+import 'dialogs/liquid_glass_dialog.dart';
 
 class StrategyHistoryPage extends StatefulWidget {
   final SimulationType simulationType;
@@ -72,7 +73,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
               Container(
                 width: 40,
                 height: 4,
-                margin: const EdgeInsets.symmetric(vertical: 12),
+                margin: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.grey[400],
                   borderRadius: BorderRadius.circular(2),
@@ -82,7 +83,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
-                  vertical: 8,
+                  vertical: 4,
                 ),
                 child: Row(
                   children: [
@@ -91,22 +92,28 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                           ? Icons.trending_up
                           : Icons.psychology,
                       color: Colors.deepPurple,
-                      size: 24,
+                      size: 22,
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Text(
                       widget.simulationType == SimulationType.kimchi
                           ? l10n(context).kimchiStrategyHistory
                           : l10n(context).aiStrategyHistory,
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.deepPurple,
                       ),
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.grey),
+                      icon: const Icon(
+                        Icons.close,
+                        color: Colors.grey,
+                        size: 22,
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                       onPressed: () {
                         // 현재 모달만 닫기
                         Navigator.of(context).pop();
@@ -515,7 +522,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    vertical: 24,
+                    vertical: 16,
                     horizontal: 20,
                   ),
                   child: Column(
@@ -536,7 +543,10 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                             icon: const Icon(
                               Icons.close,
                               color: Colors.deepPurple,
+                              size: 22,
                             ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
                             onPressed: () {
                               // 현재 다이얼로그만 닫기
                               Navigator.of(context).pop();
@@ -544,7 +554,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
                       if (widget.simulationType == SimulationType.kimchi) ...[
                         _buildKimchiStrategyDetail(context, date),
                       ] else ...[
@@ -578,21 +588,18 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
   }
 
   void _showKimchiStrategyDetail(BuildContext context, DateTime date) {
-    showDialog(
+    LiquidGlassDialog.show(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(
-              '${DateFormat('yyyy/MM/dd').format(date)} ${l10n(context).kimchiStrategy}',
-            ),
-            content: _buildKimchiStrategyDetail(context, date),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n(context).close),
-              ),
-            ],
-          ),
+      title: Text(
+        '${DateFormat('yyyy/MM/dd').format(date)} ${l10n(context).kimchiStrategy}',
+      ),
+      content: _buildKimchiStrategyDetail(context, date),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n(context).close),
+        ),
+      ],
     );
   }
 

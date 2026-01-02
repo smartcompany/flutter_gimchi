@@ -8,6 +8,7 @@ import 'package:usdt_signal/l10n/app_localizations.dart';
 import 'api_service.dart';
 import 'utils.dart';
 import 'simulation_model.dart';
+import 'dialogs/liquid_glass_dialog.dart';
 
 class ChartOnlyPage extends StatefulWidget {
   final List<ChartData> exchangeRates;
@@ -154,17 +155,19 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         backgroundColor: Colors.transparent,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
+          toolbarHeight: 48,
           title: Text(
             l10n(context).chartTrendAnalysis,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
+              fontSize: 18,
               color: Color(0xFF1E293B),
             ),
           ),
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
-          iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
+          iconTheme: const IconThemeData(color: Color(0xFF1E293B), size: 22),
           flexibleSpace: ClipRRect(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -174,14 +177,14 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withOpacity(0.8),
-                      Colors.white.withOpacity(0.6),
+                      Colors.white.withOpacity(0.85),
+                      Colors.white.withOpacity(0.7),
                     ],
                   ),
                   border: Border(
                     bottom: BorderSide(
                       color: Colors.white.withOpacity(0.3),
-                      width: 1,
+                      width: 0.5,
                     ),
                   ),
                 ),
@@ -265,49 +268,19 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         Positioned(
           top: 10,
           left: 10,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withOpacity(0.3),
-                      Colors.white.withOpacity(0.2),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.5),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.refresh,
-                    color: Color(0xFF764BA2),
-                    size: 18,
-                  ),
-                  tooltip: l10n.resetChart,
-                  padding: const EdgeInsets.all(8),
-                  constraints: const BoxConstraints(),
-                  onPressed: () {
-                    setState(() {
-                      _zoomPanBehavior.reset();
-                    });
-                  },
-                ),
-              ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.deepPurple),
+              tooltip: l10n.resetChart,
+              onPressed: () {
+                setState(() {
+                  _zoomPanBehavior.reset();
+                });
+              },
             ),
           ),
         ),
@@ -315,47 +288,17 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         Positioned(
           top: 10,
           right: 10,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withOpacity(0.3),
-                      Colors.white.withOpacity(0.2),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.5),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.close,
-                    color: Color(0xFF764BA2),
-                    size: 18,
-                  ),
-                  tooltip: l10n.backToPreviousChart,
-                  padding: const EdgeInsets.all(8),
-                  constraints: const BoxConstraints(),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.deepPurple),
+              tooltip: l10n.backToPreviousChart,
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
             ),
           ),
         ),
@@ -918,24 +861,18 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                             minHeight: 24,
                           ),
                           onPressed: () {
-                            showDialog(
+                            LiquidGlassDialog.show(
                               context: context,
-                              builder:
-                                  (_) => AlertDialog(
-                                    title: Text(
-                                      l10n.whatIsKimchiPremiumBackground,
-                                    ),
-                                    content: Text(
-                                      l10n.kimchiPremiumBackgroundDescription,
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed:
-                                            () => Navigator.of(context).pop(),
-                                        child: Text(l10n.confirm),
-                                      ),
-                                    ],
-                                  ),
+                              title: Text(l10n.whatIsKimchiPremiumBackground),
+                              content: Text(
+                                l10n.kimchiPremiumBackgroundDescription,
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: Text(l10n.confirm),
+                                ),
+                              ],
                             );
                           },
                         ),

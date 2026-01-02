@@ -7,6 +7,7 @@ import 'package:usdt_signal/api_service.dart';
 import 'package:usdt_signal/simulation_model.dart';
 import 'package:usdt_signal/strategy_history_page.dart';
 import 'utils.dart';
+import 'dialogs/liquid_glass_dialog.dart';
 
 // ============================================================================
 // Liquid Glass 디자인 스타일 정의
@@ -206,7 +207,7 @@ class SimulationPage extends StatefulWidget {
 
         return StatefulBuilder(
           builder: (context, setState) {
-            return AlertDialog(
+            return LiquidGlassDialog(
               title: Text(l10n(context).changeStrategy),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -530,7 +531,7 @@ class _SimulationPageState extends State<SimulationPage>
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    vertical: 24,
+                    vertical: 16,
                     horizontal: 20,
                   ),
                   child: Column(
@@ -541,19 +542,24 @@ class _SimulationPageState extends State<SimulationPage>
                         children: [
                           Text(
                             '${displayDate.toCustomString()} ${l10n(context).strategy}',
-                            style: _TitleStyles.dialogTitle,
+                            style: _TitleStyles.dialogTitle.copyWith(
+                              fontSize: 18,
+                            ),
                           ),
                           const Spacer(),
                           IconButton(
                             icon: const Icon(
                               Icons.close,
                               color: Colors.deepPurple,
+                              size: 22,
                             ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
                             onPressed: () => Navigator.of(context).pop(),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
                       if (widget.simulationType == SimulationType.ai &&
                           strategy != null &&
                           strategy.isNotEmpty) ...[
@@ -608,16 +614,20 @@ class _SimulationPageState extends State<SimulationPage>
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
+        toolbarHeight: 48,
         title: Text(
           widget.simulationType == SimulationType.kimchi
               ? l10n(context).gimchBaseTrade
               : l10n(context).aiBaseTrade,
-          style: _TitleStyles.appBarTitle,
+          style: _TitleStyles.appBarTitle.copyWith(fontSize: 18),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: _GlassColors.textPrimary),
+        iconTheme: const IconThemeData(
+          color: _GlassColors.textPrimary,
+          size: 22,
+        ),
         flexibleSpace: ClipRRect(
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -627,12 +637,15 @@ class _SimulationPageState extends State<SimulationPage>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    _GlassColors.glassWhite.withOpacity(0.8),
-                    _GlassColors.glassWhite.withOpacity(0.6),
+                    _GlassColors.glassWhite.withOpacity(0.85),
+                    _GlassColors.glassWhite.withOpacity(0.7),
                   ],
                 ),
                 border: Border(
-                  bottom: BorderSide(color: _GlassColors.glassBorder, width: 1),
+                  bottom: BorderSide(
+                    color: _GlassColors.glassBorder,
+                    width: 0.5,
+                  ),
                 ),
               ),
             ),
@@ -1213,22 +1226,20 @@ class _SimulationPageState extends State<SimulationPage>
                   ],
                 ),
                 const Spacer(),
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Text(
-                      "₩${krwFormat.format(r.buyPrice)}",
-                      style: _CardStyles.cardPrice.copyWith(
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.right,
-                      maxLines: 2,
-                      overflow: TextOverflow.visible,
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Text(
+                    "₩${krwFormat.format(r.buyPrice)}",
+                    style: _CardStyles.cardPrice.copyWith(
+                      color: Colors.white,
+                      fontSize: 15,
                     ),
+                    textAlign: TextAlign.right,
+                    maxLines: 1,
+                    overflow: TextOverflow.visible,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
                 _buildStrategyButton(context, r.buyDate, Colors.white),
               ],
             ),
@@ -1313,24 +1324,22 @@ class _SimulationPageState extends State<SimulationPage>
                   ],
                 ),
                 const Spacer(),
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Text(
-                      r.sellPrice != null
-                          ? "₩${krwFormat.format(r.sellPrice!)}"
-                          : "-",
-                      style: _CardStyles.cardPrice.copyWith(
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.right,
-                      maxLines: 2,
-                      overflow: TextOverflow.visible,
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Text(
+                    r.sellPrice != null
+                        ? "₩${krwFormat.format(r.sellPrice!)}"
+                        : "-",
+                    style: _CardStyles.cardPrice.copyWith(
+                      color: Colors.white,
+                      fontSize: 15,
                     ),
+                    textAlign: TextAlign.right,
+                    maxLines: 1,
+                    overflow: TextOverflow.visible,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
                 _buildStrategyButton(context, r.sellDate, Colors.white),
               ],
             ),
@@ -1642,38 +1651,33 @@ class _SimulationPageState extends State<SimulationPage>
   }
 
   void _showAnnualYieldInfoDialog(BuildContext context) {
-    showDialog(
+    LiquidGlassDialog.show(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.info_outline, color: Colors.deepPurple),
-              const SizedBox(width: 8),
-              Text(
-                l10n(context).extimatedYearGain,
-                style: _TitleStyles.dialogTitle,
-              ),
-            ],
-          ),
-          content: Text(
-            l10n(context).annualYieldDescription,
-            style: _DialogStyles.bodyText,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                l10n(context).confirm,
-                style: TextStyle(color: Colors.deepPurple),
-              ),
+      title: Row(
+        children: [
+          const Icon(Icons.info_outline, color: Colors.deepPurple, size: 24),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              l10n(context).extimatedYearGain,
+              style: _TitleStyles.dialogTitle,
             ),
-          ],
-        );
-      },
+          ),
+        ],
+      ),
+      content: Text(
+        l10n(context).annualYieldDescription,
+        style: _DialogStyles.bodyText,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(
+            l10n(context).confirm,
+            style: const TextStyle(color: Colors.deepPurple),
+          ),
+        ),
+      ],
     );
   }
 
