@@ -1092,18 +1092,23 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  // 연수익률 제목 생성 (영문일 때만 접두사 추가)
+  // 연수익률 제목 생성 (언어별로 AI/김프 구분)
   String _getAnnualYieldTitle(BuildContext context, {required bool isAi}) {
-    final annualYieldText = l10n(context).extimatedYearGain;
     final locale = Localizations.localeOf(context);
 
-    // 영어일 때만 접두사 추가
     if (locale.languageCode == 'en') {
+      // 영어: "AI APY" / "K-Premium APY"
+      final annualYieldText = l10n(context).extimatedYearGain;
       return isAi ? 'AI $annualYieldText' : 'K-Premium $annualYieldText';
+    } else if (locale.languageCode == 'ko') {
+      // 한국어: "AI 매매 연수익률" / "김프 매매 연수익률"
+      return isAi ? 'AI 매매 연수익률' : '김프 매매 연수익률';
+    } else if (locale.languageCode == 'zh') {
+      // 중국어: "AI 交易年收益率" / "泡菜溢价 交易年收益率"
+      return isAi ? 'AI 交易年收益率' : '泡菜溢价 交易年收益率';
     }
 
-    // 한국어, 중국어는 그대로 사용 (이미 충분히 명확함)
-    return annualYieldText;
+    return l10n(context).extimatedYearGain;
   }
 
   Widget _buildYieldInfoTile({
@@ -1125,13 +1130,25 @@ class _MyHomePageState extends State<MyHomePage>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+            Row(
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                if (onTap != null) ...[
+                  const SizedBox(width: 6),
+                  Icon(
+                    Icons.swap_horiz,
+                    size: 16,
+                    color: Colors.deepPurple.withOpacity(0.6),
+                  ),
+                ],
+              ],
             ),
             Text.rich(
               TextSpan(
