@@ -257,6 +257,9 @@ class _MyHomePageState extends State<MyHomePage>
   NewsItem? _latestNews;
   bool _showNewsBanner = false; // 배너 표시 여부
 
+  // 수익률 표시 모드 (true: 연수익률, false: 총 수익률) - AI와 김프 동시 전환
+  bool _showAnnualYield = false;
+
   @override
   void initState() {
     super.initState();
@@ -962,18 +965,22 @@ class _MyHomePageState extends State<MyHomePage>
 
     final aiReturn =
         aiYieldData != null
-            ? '${aiYieldData!.totalReturn.toStringAsFixed(1)}%'
+            ? (_showAnnualYield
+                ? '${aiYieldData!.annualYield.toStringAsFixed(2)}%'
+                : '${aiYieldData!.totalReturn.toStringAsFixed(1)}%')
             : '-';
     final aiDays =
-        aiYieldData?.tradingDays != null
+        !_showAnnualYield && aiYieldData?.tradingDays != null
             ? ' (${aiYieldData!.tradingDays} 🗓️)'
             : '';
     final gimchiReturn =
         gimchiYieldData != null
-            ? '${gimchiYieldData!.totalReturn.toStringAsFixed(1)}%'
+            ? (_showAnnualYield
+                ? '${gimchiYieldData!.annualYield.toStringAsFixed(2)}%'
+                : '${gimchiYieldData!.totalReturn.toStringAsFixed(1)}%')
             : '-';
     final gimchiDays =
-        gimchiYieldData?.tradingDays != null
+        !_showAnnualYield && gimchiYieldData?.tradingDays != null
             ? ' (${gimchiYieldData!.tradingDays} 🗓️)'
             : '';
 
@@ -983,15 +990,31 @@ class _MyHomePageState extends State<MyHomePage>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildYieldInfoTile(
-            title: l10n(context).aiReturn,
+            title:
+                _showAnnualYield
+                    ? _getAnnualYieldTitle(context, isAi: true)
+                    : l10n(context).aiReturn,
             valueText: aiReturn,
             detailText: aiDays,
+            onTap: () {
+              setState(() {
+                _showAnnualYield = !_showAnnualYield;
+              });
+            },
           ),
           const SizedBox(height: 8),
           _buildYieldInfoTile(
-            title: l10n(context).gimchiReturn,
+            title:
+                _showAnnualYield
+                    ? _getAnnualYieldTitle(context, isAi: false)
+                    : l10n(context).gimchiReturn,
             valueText: gimchiReturn,
             detailText: gimchiDays,
+            onTap: () {
+              setState(() {
+                _showAnnualYield = !_showAnnualYield;
+              });
+            },
           ),
           const SizedBox(height: 20),
           SizedBox(
@@ -1069,54 +1092,72 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
+  // 연수익률 제목 생성 (영문일 때만 접두사 추가)
+  String _getAnnualYieldTitle(BuildContext context, {required bool isAi}) {
+    final annualYieldText = l10n(context).extimatedYearGain;
+    final locale = Localizations.localeOf(context);
+
+    // 영어일 때만 접두사 추가
+    if (locale.languageCode == 'en') {
+      return isAi ? 'AI $annualYieldText' : 'K-Premium $annualYieldText';
+    }
+
+    // 한국어, 중국어는 그대로 사용 (이미 충분히 명확함)
+    return annualYieldText;
+  }
+
   Widget _buildYieldInfoTile({
     required String title,
     required String valueText,
     required String detailText,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.withOpacity(0.2)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
-          ),
-          Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: valueText,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
-                  ),
-                ),
-                if (detailText.isNotEmpty)
+            Text.rich(
+              TextSpan(
+                children: [
                   TextSpan(
-                    text: detailText,
+                    text: valueText,
                     style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple,
                     ),
                   ),
-              ],
+                  if (detailText.isNotEmpty)
+                    TextSpan(
+                      text: detailText,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
