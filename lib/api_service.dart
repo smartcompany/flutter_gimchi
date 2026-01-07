@@ -218,7 +218,6 @@ class ApiService {
           'token': token,
           'platform': Platform.isIOS ? 'ios' : 'android',
           'userId': userId,
-          'useTrend': SimulationCondition.instance.useTrend,
         }),
       );
       if (response.statusCode == 200) {

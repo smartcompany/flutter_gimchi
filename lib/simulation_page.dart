@@ -195,7 +195,6 @@ class SimulationPage extends StatefulWidget {
   static Future<bool> showKimchiStrategyUpdatePopup(
     BuildContext context, {
     bool showSameDatesAsAI = false,
-    bool showUseTrend = false,
   }) async {
     final result = await showDialog<Map<String, Object>>(
       context: context,
@@ -203,7 +202,6 @@ class SimulationPage extends StatefulWidget {
         double buy = SimulationCondition.instance.kimchiBuyThreshold;
         double sell = SimulationCondition.instance.kimchiSellThreshold;
         bool sameAsAI = SimulationCondition.instance.matchSameDatesAsAI;
-        bool useTrend = SimulationCondition.instance.useTrend;
 
         return StatefulBuilder(
           builder: (context, setState) {
@@ -282,20 +280,6 @@ class SimulationPage extends StatefulWidget {
                         Text(l10n(context).sameAsAI),
                       ],
                     ),
-                  if (showUseTrend)
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: useTrend,
-                          onChanged: (val) {
-                            setState(() {
-                              useTrend = val ?? false;
-                            });
-                          },
-                        ),
-                        Text(l10n(context).useTrendBasedStrategy),
-                      ],
-                    ),
                 ],
               ),
               actions: [
@@ -309,7 +293,6 @@ class SimulationPage extends StatefulWidget {
                       'buy': buy,
                       'sell': sell,
                       'sameAsAI': sameAsAI,
-                      'useTrend': useTrend,
                     });
                   },
                   child: Text(l10n(context).confirm),
@@ -325,7 +308,6 @@ class SimulationPage extends StatefulWidget {
       final buy = result['buy'] as double;
       final sell = result['sell'] as double;
       final sameAsAI = result['sameAsAI'] as bool;
-      final useTrend = result['useTrend'] as bool;
 
       final isSuccess = await ApiService.shared.saveAndSyncUserData({
         UserDataKey.gimchiBuyPercent: buy,
@@ -336,7 +318,6 @@ class SimulationPage extends StatefulWidget {
         await SimulationCondition.instance.saveKimchiBuyThreshold(buy);
         await SimulationCondition.instance.saveKimchiSellThreshold(sell);
         await SimulationCondition.instance.saveMatchSameDatesAsAI(sameAsAI);
-        await SimulationCondition.instance.saveUseTrend(useTrend);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n(context).failedToSaveSettings)),
@@ -658,11 +639,10 @@ class _SimulationPageState extends State<SimulationPage>
                     icon: const Icon(Icons.settings, color: Colors.deepPurple),
                     onPressed: () async {
                       final success =
-                          await SimulationPage.showKimchiStrategyUpdatePopup(
-                            context,
-                            showSameDatesAsAI: true,
-                            showUseTrend: true,
-                          );
+                      await SimulationPage.showKimchiStrategyUpdatePopup(
+                        context,
+                        showSameDatesAsAI: true,
+                      );
                       if (success) {
                         runSimulation();
                       }

@@ -368,12 +368,10 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
       SimulationCondition.instance.kimchiSellThreshold,
     );
 
-    if (SimulationCondition.instance.useTrend) {
-      // 서버에서 받은 김치 프리미엄 트렌드 데이터 사용
-      (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
-        trendData: widget.premiumTrends?[date],
-      );
-    }
+    // 추세 기반 전략 제거 - 항상 기본 임계값 사용
+    (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
+      trendData: null,
+    );
 
     return Column(
       children: [
@@ -609,12 +607,10 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
       SimulationCondition.instance.kimchiSellThreshold,
     );
 
-    if (SimulationCondition.instance.useTrend) {
-      // 서버에서 받은 김치 프리미엄 트렌드 데이터 사용
-      (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
-        trendData: widget.premiumTrends?[date],
-      );
-    }
+    // 추세 기반 전략 제거 - 항상 기본 임계값 사용
+    (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
+      trendData: null,
+    );
 
     return Text(
       AppLocalizations.of(context)!.kimchiStrategyComment(

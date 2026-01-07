@@ -2341,7 +2341,6 @@ class _MyHomePageState extends State<MyHomePage>
                               Navigator.of(context).pop();
                               await SimulationPage.showKimchiStrategyUpdatePopup(
                                 context,
-                                showUseTrend: true,
                               );
                             },
                             child: Text(

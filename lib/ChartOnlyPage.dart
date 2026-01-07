@@ -361,15 +361,11 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
             widget.usdtChartData.isNotEmpty) {
           final exchangeRateValue = widget.exchangeRates.last.value;
           if (exchangeRateValue > 0) {
-            final todayUsdtTime = widget.usdtChartData.last.time;
-            Map<String, double>? trendData;
-            if (SimulationCondition.instance.useTrend) {
-              trendData = widget.premiumTrends?[todayUsdtTime];
-            }
+            // 추세 기반 전략 제거 - 항상 기본 임계값 사용
             final (
               buyThreshold,
               sellThreshold,
-            ) = SimulationModel.getKimchiThresholds(trendData: trendData);
+            ) = SimulationModel.getKimchiThresholds(trendData: null);
 
             final buyPrice = exchangeRateValue * (1 + buyThreshold / 100);
             final sellPrice = exchangeRateValue * (1 + sellThreshold / 100);

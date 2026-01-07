@@ -78,8 +78,6 @@ class SimulationCondition {
   double get kimchiSellThreshold => _kimchiSellThreshold;
   bool _matchSameDatesAsAI = false;
   bool get matchSameDatesAsAI => _matchSameDatesAsAI;
-  bool _useTrend = false;
-  bool get useTrend => _useTrend;
 
   void load() {
     SharedPreferences.getInstance().then((prefs) {
@@ -89,7 +87,6 @@ class SimulationCondition {
           prefs.getDouble('kimchiSellThreshold') ?? 2.5;
       instance._matchSameDatesAsAI =
           prefs.getBool('matchSameDatesAsAI') ?? false;
-      instance._useTrend = prefs.getBool('useTrend') ?? false;
     });
   }
 
@@ -111,21 +108,6 @@ class SimulationCondition {
     _matchSameDatesAsAI = value;
   }
 
-  Future<void> saveUseTrend(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('useTrend', value);
-    _useTrend = value;
-
-    // FCM 토큰을 서버에 업데이트 (useTrend 설정 포함)
-    try {
-      final token = await _getFcmToken();
-      if (token != null) {
-        await ApiService.shared.saveFcmTokenToServer(token);
-      }
-    } catch (e) {
-      print('FCM 토큰 업데이트 실패: $e');
-    }
-  }
 
   Future<String?> _getFcmToken() async {
     try {

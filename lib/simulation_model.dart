@@ -217,19 +217,9 @@ class SimulationModel {
   static (double, double) getKimchiThresholds({
     required Map<String, double>? trendData,
   }) {
-    double buyThreshold;
-    double sellThreshold;
-    if (SimulationCondition.instance.useTrend) {
-      buyThreshold =
-          trendData?['buy_threshold'] ??
-          SimulationCondition.instance.kimchiBuyThreshold;
-      sellThreshold =
-          trendData?['sell_threshold'] ??
-          SimulationCondition.instance.kimchiSellThreshold;
-    } else {
-      buyThreshold = SimulationCondition.instance.kimchiBuyThreshold;
-      sellThreshold = SimulationCondition.instance.kimchiSellThreshold;
-    }
+    // 항상 기본 임계값 사용 (추세 기반 전략 제거)
+    final buyThreshold = SimulationCondition.instance.kimchiBuyThreshold;
+    final sellThreshold = SimulationCondition.instance.kimchiSellThreshold;
 
     return (buyThreshold, sellThreshold);
   }
@@ -565,13 +555,9 @@ class SimulationModel {
         // 오늘 날짜 (targetDate로 사용)
         final todayUsdtTime = usdtChartData.last.time;
 
-        // 김치 프리미엄 임계값 가져오기
-        Map<String, double>? trendData;
-        if (SimulationCondition.instance.useTrend) {
-          trendData = premiumTrends?[todayUsdtTime];
-        }
+        // 김치 프리미엄 임계값 가져오기 (추세 기반 전략 제거)
         final (buyThreshold, sellThreshold) = getKimchiThresholds(
-          trendData: trendData,
+          trendData: null,
         );
 
         // 김치 프리미엄 매수/매도 가격 계산
@@ -604,14 +590,8 @@ class SimulationModel {
     Map<DateTime, Map<String, double>>? premiumTrends,
     DateTime? targetDate,
   }) {
-    Map<String, double>? trendData;
-    if (SimulationCondition.instance.useTrend) {
-      trendData = premiumTrends?[targetDate];
-    }
-
-    final (buyThreshold, sellThreshold) = getKimchiThresholds(
-      trendData: trendData,
-    );
+    // 추세 기반 전략 제거 - 항상 기본 임계값 사용
+    final (buyThreshold, sellThreshold) = getKimchiThresholds(trendData: null);
 
     final buyPrice = exchangeRateValue * (1 + buyThreshold / 100);
     final sellPrice = exchangeRateValue * (1 + sellThreshold / 100);
@@ -629,13 +609,8 @@ class SimulationModel {
     final exchangeRateValue = exchangeRates.last.value;
     if (exchangeRateValue == 0) return 0;
 
-    // targetDate가 있으면 해당 날짜의 트렌드 데이터 사용, 없으면 마지막 날짜 사용
-    final date = targetDate ?? usdtChartData?.last.time;
-    Map<String, double>? trendData;
-    if (SimulationCondition.instance.useTrend) {
-      trendData = premiumTrends?[date];
-    }
-    final (buyThreshold, _) = getKimchiThresholds(trendData: trendData);
+    // 추세 기반 전략 제거 - 항상 기본 임계값 사용
+    final (buyThreshold, _) = getKimchiThresholds(trendData: null);
     return exchangeRateValue * (1 + buyThreshold / 100);
   }
 
@@ -649,13 +624,8 @@ class SimulationModel {
     final exchangeRateValue = exchangeRates.last.value;
     if (exchangeRateValue == 0) return 0;
 
-    // targetDate가 있으면 해당 날짜의 트렌드 데이터 사용, 없으면 마지막 날짜 사용
-    final date = targetDate ?? usdtChartData?.last.time;
-    Map<String, double>? trendData;
-    if (SimulationCondition.instance.useTrend) {
-      trendData = premiumTrends?[date];
-    }
-    final (_, sellThreshold) = getKimchiThresholds(trendData: trendData);
+    // 추세 기반 전략 제거 - 항상 기본 임계값 사용
+    final (_, sellThreshold) = getKimchiThresholds(trendData: null);
     return exchangeRateValue * (1 + sellThreshold / 100);
   }
 }
