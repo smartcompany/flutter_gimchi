@@ -266,47 +266,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sellIfCurrentPrice => 'Sell if current price';
 
   @override
-  String get onboardingTitle1 => 'USDT is not just a dollar';
+  String get onboardingTitle1 => 'The Hidden Price Difference of USDT';
 
   @override
   String get onboardingBody1 =>
-      '1 USDT ≈ 1 USD, but the actual price varies depending on the exchange, market price, and exchange rate. Especially in Korea, price differences often occur due to the \'K-Premium\' and \'exchange rate differences\'.';
+      'While 1 USDT = 1 USD overseas, Korean exchanges show different prices due to exchange rates and \'K-Premium\'. Understanding this difference can help you profit.';
 
   @override
-  String get onboardingImageDesc1 => 'USDT vs. K-Premium comparison graph';
+  String get onboardingImageDesc1 =>
+      'Korean USDT Price = Exchange Rate + K-Premium';
 
   @override
-  String get onboardingTitle2 =>
-      'K-Premium + Exchange Rate Difference = Opportunity for Profit';
+  String get onboardingTitle2 => 'Profiting from K-Premium';
 
   @override
   String get onboardingBody2 =>
-      'In Korea, USDT is often traded at a higher price than abroad (this is called the \'K-Premium\'). When you also consider the exchange rate, the price difference can be even greater. Our app\'s AI analyzes the K-Premium and exchange rate to find the optimal buying/selling points.';
+      'When USDT trades higher in Korea than abroad (K-Premium), selling can be profitable. Our app analyzes K-Premium and exchange rates in real-time to find the best buy/sell timing.';
 
   @override
   String get onboardingImageDesc2 =>
-      'USDT → Buy Low → Sell High → Stable Profit Structure';
+      'Buy Low → Sell When Premium is High → Profit';
 
   @override
-  String get onboardingTitle3 => 'Buy/Sell Timing? We\'ll let you know';
+  String get onboardingTitle3 => 'Two Strategies: AI and K-Premium';
 
   @override
   String get onboardingBody3 =>
-      'Our AI analyzes the K-Premium, exchange rate, and overseas market prices in real-time to give you signals like \'Buy Now / Sell Now\'.';
+      'Choose between AI-analyzed trading strategies or K-Premium-based strategies for notifications. View real-time charts at a glance and compare each strategy\'s historical returns.';
 
   @override
   String get onboardingImageDesc3 =>
-      'Example of actual app screen capture (Buy signal notification)';
+      'AI Strategy Alerts + K-Premium Strategy Alerts';
 
   @override
-  String get onboardingTitle4 => 'What if you started with ₩1,000,000?';
+  String get onboardingTitle4 => 'Verified Returns with Past Data';
 
   @override
   String get onboardingBody4 =>
-      'Based on actual past data, we\'ll show you the rate of return you would have achieved using our strategy.';
+      'What if you started with ₩1,000,000? Simulate returns for each strategy using actual past data and compare which method works better.';
 
   @override
-  String get onboardingImageDesc4 => 'Asset change visualization by date';
+  String get onboardingImageDesc4 =>
+      'AI Returns vs K-Premium Returns Comparison';
 
   @override
   String get previous => 'Previous';

@@ -265,43 +265,44 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sellIfCurrentPrice => '현재가 매도시';
 
   @override
-  String get onboardingTitle1 => '테더(USDT)는 단순한 달러가 아닙니다';
+  String get onboardingTitle1 => '테더(USDT)의 숨겨진 차이';
 
   @override
   String get onboardingBody1 =>
-      '외국에서는 1 테더(USDT)가 1 달러 이지만, 한국 거래소 에서는 환율과 가격이 달라요. 특히 한국에서는 ‘김치 프리미엄’에 따라 환율과의 가격 차이가 발생 합니다.';
+      '해외에서는 1 USDT = 1 USD지만, 한국 거래소에서는 환율과 \'김치 프리미엄\'으로 인해 실제 가격이 달라집니다. 이 차이를 잘 활용하면 수익을 만들 수 있어요.';
 
   @override
-  String get onboardingImageDesc1 => '테더(USDT) ≒ 환율 + 김치 프리미엄';
+  String get onboardingImageDesc1 => '한국 USDT 가격 = 환율 + 김치 프리미엄';
 
   @override
-  String get onboardingTitle2 => '높은 김치 프리미엄일 때 테더(USDT) 매도는 수익의 기회';
+  String get onboardingTitle2 => '김치 프리미엄으로 수익 만들기';
 
   @override
   String get onboardingBody2 =>
-      '한국에서는 테더(USDT)가 해외보다 비싸게 거래되는 경우가 많습니다. (이걸 ‘김치 프리미엄’이라 부릅니다.) 우리 앱은 테더(USDT)의 과거 테이타를 분석해 최적의 매수/매도 시점을 찾아줍니다.';
+      '한국에서 테더가 해외보다 비싸게 거래될 때(김치 프리미엄) 매도하면 수익이 됩니다. 우리 앱이 김치 프리미엄과 환율을 실시간으로 분석해 최적의 매수/매도 타이밍을 찾아드립니다.';
 
   @override
-  String get onboardingImageDesc2 => '테더(USDT) → 저가 매수 → 고가 매도 → 안정적인 수익 구조';
+  String get onboardingImageDesc2 => '저가에 매수 → 프리미엄 높을 때 매도 → 수익 실현';
 
   @override
-  String get onboardingTitle3 => '매수/매도 타이밍? 우리가 알려드려요';
+  String get onboardingTitle3 => 'AI와 김치 프리미엄, 두 가지 전략';
 
   @override
   String get onboardingBody3 =>
-      '김치 프리미엄의 매매 기준, AI 분석을 통해 매수와 매도 시점을 알림으로 알려 줍니다. 본인의 판단에 따라 맞는 방법을 참고 하시면 됩니다.';
+      'AI가 분석한 매매 전략과 김치 프리미엄 기반 전략 중 선택해 알림을 받을 수 있습니다. 실시간 차트로 현재 상황을 한눈에 확인하고, 각 전략의 과거 수익률도 비교해보세요.';
 
   @override
-  String get onboardingImageDesc3 => '실시간 테더(USDT) 가격을 확인 후 매수/매도 알림';
+  String get onboardingImageDesc3 => 'AI 전략 알림 + 김치 프리미엄 전략 알림';
 
   @override
-  String get onboardingTitle4 => '만약 100만원으로 시작했다면?';
+  String get onboardingTitle4 => '과거 데이터로 검증된 수익률';
 
   @override
-  String get onboardingBody4 => '실제 과거 데이터를 기반으로, 우리 전략을 썼을 때 수익률 보여드릴게요.';
+  String get onboardingBody4 =>
+      '100만원으로 시작했다면 얼마나 벌 수 있었을까? 실제 과거 데이터로 각 전략의 수익률을 시뮬레이션해보고, 어떤 방법이 더 효과적인지 비교해보세요.';
 
   @override
-  String get onboardingImageDesc4 => '과거 데이타를 통한 수익률 시각화';
+  String get onboardingImageDesc4 => 'AI 수익률 vs 김치 프리미엄 수익률 비교';
 
   @override
   String get previous => '이전';
