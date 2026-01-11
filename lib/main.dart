@@ -346,10 +346,15 @@ class _MyHomePageState extends State<MyHomePage>
           // Android: permission_handler 권한 요청
           final status = await Permission.notification.status;
           if (!status.isGranted) {
+            // Android 13 이상: 시스템 권한 팝업 표시
             final result = await Permission.notification.request();
+            // 권한 요청 후 (허용/거부 상관없이) 알림 설정 다이얼로그 표시
             if (result.isGranted) {
               await showAlarmSettingDialog(context);
             }
+          } else {
+            // Android 13 미만: 권한이 이미 부여되어 있으므로 바로 알림 설정 다이얼로그 표시
+            await showAlarmSettingDialog(context);
           }
         }
       });
