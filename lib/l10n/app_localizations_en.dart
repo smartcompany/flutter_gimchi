@@ -321,10 +321,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectReceiveAlert => 'Select alert to receive';
 
   @override
+  String get selectReceiveAlertSubtitle =>
+      'Choose the type of notification to receive';
+
+  @override
   String get aIalert => 'AI Alert';
 
   @override
+  String get aIalertDescription =>
+      'Receive notifications for AI-analyzed trading strategies';
+
+  @override
   String get gimpAlert => 'K-Premium Alert';
+
+  @override
+  String get gimpAlertDescription =>
+      'Receive notifications for K-Premium based trading strategies';
 
   @override
   String get turnOffAlert => 'Turn off alert';

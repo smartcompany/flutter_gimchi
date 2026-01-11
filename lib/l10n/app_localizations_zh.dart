@@ -314,10 +314,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get selectReceiveAlert => '选择要接收的通知';
 
   @override
+  String get selectReceiveAlertSubtitle => '选择要接收的通知类型';
+
+  @override
   String get aIalert => 'AI 通知';
 
   @override
+  String get aIalertDescription => '接收AI分析的交易策略通知';
+
+  @override
   String get gimpAlert => '泡菜溢价通知';
+
+  @override
+  String get gimpAlertDescription => '接收基于泡菜溢价的交易策略通知';
 
   @override
   String get turnOffAlert => '关闭通知';

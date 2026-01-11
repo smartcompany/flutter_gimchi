@@ -316,10 +316,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get selectReceiveAlert => '받을 알림을 선택하세요';
 
   @override
+  String get selectReceiveAlertSubtitle => '수신할 알림 유형을 선택하세요';
+
+  @override
   String get aIalert => 'AI 분석 알림 받기';
 
   @override
+  String get aIalertDescription => 'AI가 분석한 매매 전략을 알림으로 받습니다';
+
+  @override
   String get gimpAlert => '김프 알림 받기';
+
+  @override
+  String get gimpAlertDescription => '김치 프리미엄 기반 매매 전략을 알림으로 받습니다';
 
   @override
   String get turnOffAlert => '알림 끄기';

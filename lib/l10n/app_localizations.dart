@@ -694,17 +694,35 @@ abstract class AppLocalizations {
   /// **'받을 알림을 선택하세요'**
   String get selectReceiveAlert;
 
+  /// No description provided for @selectReceiveAlertSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'수신할 알림 유형을 선택하세요'**
+  String get selectReceiveAlertSubtitle;
+
   /// No description provided for @aIalert.
   ///
   /// In ko, this message translates to:
   /// **'AI 분석 알림 받기'**
   String get aIalert;
 
+  /// No description provided for @aIalertDescription.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI가 분석한 매매 전략을 알림으로 받습니다'**
+  String get aIalertDescription;
+
   /// No description provided for @gimpAlert.
   ///
   /// In ko, this message translates to:
   /// **'김프 알림 받기'**
   String get gimpAlert;
+
+  /// No description provided for @gimpAlertDescription.
+  ///
+  /// In ko, this message translates to:
+  /// **'김치 프리미엄 기반 매매 전략을 알림으로 받습니다'**
+  String get gimpAlertDescription;
 
   /// No description provided for @turnOffAlert.
   ///

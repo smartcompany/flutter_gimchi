@@ -343,18 +343,26 @@ class _MyHomePageState extends State<MyHomePage>
             }
           }
         } else if (Platform.isAndroid) {
-          // Android: permission_handler 권한 요청
-          final status = await Permission.notification.status;
-          if (!status.isGranted) {
-            // Android 13 이상: 시스템 권한 팝업 표시
-            final result = await Permission.notification.request();
-            // 권한 요청 후 (허용/거부 상관없이) 알림 설정 다이얼로그 표시
-            if (result.isGranted) {
+          // Android: 첫 실행 시에만 알림 설정 다이얼로그 표시
+          final prefs = await SharedPreferences.getInstance();
+          final alarmSettingConfigured = prefs.containsKey(
+            'todayCommentAlarmType',
+          );
+
+          if (!alarmSettingConfigured) {
+            // 설정이 저장되어 있지 않으면 (첫 실행)
+            final status = await Permission.notification.status;
+            if (!status.isGranted) {
+              // Android 13 이상: 시스템 권한 팝업 표시
+              final result = await Permission.notification.request();
+              // 권한 요청 후 허용된 경우에만 알림 설정 다이얼로그 표시
+              if (result.isGranted) {
+                await showAlarmSettingDialog(context);
+              }
+            } else {
+              // Android 13 미만: 권한이 이미 부여되어 있으므로 바로 알림 설정 다이얼로그 표시
               await showAlarmSettingDialog(context);
             }
-          } else {
-            // Android 13 미만: 권한이 이미 부여되어 있으므로 바로 알림 설정 다이얼로그 표시
-            await showAlarmSettingDialog(context);
           }
         }
       });
@@ -1707,6 +1715,7 @@ class _MyHomePageState extends State<MyHomePage>
     TodayCommentAlarmType value,
     TodayCommentAlarmType selected,
     String text,
+    String? description,
   ) {
     final isSelected = value == selected;
     return GestureDetector(
@@ -1721,13 +1730,31 @@ class _MyHomePageState extends State<MyHomePage>
         child: Row(
           children: [
             Expanded(
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 20,
-                  color: Colors.black87,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    text,
+                    style: TextStyle(
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  if (description != null && description.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
             if (isSelected) const Icon(Icons.check, color: Colors.deepPurple),
@@ -2468,48 +2495,49 @@ class _MyHomePageState extends State<MyHomePage>
     BuildContext context,
   ) async {
     final prevType = _todayCommentAlarmType;
-    final updatedType = await showDialog<TodayCommentAlarmType>(
+    final updatedType = await LiquidGlassDialog.show<TodayCommentAlarmType>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            l10n(context).selectReceiveAlert,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-              color: Colors.black87,
+      title: Column(
+        children: [
+          Text(l10n(context).selectReceiveAlert, textAlign: TextAlign.center),
+          const SizedBox(height: 8),
+          Text(
+            l10n(context).selectReceiveAlertSubtitle,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.normal,
+              color: Colors.black54,
             ),
             textAlign: TextAlign.center,
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildAlarmOptionTile(
-                context,
-                TodayCommentAlarmType.ai,
-                _todayCommentAlarmType,
-                l10n(context).aIalert,
-              ),
-              _buildAlarmOptionTile(
-                context,
-                TodayCommentAlarmType.kimchi,
-                _todayCommentAlarmType,
-                l10n(context).gimpAlert,
-              ),
-              _buildAlarmOptionTile(
-                context,
-                TodayCommentAlarmType.off,
-                _todayCommentAlarmType,
-                l10n(context).turnOffAlert,
-              ),
-            ],
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildAlarmOptionTile(
+            context,
+            TodayCommentAlarmType.ai,
+            _todayCommentAlarmType,
+            l10n(context).aIalert,
+            l10n(context).aIalertDescription,
           ),
-        );
-      },
+          _buildAlarmOptionTile(
+            context,
+            TodayCommentAlarmType.kimchi,
+            _todayCommentAlarmType,
+            l10n(context).gimpAlert,
+            l10n(context).gimpAlertDescription,
+          ),
+          _buildAlarmOptionTile(
+            context,
+            TodayCommentAlarmType.off,
+            _todayCommentAlarmType,
+            l10n(context).turnOffAlert,
+            null,
+          ),
+        ],
+      ),
     );
 
     if (updatedType == null) {
