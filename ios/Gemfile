@@ -2,3 +2,9 @@ source "https://rubygems.org"
 
 gem "fastlane"
 gem "cocoapods", "~> 1.16.0"
+gem "abbrev"
+gem "base64"
+gem "mutex_m"
+gem "logger"
+gem "nkf"    # <-- 이번 에러(kconv) 해결을 위해 필수
+gem "ostruct" # <-- 다음에 발생할 확률이 높은 에러 방지용
