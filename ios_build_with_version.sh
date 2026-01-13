@@ -57,31 +57,27 @@ else
   log "버전 증가는 건너뜀 (옵션 미지정)"
 fi
 
+# -------- Clean previous builds --------
+log "기존 빌드 아티팩트 정리 중..."
+cd ios || fail "ios 폴더 이동 실패"
+if [ -d "build" ]; then
+  rm -rf build
+fi
+if [ -d "Runner.xcworkspace/xcuserdata" ]; then
+  rm -rf Runner.xcworkspace/xcuserdata
+fi
+if [ -d "Runner.xcodeproj/xcuserdata" ]; then
+  rm -rf Runner.xcodeproj/xcuserdata
+fi
+cd ..
+
 # -------- Flutter iOS config-only (Release) --------
 log "flutter build ios --config-only --release"
 flutter build ios --config-only --release
 
 # -------- Fastlane in ios/ --------
 cd ios || fail "ios 폴더 이동 실패"
-
-LOCK_FILE="Gemfile.lock"
-
-# -------- 스마트 의존성 관리 --------
-if [ ! -f "$LOCK_FILE" ]; then
-  log "⚠️ Gemfile.lock이 없습니다. 초기 설치를 진행합니다 (약 10~20초 소요)..."
-  bundle _2.5.23_ install || fail "bundle install 실패"
-else
-  # 파일이 이미 있다면 매우 빠르게 체크만 하고 넘어갑니다.
-  log "✅ 기존 Gemfile.lock을 사용하여 빠르게 실행합니다."
-fi
-
-
-if [ -f Gemfile ]; then
-  log "bundle exec fastlane release"
-  bundle exec fastlane release
-else
-  log "fastlane release"
-  fastlane release
-fi
+log "fastlane release"
+fastlane release
 
 log "✅ 완료"
