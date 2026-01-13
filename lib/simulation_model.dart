@@ -429,7 +429,7 @@ class SimulationModel {
     final days = lastDate.difference(firstDate).inDays;
     final totalReturn =
         (results.last.finalKRW / 1000000 - 1) * 100; // 총 수익률 (%)
-    final annualYield = _calculateAnnualYield(results);
+    final annualYield = calculateAnnualYield(results);
 
     return SimulationYieldData(
       totalReturn: totalReturn,
@@ -439,7 +439,7 @@ class SimulationModel {
   }
 
   // results를 입력으로 받아 annualYield를 리턴하는 static 함수
-  static double _calculateAnnualYield(List<SimulationResult> results) {
+  static double calculateAnnualYield(List<SimulationResult> results) {
     if (results.isEmpty) return 0.0;
 
     final firstDate = results.first.buyDate;
@@ -461,12 +461,16 @@ class SimulationModel {
   static SimulationYieldData getYieldForAISimulation(
     List<ChartData> usdExchangeRates,
     List<StrategyMap> strategyList,
-    Map<DateTime, USDTChartData> usdtMap,
-  ) {
+    Map<DateTime, USDTChartData> usdtMap, {
+    double? buyFee,
+    double? sellFee,
+  }) {
     final results = SimulationModel.simulateResults(
       usdExchangeRates,
       strategyList,
       usdtMap,
+      buyFee: buyFee,
+      sellFee: sellFee,
     );
     return _calculateYieldData(results);
   }
@@ -476,13 +480,17 @@ class SimulationModel {
     List<ChartData> usdExchangeRates,
     List<StrategyMap> strategyList,
     Map<DateTime, USDTChartData> usdtMap,
-    Map<DateTime, Map<String, double>>? premiumTrends,
-  ) {
+    Map<DateTime, Map<String, double>>? premiumTrends, {
+    double? buyFee,
+    double? sellFee,
+  }) {
     final simResults = gimchiSimulateResults(
       usdExchangeRates,
       strategyList,
       usdtMap,
       premiumTrends,
+      buyFee: buyFee,
+      sellFee: sellFee,
     );
 
     return _calculateYieldData(simResults);

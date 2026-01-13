@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -289,11 +288,9 @@ class SimulationPage extends StatefulWidget {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop({
-                      'buy': buy,
-                      'sell': sell,
-                      'sameAsAI': sameAsAI,
-                    });
+                    Navigator.of(
+                      context,
+                    ).pop({'buy': buy, 'sell': sell, 'sameAsAI': sameAsAI});
                   },
                   child: Text(l10n(context).confirm),
                 ),
@@ -639,10 +636,10 @@ class _SimulationPageState extends State<SimulationPage>
                     icon: const Icon(Icons.settings, color: Colors.deepPurple),
                     onPressed: () async {
                       final success =
-                      await SimulationPage.showKimchiStrategyUpdatePopup(
-                        context,
-                        showSameDatesAsAI: true,
-                      );
+                          await SimulationPage.showKimchiStrategyUpdatePopup(
+                            context,
+                            showSameDatesAsAI: true,
+                          );
                       if (success) {
                         runSimulation();
                       }
@@ -1528,19 +1525,9 @@ class _SimulationPageState extends State<SimulationPage>
 
     String annualYieldText = "0.00%";
     if (results.isNotEmpty) {
-      final firstDate = results.first.buyDate;
-      final lastDate = results.last.analysisDate;
-      if (firstDate != null) {
-        final days = lastDate.difference(firstDate).inDays;
-        if (days >= 1) {
-          final years = days / 365.0;
-          final totalReturn = results.last.finalKRW / 1000000;
-          final annualYield =
-              (years > 0) ? (pow(totalReturn, 1 / years) - 1) * 100 : 0.0;
-          if (!annualYield.isNaN && !annualYield.isInfinite) {
-            annualYieldText = "${annualYield.toStringAsFixed(2)}%";
-          }
-        }
+      final annualYield = SimulationModel.calculateAnnualYield(results);
+      if (!annualYield.isNaN && !annualYield.isInfinite && annualYield != 0.0) {
+        annualYieldText = "${annualYield.toStringAsFixed(2)}%";
       }
     }
 

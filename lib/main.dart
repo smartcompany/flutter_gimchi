@@ -1352,10 +1352,24 @@ class _MyHomePageState extends State<MyHomePage>
             print('변환된 premiumTrends 개수: ${premiumTrends?.length ?? 0}');
           }
 
+          // Settings에서 수수료 정보 추출
+          double? buyFee;
+          double? sellFee;
+          final settings = ApiService.shared.settings;
+          if (settings != null) {
+            final upbitFees = settings['upbit_fees'] as Map<String, dynamic>?;
+            if (upbitFees != null) {
+              buyFee = (upbitFees['buy_fee'] as num?)?.toDouble();
+              sellFee = (upbitFees['sell_fee'] as num?)?.toDouble();
+            }
+          }
+
           aiYieldData = SimulationModel.getYieldForAISimulation(
             exchangeRates,
             strategyList,
             usdtMap,
+            buyFee: buyFee,
+            sellFee: sellFee,
           );
 
           gimchiYieldData = SimulationModel.getYieldForGimchiSimulation(
@@ -1363,6 +1377,8 @@ class _MyHomePageState extends State<MyHomePage>
             strategyList,
             usdtMap,
             premiumTrends,
+            buyFee: buyFee,
+            sellFee: sellFee,
           );
 
           // chartOnlyPageModel 업데이트
