@@ -18,6 +18,26 @@ class AppLocalizationsKo extends AppLocalizations {
   String get gimchiPremiem => '김치 프리미엄';
 
   @override
+  String get xrpFundingRateTitle => 'XRP 펀딩피(Y)';
+
+  @override
+  String fundingRateInterval(Object hours) {
+    return '(${hours}h)';
+  }
+
+  @override
+  String get fundingRateSourceBinance => 'Binance';
+
+  @override
+  String get fundingRateSourceBybit => 'Bybit';
+
+  @override
+  String get fundingRateLoading => '펀딩피 불러오는 중...';
+
+  @override
+  String get fundingRateFailed => '펀딩피를 불러오지 못했습니다';
+
+  @override
   String get cancel => '취소';
 
   @override

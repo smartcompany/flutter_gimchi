@@ -18,6 +18,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gimchiPremiem => 'K-Premium';
 
   @override
+  String get xrpFundingRateTitle => 'XRP Funding (Y)';
+
+  @override
+  String fundingRateInterval(Object hours) {
+    return '(${hours}h)';
+  }
+
+  @override
+  String get fundingRateSourceBinance => 'Binance';
+
+  @override
+  String get fundingRateSourceBybit => 'Bybit';
+
+  @override
+  String get fundingRateLoading => 'Loading funding rate...';
+
+  @override
+  String get fundingRateFailed => 'Failed to load funding rate';
+
+  @override
   String get cancel => 'Cancel';
 
   @override

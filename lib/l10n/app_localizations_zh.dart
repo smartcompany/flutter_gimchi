@@ -18,6 +18,26 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gimchiPremiem => '韩元溢价';
 
   @override
+  String get xrpFundingRateTitle => 'XRP 资金费率(Y)';
+
+  @override
+  String fundingRateInterval(Object hours) {
+    return '(${hours}h)';
+  }
+
+  @override
+  String get fundingRateSourceBinance => 'Binance';
+
+  @override
+  String get fundingRateSourceBybit => 'Bybit';
+
+  @override
+  String get fundingRateLoading => '正在加载资金费率...';
+
+  @override
+  String get fundingRateFailed => '无法加载资金费率';
+
+  @override
   String get cancel => '取消';
 
   @override

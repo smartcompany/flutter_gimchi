@@ -118,6 +118,42 @@ abstract class AppLocalizations {
   /// **'김치 프리미엄'**
   String get gimchiPremiem;
 
+  /// No description provided for @xrpFundingRateTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'XRP 펀딩피(Y)'**
+  String get xrpFundingRateTitle;
+
+  /// No description provided for @fundingRateInterval.
+  ///
+  /// In ko, this message translates to:
+  /// **'({hours}h)'**
+  String fundingRateInterval(Object hours);
+
+  /// No description provided for @fundingRateSourceBinance.
+  ///
+  /// In ko, this message translates to:
+  /// **'Binance'**
+  String get fundingRateSourceBinance;
+
+  /// No description provided for @fundingRateSourceBybit.
+  ///
+  /// In ko, this message translates to:
+  /// **'Bybit'**
+  String get fundingRateSourceBybit;
+
+  /// No description provided for @fundingRateLoading.
+  ///
+  /// In ko, this message translates to:
+  /// **'펀딩피 불러오는 중...'**
+  String get fundingRateLoading;
+
+  /// No description provided for @fundingRateFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'펀딩피를 불러오지 못했습니다'**
+  String get fundingRateFailed;
+
   /// No description provided for @cancel.
   ///
   /// In ko, this message translates to:

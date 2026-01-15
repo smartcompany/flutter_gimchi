@@ -260,6 +260,14 @@ class _MyHomePageState extends State<MyHomePage>
   // 수익률 표시 모드 (true: 연수익률, false: 총 수익률) - AI와 김프 동시 전환
   bool _showAnnualYield = false;
 
+  final PageController _infoPageController = PageController();
+  int _infoPageIndex = 0;
+  FundingRateInfo? _xrpFundingRate;
+  bool _isFundingRateLoading = false;
+  DateTime? _fundingRateFetchedAt;
+  String? _fundingRateError;
+  String _fundingRateSource = 'binance';
+
   @override
   void initState() {
     super.initState();
@@ -559,6 +567,46 @@ class _MyHomePageState extends State<MyHomePage>
     });
   }
 
+  Future<void> _loadXrpFundingRate({bool force = false}) async {
+    if (_isFundingRateLoading) return;
+    final lastFetched = _fundingRateFetchedAt;
+    if (!force &&
+        lastFetched != null &&
+        DateTime.now().difference(lastFetched).inSeconds < 30) {
+      return;
+    }
+    setState(() {
+      _isFundingRateLoading = true;
+      _fundingRateError = null;
+    });
+
+    final result =
+        _fundingRateSource == 'bybit'
+            ? await ApiService.shared.fetchXrpFundingRateBybit()
+            : await ApiService.shared.fetchXrpFundingRate();
+    if (!mounted) return;
+
+    setState(() {
+      _isFundingRateLoading = false;
+      if (result == null) {
+        _fundingRateError = 'failed';
+      } else {
+        _xrpFundingRate = result;
+        _fundingRateFetchedAt = DateTime.now();
+      }
+    });
+  }
+
+  void _toggleFundingRateSource() {
+    setState(() {
+      _fundingRateSource =
+          _fundingRateSource == 'binance' ? 'bybit' : 'binance';
+      _xrpFundingRate = null;
+      _fundingRateFetchedAt = null;
+    });
+    _loadXrpFundingRate(force: true);
+  }
+
   // 배너 광고 로드
   void _loadBannerAd() async {
     if (_hasAdFreePass) return;
@@ -633,6 +681,7 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _infoPageController.dispose();
     _purchaseSubscription?.cancel();
     _disposeAds();
     super.dispose();
@@ -770,6 +819,8 @@ class _MyHomePageState extends State<MyHomePage>
             .reduce((a, b) => a > b ? a : b);
         _loading = false;
       });
+
+      unawaited(_loadXrpFundingRate(force: true));
     } catch (e) {
       setState(() {
         _loading = false;
@@ -1868,29 +1919,152 @@ class _MyHomePageState extends State<MyHomePage>
   ) {
     return Container(
       padding: const EdgeInsets.fromLTRB(0, 10, 0, 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: Column(
         children: [
-          InfoItem(
-            label: l10n(context).usdt,
-            value: todayUsdt != null ? todayUsdt.close.toStringAsFixed(1) : '-',
-            color: Colors.blue,
+          SizedBox(
+            height: 78,
+            child: PageView(
+              controller: _infoPageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _infoPageIndex = index;
+                });
+                if (index == 1) {
+                  _loadXrpFundingRate();
+                }
+              },
+              children: [
+                _buildTodayInfoRow(todayUsdt, todayRate, todayKimchi),
+                _buildXrpFundingRateRow(),
+              ],
+            ),
           ),
-          InfoItem(
-            label: l10n(context).exchangeRate,
-            value: todayRate != null ? todayRate.value.toStringAsFixed(1) : '-',
-            color: Colors.green,
-          ),
-          InfoItem(
-            label: l10n(context).gimchiPremiem,
-            value:
-                todayKimchi != null
-                    ? '${todayKimchi.value.toStringAsFixed(2)}%'
-                    : '-',
-            color: Colors.orange,
-          ),
+          const SizedBox(height: 6),
+          _buildInfoPageIndicator(),
         ],
       ),
+    );
+  }
+
+  Widget _buildTodayInfoRow(
+    USDTChartData? todayUsdt,
+    ChartData? todayRate,
+    ChartData? todayKimchi,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InfoItem(
+          label: l10n(context).usdt,
+          value: todayUsdt != null ? todayUsdt.close.toStringAsFixed(1) : '-',
+          color: Colors.blue,
+        ),
+        InfoItem(
+          label: l10n(context).exchangeRate,
+          value: todayRate != null ? todayRate.value.toStringAsFixed(1) : '-',
+          color: Colors.green,
+        ),
+        InfoItem(
+          label: l10n(context).gimchiPremiem,
+          value:
+              todayKimchi != null
+                  ? '${todayKimchi.value.toStringAsFixed(2)}%'
+                  : '-',
+          color: Colors.orange,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildXrpFundingRateRow() {
+    if (_isFundingRateLoading && _xrpFundingRate == null) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 8),
+          Text(l10n(context).fundingRateLoading),
+        ],
+      );
+    }
+
+    if (_fundingRateError != null && _xrpFundingRate == null) {
+      return Text(l10n(context).fundingRateFailed);
+    }
+
+    final rate = _xrpFundingRate;
+    final interval = rate?.fundingIntervalHours ?? 8;
+    final isBybit = _fundingRateSource == 'bybit';
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        InfoItem(
+          label: l10n(context).xrpFundingRateTitle,
+          value:
+              rate != null
+                  ? '${rate.annualizedRatePercent.toStringAsFixed(2)}%'
+                  : '-',
+          color: Colors.deepPurple,
+        ),
+        InfoItem(
+          label: l10n(context).fundingRateInterval(interval),
+          value:
+              rate != null
+                  ? '${rate.fundingRatePercent.toStringAsFixed(4)}%'
+                  : '-',
+          color: Colors.teal,
+        ),
+        Align(
+          alignment: Alignment.topCenter,
+          child: ElevatedButton(
+            onPressed: _toggleFundingRateSource,
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: const Size(72, 34),
+              backgroundColor: Colors.deepPurple,
+              foregroundColor: Colors.white,
+              elevation: 6,
+              shadowColor: Colors.black.withOpacity(0.2),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            child: Text(
+              isBybit
+                  ? l10n(context).fundingRateSourceBybit
+                  : l10n(context).fundingRateSourceBinance,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoPageIndicator() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(2, (index) {
+        final isActive = _infoPageIndex == index;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: isActive ? 8 : 6,
+          height: isActive ? 8 : 6,
+          decoration: BoxDecoration(
+            color: isActive ? Colors.deepPurple : Colors.grey[300],
+            shape: BoxShape.circle,
+          ),
+        );
+      }),
     );
   }
 

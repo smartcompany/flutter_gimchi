@@ -41,6 +41,10 @@ class ApiService {
   static const String latestUsdtUrl =
       'https://api.upbit.com/v1/ticker?markets=KRW-USDT';
   static const latestExchangeRateUrl = '$host/api/rate-history';
+  static const String binanceFundingRateUrl = '$host/api/binance-funding-rate';
+  static const String bybitFundingRateUrl = '$host/api/bybit-funding-rate';
+  static const String defaultXrpFundingSymbol = 'XRPUSDT';
+  static const String defaultXrpUsdFundingSymbol = 'XRPUSD';
 
   // Settings 캐시
   Map<String, dynamic>? settings;
@@ -59,6 +63,46 @@ class ApiService {
       }
     } catch (error) {
       print('USDT 데이터 가져오기 실패: $error');
+      return null;
+    }
+  }
+
+  Future<FundingRateInfo?> fetchXrpFundingRate() async {
+    try {
+      final url = '$binanceFundingRateUrl?symbol=$defaultXrpFundingSymbol';
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        final json = jsonDecode(utf8.decode(response.bodyBytes));
+        return FundingRateInfo.fromJson(json as Map<String, dynamic>);
+      }
+      print(
+        'XRP 펀딩피 조회 실패: ${response.statusCode} - ${response.body}',
+      );
+      return null;
+    } catch (e) {
+      print('XRP 펀딩피 조회 실패: $e');
+      return null;
+    }
+  }
+
+  Future<FundingRateInfo?> fetchXrpFundingRateBybit() async {
+    try {
+      final url = '$bybitFundingRateUrl?symbol=$defaultXrpUsdFundingSymbol';
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        final json = jsonDecode(utf8.decode(response.bodyBytes));
+        return FundingRateInfo.fromJson(json as Map<String, dynamic>);
+      }
+      print(
+        'Bybit XRP 펀딩피 조회 실패: ${response.statusCode} - ${response.body}',
+      );
+      return null;
+    } catch (e) {
+      print('Bybit XRP 펀딩피 조회 실패: $e');
       return null;
     }
   }
@@ -420,6 +464,42 @@ class ApiService {
       print('최신 뉴스 조회 실패: $e');
       return null;
     }
+  }
+}
+
+class FundingRateInfo {
+  final String symbol;
+  final String source;
+  final double fundingRate;
+  final double fundingRatePercent;
+  final double annualizedRatePercent;
+  final int fundingIntervalHours;
+  final DateTime? retrievedAt;
+
+  FundingRateInfo({
+    required this.symbol,
+    required this.source,
+    required this.fundingRate,
+    required this.fundingRatePercent,
+    required this.annualizedRatePercent,
+    required this.fundingIntervalHours,
+    this.retrievedAt,
+  });
+
+  factory FundingRateInfo.fromJson(Map<String, dynamic> json) {
+    return FundingRateInfo(
+      symbol: json['symbol'] ?? '',
+      source: json['source'] ?? '',
+      fundingRate: (json['fundingRate'] as num?)?.toDouble() ?? 0,
+      fundingRatePercent: (json['fundingRatePercent'] as num?)?.toDouble() ?? 0,
+      annualizedRatePercent:
+          (json['annualizedRatePercent'] as num?)?.toDouble() ?? 0,
+      fundingIntervalHours:
+          (json['fundingIntervalHours'] as num?)?.toInt() ?? 8,
+      retrievedAt: json['retrievedAt'] != null
+          ? DateTime.tryParse(json['retrievedAt'])
+          : null,
+    );
   }
 }
 

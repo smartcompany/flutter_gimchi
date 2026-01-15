@@ -2,6 +2,17 @@
   "usdt": "USDT",
   "exchangeRate": "FX",
   "gimchiPremiem": "K-Premium",
+  "xrpFundingRateTitle": "XRP Funding (Y)",
+  "fundingRateInterval": "({hours}h)",
+  "@fundingRateInterval": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "fundingRateSourceBinance": "Binance",
+  "fundingRateSourceBybit": "Bybit",
+  "fundingRateLoading": "Loading funding rate...",
+  "fundingRateFailed": "Failed to load funding rate",
   "cancel": "Cancel",
   "changeStrategy": "Change strategy",
   "close": "Close",

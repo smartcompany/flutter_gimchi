@@ -2,6 +2,17 @@
   "usdt": "USDT",
   "exchangeRate": "汇率",
   "gimchiPremiem": "韩元溢价",
+  "xrpFundingRateTitle": "XRP 资金费率(Y)",
+  "fundingRateInterval": "({hours}h)",
+  "@fundingRateInterval": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "fundingRateSourceBinance": "Binance",
+  "fundingRateSourceBybit": "Bybit",
+  "fundingRateLoading": "正在加载资金费率...",
+  "fundingRateFailed": "无法加载资金费率",
   "cancel": "取消",
   "changeStrategy": "更改泡菜溢价策略",
   "close": "关闭",
