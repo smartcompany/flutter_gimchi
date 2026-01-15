@@ -265,7 +265,6 @@ class _MyHomePageState extends State<MyHomePage>
   FundingRateInfo? _xrpFundingRate;
   bool _isFundingRateLoading = false;
   DateTime? _fundingRateFetchedAt;
-  String? _fundingRateError;
   String _fundingRateSource = 'binance';
 
   @override
@@ -577,7 +576,6 @@ class _MyHomePageState extends State<MyHomePage>
     }
     setState(() {
       _isFundingRateLoading = true;
-      _fundingRateError = null;
     });
 
     final result =
@@ -588,9 +586,7 @@ class _MyHomePageState extends State<MyHomePage>
 
     setState(() {
       _isFundingRateLoading = false;
-      if (result == null) {
-        _fundingRateError = 'failed';
-      } else {
+      if (result != null) {
         _xrpFundingRate = result;
         _fundingRateFetchedAt = DateTime.now();
       }
@@ -1991,10 +1987,6 @@ class _MyHomePageState extends State<MyHomePage>
           Text(l10n(context).fundingRateLoading),
         ],
       );
-    }
-
-    if (_fundingRateError != null && _xrpFundingRate == null) {
-      return Text(l10n(context).fundingRateFailed);
     }
 
     final rate = _xrpFundingRate;
