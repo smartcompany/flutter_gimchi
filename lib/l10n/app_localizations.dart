@@ -586,6 +586,24 @@ abstract class AppLocalizations {
   /// **'AI와 동일 일정 적용'**
   String get sameAsAI;
 
+  /// No description provided for @kimchiStartDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'시작 일정'**
+  String get kimchiStartDate;
+
+  /// No description provided for @kimchiEndDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'종료 일정'**
+  String get kimchiEndDate;
+
+  /// No description provided for @kimchiResetDateRange.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 일정'**
+  String get kimchiResetDateRange;
+
   /// No description provided for @failedToSaveSettings.
   ///
   /// In ko, this message translates to:

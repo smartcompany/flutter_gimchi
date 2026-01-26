@@ -258,6 +258,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sameAsAI => '与AI使用相同的时间设置';
 
   @override
+  String get kimchiStartDate => '开始日期';
+
+  @override
+  String get kimchiEndDate => '结束日期';
+
+  @override
+  String get kimchiResetDateRange => '全部期间';
+
+  @override
   String get failedToSaveSettings => '保存设置失败。';
 
   @override

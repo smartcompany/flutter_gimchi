@@ -260,6 +260,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sameAsAI => 'Use AI Schedule';
 
   @override
+  String get kimchiStartDate => 'Start date';
+
+  @override
+  String get kimchiEndDate => 'End date';
+
+  @override
+  String get kimchiResetDateRange => 'Full period';
+
+  @override
   String get failedToSaveSettings => 'Failed to save settings.';
 
   @override

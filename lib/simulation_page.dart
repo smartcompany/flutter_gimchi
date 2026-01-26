@@ -193,14 +193,36 @@ class SimulationPage extends StatefulWidget {
 
   static Future<bool> showKimchiStrategyUpdatePopup(
     BuildContext context, {
-    bool showSameDatesAsAI = false,
+    DateTime? defaultStartDate,
+    DateTime? defaultEndDate,
+    List<DateTime>? availableDates,
   }) async {
-    final result = await showDialog<Map<String, Object>>(
+    final result = await showDialog<Map<String, Object?>>(
       context: context,
       builder: (context) {
         double buy = SimulationCondition.instance.kimchiBuyThreshold;
         double sell = SimulationCondition.instance.kimchiSellThreshold;
-        bool sameAsAI = SimulationCondition.instance.matchSameDatesAsAI;
+        final sortedDates = (availableDates ?? <DateTime>[]).toList()..sort();
+        DateTime? startDate =
+            SimulationCondition.instance.kimchiStartDate ?? defaultStartDate;
+        DateTime? endDate =
+            SimulationCondition.instance.kimchiEndDate ?? defaultEndDate;
+        double rangeStart = 0;
+        double rangeEnd =
+            sortedDates.isNotEmpty ? (sortedDates.length - 1).toDouble() : 0;
+        if (sortedDates.isNotEmpty) {
+          final startIndex =
+              startDate != null
+                  ? sortedDates.indexWhere((d) => d.isSameDate(startDate!))
+                  : -1;
+          final endIndex =
+              endDate != null
+                  ? sortedDates.indexWhere((d) => d.isSameDate(endDate!))
+                  : -1;
+          rangeStart = (startIndex >= 0 ? startIndex : 0).toDouble();
+          rangeEnd =
+              (endIndex >= 0 ? endIndex : sortedDates.length - 1).toDouble();
+        }
 
         return StatefulBuilder(
           builder: (context, setState) {
@@ -265,20 +287,72 @@ class SimulationPage extends StatefulWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  if (showSameDatesAsAI)
+                  if (sortedDates.isNotEmpty) ...[
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Checkbox(
-                          value: sameAsAI,
-                          onChanged: (val) {
-                            setState(() {
-                              sameAsAI = val ?? false;
-                            });
-                          },
-                        ),
-                        Text(l10n(context).sameAsAI),
+                        Text(l10n(context).kimchiStartDate),
+                        Text(startDate?.toCustomString() ?? l10n(context).dash),
                       ],
                     ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(l10n(context).kimchiEndDate),
+                        Text(endDate?.toCustomString() ?? l10n(context).dash),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    RangeSlider(
+                      values: RangeValues(rangeStart, rangeEnd),
+                      min: 0,
+                      max: (sortedDates.length - 1).toDouble(),
+                      divisions: sortedDates.length - 1,
+                      labels: RangeLabels(
+                        startDate?.toCustomString() ?? l10n(context).dash,
+                        endDate?.toCustomString() ?? l10n(context).dash,
+                      ),
+                      onChanged: (values) {
+                        setState(() {
+                          rangeStart = values.start.roundToDouble();
+                          rangeEnd = values.end.roundToDouble();
+                          final startIndex = rangeStart.toInt();
+                          final endIndex = rangeEnd.toInt();
+                          startDate = sortedDates[startIndex];
+                          endDate = sortedDates[endIndex];
+                        });
+                      },
+                    ),
+                  ] else
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(l10n(context).kimchiStartDate),
+                        Text(l10n(context).dash),
+                      ],
+                    ),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed:
+                          (defaultStartDate == null && defaultEndDate == null)
+                              ? null
+                              : () {
+                                setState(() {
+                                  startDate = defaultStartDate;
+                                  endDate = defaultEndDate;
+                                  if (sortedDates.isNotEmpty) {
+                                    rangeStart = 0;
+                                    rangeEnd =
+                                        (sortedDates.length - 1).toDouble();
+                                  }
+                                });
+                              },
+                      child: Text(l10n(context).kimchiResetDateRange),
+                    ),
+                  ),
                 ],
               ),
               actions: [
@@ -288,9 +362,12 @@ class SimulationPage extends StatefulWidget {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.of(
-                      context,
-                    ).pop({'buy': buy, 'sell': sell, 'sameAsAI': sameAsAI});
+                    Navigator.of(context).pop({
+                      'buy': buy,
+                      'sell': sell,
+                      'startDate': startDate,
+                      'endDate': endDate,
+                    });
                   },
                   child: Text(l10n(context).confirm),
                 ),
@@ -304,7 +381,8 @@ class SimulationPage extends StatefulWidget {
     if (result != null) {
       final buy = result['buy'] as double;
       final sell = result['sell'] as double;
-      final sameAsAI = result['sameAsAI'] as bool;
+      final startDate = result['startDate'] as DateTime?;
+      final endDate = result['endDate'] as DateTime?;
 
       final isSuccess = await ApiService.shared.saveAndSyncUserData({
         UserDataKey.gimchiBuyPercent: buy,
@@ -314,7 +392,10 @@ class SimulationPage extends StatefulWidget {
       if (isSuccess) {
         await SimulationCondition.instance.saveKimchiBuyThreshold(buy);
         await SimulationCondition.instance.saveKimchiSellThreshold(sell);
-        await SimulationCondition.instance.saveMatchSameDatesAsAI(sameAsAI);
+        await SimulationCondition.instance.saveKimchiDateRange(
+          startDate: startDate,
+          endDate: endDate,
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n(context).failedToSaveSettings)),
@@ -635,10 +716,17 @@ class _SimulationPageState extends State<SimulationPage>
                   IconButton(
                     icon: const Icon(Icons.settings, color: Colors.deepPurple),
                     onPressed: () async {
+                      final sortedDates = widget.usdtMap.keys.toList()..sort();
+                      final defaultStartDate =
+                          sortedDates.isNotEmpty ? sortedDates.first : null;
+                      final defaultEndDate =
+                          sortedDates.isNotEmpty ? sortedDates.last : null;
                       final success =
                           await SimulationPage.showKimchiStrategyUpdatePopup(
                             context,
-                            showSameDatesAsAI: true,
+                            defaultStartDate: defaultStartDate,
+                            defaultEndDate: defaultEndDate,
+                            availableDates: sortedDates,
                           );
                       if (success) {
                         runSimulation();

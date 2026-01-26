@@ -254,11 +254,20 @@ class SimulationModel {
       return dateA.compareTo(dateB);
     });
 
-    if (SimulationCondition.instance.matchSameDatesAsAI) {
-      final strategyFirstDate = DateTime.parse(
-        strategyList.first['analysis_date'],
+    final kimchiStartDate = SimulationCondition.instance.kimchiStartDate;
+    final kimchiEndDate = SimulationCondition.instance.kimchiEndDate;
+    if (kimchiStartDate != null) {
+      sortedDates.removeWhere(
+        (date) =>
+            date.isBefore(kimchiStartDate) &&
+            !date.isSameDate(kimchiStartDate),
       );
-      sortedDates.removeWhere((date) => date.compareTo(strategyFirstDate) < 0);
+    }
+    if (kimchiEndDate != null) {
+      sortedDates.removeWhere(
+        (date) =>
+            date.isAfter(kimchiEndDate) && !date.isSameDate(kimchiEndDate),
+      );
     }
 
     final usdExchangeRatesMap = {

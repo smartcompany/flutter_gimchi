@@ -259,6 +259,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sameAsAI => 'AI와 동일 일정 적용';
 
   @override
+  String get kimchiStartDate => '시작 일정';
+
+  @override
+  String get kimchiEndDate => '종료 일정';
+
+  @override
+  String get kimchiResetDateRange => '전체 일정';
+
+  @override
   String get failedToSaveSettings => '설정 저장에 실패했습니다.';
 
   @override

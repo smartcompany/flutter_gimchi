@@ -2553,8 +2553,20 @@ class _MyHomePageState extends State<MyHomePage>
                           TextButton(
                             onPressed: () async {
                               Navigator.of(context).pop();
+                              final sortedDates = usdtMap.keys.toList()..sort();
+                              final defaultStartDate =
+                                  sortedDates.isNotEmpty
+                                      ? sortedDates.first
+                                      : null;
+                              final defaultEndDate =
+                                  sortedDates.isNotEmpty
+                                      ? sortedDates.last
+                                      : null;
                               await SimulationPage.showKimchiStrategyUpdatePopup(
                                 context,
+                                defaultStartDate: defaultStartDate,
+                                defaultEndDate: defaultEndDate,
+                                availableDates: sortedDates,
                               );
                             },
                             child: Text(

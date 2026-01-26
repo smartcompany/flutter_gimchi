@@ -76,8 +76,10 @@ class SimulationCondition {
   double get kimchiBuyThreshold => _kimchiBuyThreshold;
   double _kimchiSellThreshold = 2.5;
   double get kimchiSellThreshold => _kimchiSellThreshold;
-  bool _matchSameDatesAsAI = false;
-  bool get matchSameDatesAsAI => _matchSameDatesAsAI;
+  DateTime? _kimchiStartDate;
+  DateTime? get kimchiStartDate => _kimchiStartDate;
+  DateTime? _kimchiEndDate;
+  DateTime? get kimchiEndDate => _kimchiEndDate;
 
   void load() {
     SharedPreferences.getInstance().then((prefs) {
@@ -85,8 +87,12 @@ class SimulationCondition {
           prefs.getDouble('kimchiBuyThreshold') ?? 0.5;
       instance._kimchiSellThreshold =
           prefs.getDouble('kimchiSellThreshold') ?? 2.5;
-      instance._matchSameDatesAsAI =
-          prefs.getBool('matchSameDatesAsAI') ?? false;
+      final startDateRaw = prefs.getString('kimchiStartDate');
+      final endDateRaw = prefs.getString('kimchiEndDate');
+      instance._kimchiStartDate =
+          startDateRaw != null ? DateTime.tryParse(startDateRaw) : null;
+      instance._kimchiEndDate =
+          endDateRaw != null ? DateTime.tryParse(endDateRaw) : null;
     });
   }
 
@@ -102,10 +108,32 @@ class SimulationCondition {
     _kimchiSellThreshold = value;
   }
 
-  Future<void> saveMatchSameDatesAsAI(bool value) async {
+  Future<void> saveKimchiStartDate(DateTime? value) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('matchSameDatesAsAI', value);
-    _matchSameDatesAsAI = value;
+    if (value == null) {
+      await prefs.remove('kimchiStartDate');
+    } else {
+      await prefs.setString('kimchiStartDate', value.toIso8601String());
+    }
+    _kimchiStartDate = value;
+  }
+
+  Future<void> saveKimchiEndDate(DateTime? value) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (value == null) {
+      await prefs.remove('kimchiEndDate');
+    } else {
+      await prefs.setString('kimchiEndDate', value.toIso8601String());
+    }
+    _kimchiEndDate = value;
+  }
+
+  Future<void> saveKimchiDateRange({
+    required DateTime? startDate,
+    required DateTime? endDate,
+  }) async {
+    await saveKimchiStartDate(startDate);
+    await saveKimchiEndDate(endDate);
   }
 
 
