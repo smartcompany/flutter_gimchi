@@ -269,6 +269,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get kimchiResetDateRange => 'Full period';
 
   @override
+  String get useExchangeRateSellWeight =>
+      'Adjust buy/sell thresholds by exchange rate';
+
+  @override
   String get failedToSaveSettings => 'Failed to save settings.';
 
   @override

@@ -578,7 +578,12 @@ class AirdropInfo {
   }
 }
 
-enum UserDataKey { pushType, gimchiBuyPercent, gimchiSellPercent }
+enum UserDataKey {
+  pushType,
+  gimchiBuyPercent,
+  gimchiSellPercent,
+  gimchiSellFollowExchangeRate,
+}
 
 extension UserDataKeyExt on UserDataKey {
   String get key {
@@ -589,6 +594,8 @@ extension UserDataKeyExt on UserDataKey {
         return 'gimchiBuyPercent';
       case UserDataKey.gimchiSellPercent:
         return 'gimchiSellPercent';
+      case UserDataKey.gimchiSellFollowExchangeRate:
+        return 'gimchiSellFollowExchangeRate';
     }
   }
 }

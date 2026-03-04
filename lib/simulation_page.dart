@@ -203,6 +203,8 @@ class SimulationPage extends StatefulWidget {
         double buy = SimulationCondition.instance.kimchiBuyThreshold;
         double sell = SimulationCondition.instance.kimchiSellThreshold;
         final sortedDates = (availableDates ?? <DateTime>[]).toList()..sort();
+        bool useExchangeRateSellWeight =
+            SimulationCondition.instance.useExchangeRateSellWeight;
         DateTime? startDate =
             SimulationCondition.instance.kimchiStartDate ?? defaultStartDate;
         DateTime? endDate =
@@ -353,6 +355,24 @@ class SimulationPage extends StatefulWidget {
                       child: Text(l10n(context).kimchiResetDateRange),
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: useExchangeRateSellWeight,
+                        onChanged: (value) {
+                          setState(() {
+                            useExchangeRateSellWeight = value ?? false;
+                          });
+                        },
+                      ),
+                      Expanded(
+                        child: Text(
+                          l10n(context).useExchangeRateSellWeight,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
               actions: [
@@ -367,6 +387,7 @@ class SimulationPage extends StatefulWidget {
                       'sell': sell,
                       'startDate': startDate,
                       'endDate': endDate,
+                      'useExchangeRateSellWeight': useExchangeRateSellWeight,
                     });
                   },
                   child: Text(l10n(context).confirm),
@@ -383,10 +404,13 @@ class SimulationPage extends StatefulWidget {
       final sell = result['sell'] as double;
       final startDate = result['startDate'] as DateTime?;
       final endDate = result['endDate'] as DateTime?;
+      final useExchangeRateSellWeight =
+          result['useExchangeRateSellWeight'] as bool? ?? false;
 
       final isSuccess = await ApiService.shared.saveAndSyncUserData({
         UserDataKey.gimchiBuyPercent: buy,
         UserDataKey.gimchiSellPercent: sell,
+        UserDataKey.gimchiSellFollowExchangeRate: useExchangeRateSellWeight,
       });
 
       if (isSuccess) {
@@ -396,6 +420,8 @@ class SimulationPage extends StatefulWidget {
           startDate: startDate,
           endDate: endDate,
         );
+        await SimulationCondition.instance
+            .saveUseExchangeRateSellWeight(useExchangeRateSellWeight);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n(context).failedToSaveSettings)),
@@ -552,6 +578,8 @@ class _SimulationPageState extends State<SimulationPage>
       // 서버에서 받은 김치 프리미엄 트렌드 데이터 사용
       (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
         trendData: widget.premiumTrends?[date],
+        exchangeRates: widget.usdExchangeRates,
+        targetDate: date,
       );
     }
 

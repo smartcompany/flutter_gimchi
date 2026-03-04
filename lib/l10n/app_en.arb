@@ -92,6 +92,7 @@
   "kimchiStartDate": "Start date",
   "kimchiEndDate": "End date",
   "kimchiResetDateRange": "Full period",
+  "useExchangeRateSellWeight": "Adjust buy/sell thresholds by exchange rate",
   "failedToSaveSettings": "Failed to save settings.",
   "buyPrice": "Buy Price",
   "sellPrice": "Sell Price",

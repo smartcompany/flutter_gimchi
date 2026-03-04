@@ -89,6 +89,7 @@
   "kimchiStartDate": "시작 일정",
   "kimchiEndDate": "종료 일정",
   "kimchiResetDateRange": "전체 일정",
+  "useExchangeRateSellWeight": "환율 추종 매수/매도 보정",
   "failedToSaveSettings":"설정 저장에 실패했습니다.",
   "buyPrice":"매수 가격",
   "sellPrice":"매도 가격",

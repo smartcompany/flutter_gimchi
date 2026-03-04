@@ -365,7 +365,11 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
             final (
               buyThreshold,
               sellThreshold,
-            ) = SimulationModel.getKimchiThresholds(trendData: null);
+            ) = SimulationModel.getKimchiThresholds(
+              trendData: null,
+              exchangeRates: widget.exchangeRates,
+              targetDate: widget.usdtChartData.last.time,
+            );
 
             final buyPrice = exchangeRateValue * (1 + buyThreshold / 100);
             final sellPrice = exchangeRateValue * (1 + sellThreshold / 100);

@@ -1709,6 +1709,7 @@ class _MyHomePageState extends State<MyHomePage>
         exchangeRateValue: exchangeRateValue,
         premiumTrends: premiumTrends,
         targetDate: todayUsdt?.time,
+        exchangeRates: exchangeRates,
       );
       buyPrice = prices.buyPrice;
       sellPrice = prices.sellPrice;
@@ -2795,6 +2796,8 @@ class _MyHomePageState extends State<MyHomePage>
     final todayDate = exchangeRates.safeLast?.time;
     final (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
       trendData: premiumTrends?[todayDate],
+      exchangeRates: exchangeRates,
+      targetDate: todayDate,
     );
 
     final buyPrice = (exchangeRateValue * (1 + buyThreshold / 100));

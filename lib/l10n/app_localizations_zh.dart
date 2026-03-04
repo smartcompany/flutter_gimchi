@@ -267,6 +267,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get kimchiResetDateRange => '全部期间';
 
   @override
+  String get useExchangeRateSellWeight => '按汇率调整买入/卖出阈值';
+
+  @override
   String get failedToSaveSettings => '保存设置失败。';
 
   @override

@@ -216,12 +216,107 @@ class SimulationModel {
 
   static (double, double) getKimchiThresholds({
     required Map<String, double>? trendData,
+    List<ChartData>? exchangeRates,
+    DateTime? targetDate,
   }) {
     // 항상 기본 임계값 사용 (추세 기반 전략 제거)
-    final buyThreshold = SimulationCondition.instance.kimchiBuyThreshold;
-    final sellThreshold = SimulationCondition.instance.kimchiSellThreshold;
+    double buyThreshold = SimulationCondition.instance.kimchiBuyThreshold;
+    double sellThreshold = SimulationCondition.instance.kimchiSellThreshold;
+
+    if (SimulationCondition.instance.useExchangeRateSellWeight) {
+      buyThreshold = _applyExchangeRateBuyWeight(
+        baseBuyThreshold: buyThreshold,
+        exchangeRates: exchangeRates,
+        targetDate: targetDate,
+      );
+      sellThreshold = _applyExchangeRateSellWeight(
+        baseSellThreshold: sellThreshold,
+        exchangeRates: exchangeRates,
+        targetDate: targetDate,
+      );
+    }
 
     return (buyThreshold, sellThreshold);
+  }
+
+  static double _applyExchangeRateSellWeight({
+    required double baseSellThreshold,
+    List<ChartData>? exchangeRates,
+    DateTime? targetDate,
+  }) {
+    if (exchangeRates == null || exchangeRates.isEmpty) {
+      return baseSellThreshold;
+    }
+
+    final DateTime referenceDate = targetDate ?? exchangeRates.last.time;
+    final currentRate =
+        _getExchangeRateAtDate(exchangeRates, referenceDate) ??
+            exchangeRates.last.value;
+    const lowRate = 1450.0;
+    const highRate = 1480.0;
+    if (lowRate >= highRate) {
+      return baseSellThreshold;
+    }
+
+    const minFactor = 0.2; // 환율 고점일 때 매도 임계값 축소 비율
+    if (currentRate <= lowRate) {
+      return baseSellThreshold;
+    }
+    final ratio =
+        ((currentRate - lowRate) / (highRate - lowRate)).clamp(0.0, 1.0);
+    final eased = _smoothstep(ratio);
+    final factor = 1.0 - eased * (1.0 - minFactor);
+    final adjusted = baseSellThreshold * factor;
+    return adjusted.clamp(-50.0, 50.0);
+  }
+
+  static double _applyExchangeRateBuyWeight({
+    required double baseBuyThreshold,
+    List<ChartData>? exchangeRates,
+    DateTime? targetDate,
+  }) {
+    if (exchangeRates == null || exchangeRates.isEmpty) {
+      return baseBuyThreshold;
+    }
+
+    final DateTime referenceDate = targetDate ?? exchangeRates.last.time;
+    final currentRate =
+        _getExchangeRateAtDate(exchangeRates, referenceDate) ??
+            exchangeRates.last.value;
+
+    const lowRate = 1450.0;
+    const highRate = 1480.0;
+    const targetHighBuyThreshold = -1.5;
+    if (lowRate >= highRate) {
+      return baseBuyThreshold;
+    }
+    if (currentRate <= lowRate) {
+      return baseBuyThreshold;
+    }
+
+    final ratio =
+        ((currentRate - lowRate) / (highRate - lowRate)).clamp(0.0, 1.0);
+    final eased = _smoothstep(ratio);
+    final adjusted = baseBuyThreshold +
+        (targetHighBuyThreshold - baseBuyThreshold) * eased;
+    return adjusted.clamp(-50.0, 50.0);
+  }
+
+  static double _smoothstep(double t) {
+    final clamped = t.clamp(0.0, 1.0);
+    return clamped * clamped * (3 - 2 * clamped);
+  }
+
+  static double? _getExchangeRateAtDate(
+    List<ChartData> exchangeRates,
+    DateTime targetDate,
+  ) {
+    ChartData? closest;
+    for (final rate in exchangeRates) {
+      if (rate.time.isAfter(targetDate)) break;
+      closest = rate;
+    }
+    return closest?.value;
   }
 
   // 김치 시뮬레이션 결과 계산
@@ -287,6 +382,8 @@ class SimulationModel {
 
       final (buyThreshold, sellThreshold) = getKimchiThresholds(
         trendData: premiumTrends?[date],
+        exchangeRates: usdExchangeRates,
+        targetDate: date,
       );
 
       buyTargetPrice = usdExchangeRate * (1 + buyThreshold / 100);
@@ -575,6 +672,8 @@ class SimulationModel {
         // 김치 프리미엄 임계값 가져오기 (추세 기반 전략 제거)
         final (buyThreshold, sellThreshold) = getKimchiThresholds(
           trendData: null,
+          exchangeRates: exchangeRates,
+          targetDate: todayUsdtTime,
         );
 
         // 김치 프리미엄 매수/매도 가격 계산
@@ -606,9 +705,14 @@ class SimulationModel {
     required double exchangeRateValue,
     Map<DateTime, Map<String, double>>? premiumTrends,
     DateTime? targetDate,
+    List<ChartData>? exchangeRates,
   }) {
     // 추세 기반 전략 제거 - 항상 기본 임계값 사용
-    final (buyThreshold, sellThreshold) = getKimchiThresholds(trendData: null);
+    final (buyThreshold, sellThreshold) = getKimchiThresholds(
+      trendData: null,
+      exchangeRates: exchangeRates,
+      targetDate: targetDate,
+    );
 
     final buyPrice = exchangeRateValue * (1 + buyThreshold / 100);
     final sellPrice = exchangeRateValue * (1 + sellThreshold / 100);
@@ -627,7 +731,11 @@ class SimulationModel {
     if (exchangeRateValue == 0) return 0;
 
     // 추세 기반 전략 제거 - 항상 기본 임계값 사용
-    final (buyThreshold, _) = getKimchiThresholds(trendData: null);
+    final (buyThreshold, _) = getKimchiThresholds(
+      trendData: null,
+      exchangeRates: exchangeRates,
+      targetDate: targetDate,
+    );
     return exchangeRateValue * (1 + buyThreshold / 100);
   }
 
@@ -642,7 +750,11 @@ class SimulationModel {
     if (exchangeRateValue == 0) return 0;
 
     // 추세 기반 전략 제거 - 항상 기본 임계값 사용
-    final (_, sellThreshold) = getKimchiThresholds(trendData: null);
+    final (_, sellThreshold) = getKimchiThresholds(
+      trendData: null,
+      exchangeRates: exchangeRates,
+      targetDate: targetDate,
+    );
     return exchangeRateValue * (1 + sellThreshold / 100);
   }
 }

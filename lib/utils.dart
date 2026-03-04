@@ -76,6 +76,8 @@ class SimulationCondition {
   double get kimchiBuyThreshold => _kimchiBuyThreshold;
   double _kimchiSellThreshold = 2.5;
   double get kimchiSellThreshold => _kimchiSellThreshold;
+  bool _useExchangeRateSellWeight = false;
+  bool get useExchangeRateSellWeight => _useExchangeRateSellWeight;
   DateTime? _kimchiStartDate;
   DateTime? get kimchiStartDate => _kimchiStartDate;
   DateTime? _kimchiEndDate;
@@ -87,6 +89,8 @@ class SimulationCondition {
           prefs.getDouble('kimchiBuyThreshold') ?? 0.5;
       instance._kimchiSellThreshold =
           prefs.getDouble('kimchiSellThreshold') ?? 2.5;
+      instance._useExchangeRateSellWeight =
+          prefs.getBool('useExchangeRateSellWeight') ?? false;
       final startDateRaw = prefs.getString('kimchiStartDate');
       final endDateRaw = prefs.getString('kimchiEndDate');
       instance._kimchiStartDate =
@@ -106,6 +110,12 @@ class SimulationCondition {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('kimchiSellThreshold', value);
     _kimchiSellThreshold = value;
+  }
+
+  Future<void> saveUseExchangeRateSellWeight(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('useExchangeRateSellWeight', value);
+    _useExchangeRateSellWeight = value;
   }
 
   Future<void> saveKimchiStartDate(DateTime? value) async {

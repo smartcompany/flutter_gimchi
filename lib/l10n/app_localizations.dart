@@ -604,6 +604,12 @@ abstract class AppLocalizations {
   /// **'전체 일정'**
   String get kimchiResetDateRange;
 
+  /// No description provided for @useExchangeRateSellWeight.
+  ///
+  /// In ko, this message translates to:
+  /// **'환율 추종 매수/매도 보정'**
+  String get useExchangeRateSellWeight;
+
   /// No description provided for @failedToSaveSettings.
   ///
   /// In ko, this message translates to:

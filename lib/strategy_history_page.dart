@@ -371,6 +371,8 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
     // 추세 기반 전략 제거 - 항상 기본 임계값 사용
     (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
       trendData: null,
+      exchangeRates: widget.usdExchangeRates,
+      targetDate: date,
     );
 
     return Column(
@@ -610,6 +612,8 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
     // 추세 기반 전략 제거 - 항상 기본 임계값 사용
     (buyThreshold, sellThreshold) = SimulationModel.getKimchiThresholds(
       trendData: null,
+      exchangeRates: widget.usdExchangeRates,
+      targetDate: date,
     );
 
     return Text(

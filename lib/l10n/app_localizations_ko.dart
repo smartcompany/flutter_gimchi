@@ -268,6 +268,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get kimchiResetDateRange => '전체 일정';
 
   @override
+  String get useExchangeRateSellWeight => '환율 추종 매수/매도 보정';
+
+  @override
   String get failedToSaveSettings => '설정 저장에 실패했습니다.';
 
   @override

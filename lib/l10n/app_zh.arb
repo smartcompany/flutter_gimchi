@@ -92,6 +92,7 @@
   "kimchiStartDate": "开始日期",
   "kimchiEndDate": "结束日期",
   "kimchiResetDateRange": "全部期间",
+  "useExchangeRateSellWeight": "按汇率调整买入/卖出阈值",
   "failedToSaveSettings": "保存设置失败。",
   "buyPrice": "买入价格",
   "sellPrice": "卖出价格",
