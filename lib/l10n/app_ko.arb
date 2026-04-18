@@ -152,7 +152,17 @@
   "kimchiPremiumShort": "김프",
   "tradeTimeline": "매매 타임라인",
   "performanceMetrics": "성과 지표",
-  "initialCapital": "초기 자본: ₩1,000,000",
+  "initialCapital": "초기 자본: {amount}",
+  "@initialCapital": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "editInitialCapitalTitle": "모의 투자 초기 자본",
+  "editInitialCapitalHint": "1만 원 이상 10억 원 이하로 입력하세요.",
+  "initialCapitalInvalid": "유효한 금액(숫자)을 입력해 주세요.",
   "finalValue": "최종 가치",
   "aiSimulatedTradeTitle": "AI 모의 투자",
   "kimchiSimulatedTradeTitle": "김프 모의 투자",

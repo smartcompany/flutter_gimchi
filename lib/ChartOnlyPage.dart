@@ -98,31 +98,43 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
     showGimchiTrading = widget.initialShowGimchiTrading;
 
     // 체크박스에 따라 필요한 동작 자동 실행
+    if (showAITrading || showGimchiTrading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadTradeSimulationMarkers();
+      });
+    }
+  }
+
+  Future<void> _loadTradeSimulationMarkers() async {
+    final cap = await SimulationCondition.instance.getInitialCapitalKrw();
+    if (!mounted) return;
     if (showAITrading) {
-      showGimchiTrading = false;
-      showKimchiPremium = false;
-      showExchangeRate = false;
-      aiTradeResults = SimulationModel.simulateResults(
-        widget.exchangeRates,
-        widget.strategyList,
-        widget.usdtMap,
-      );
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _autoZoomToAITrades();
+      setState(() {
+        showGimchiTrading = false;
+        showKimchiPremium = false;
+        showExchangeRate = false;
+        aiTradeResults = SimulationModel.simulateResults(
+          widget.exchangeRates,
+          widget.strategyList,
+          widget.usdtMap,
+          initialKRW: cap,
+        );
       });
+      _autoZoomToAITrades();
     } else if (showGimchiTrading) {
-      showAITrading = false;
-      showKimchiPremium = false;
-      showExchangeRate = false;
-      aiTradeResults = SimulationModel.gimchiSimulateResults(
-        widget.exchangeRates,
-        widget.strategyList,
-        widget.usdtMap,
-        widget.premiumTrends,
-      );
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _autoZoomToAITrades();
+      setState(() {
+        showAITrading = false;
+        showKimchiPremium = false;
+        showExchangeRate = false;
+        aiTradeResults = SimulationModel.gimchiSimulateResults(
+          widget.exchangeRates,
+          widget.strategyList,
+          widget.usdtMap,
+          widget.premiumTrends,
+          initialKRW: cap,
+        );
       });
+      _autoZoomToAITrades();
     }
   }
 
@@ -818,24 +830,31 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                   value: showAITrading,
                   label: l10n.aiBuySell,
                   color: cs.primary,
-                  onChanged: (val) {
-                    setState(() {
-                      showAITrading = val ?? false;
-                      if (showAITrading) {
-                        showGimchiTrading = false; // AI 매매가 켜지면 김프 매매는 꺼짐
-                        showKimchiPremium = false; // AI 매매가 켜지면 김치 프리미엄은 꺼짐
-                        showExchangeRate = false; // AI 매매가 켜지면 환율은 꺼짐
-
+                  onChanged: (val) async {
+                    final on = val ?? false;
+                    if (on) {
+                      final cap =
+                          await SimulationCondition.instance.getInitialCapitalKrw();
+                      if (!mounted) return;
+                      setState(() {
+                        showAITrading = true;
+                        showGimchiTrading = false;
+                        showKimchiPremium = false;
+                        showExchangeRate = false;
                         aiTradeResults = SimulationModel.simulateResults(
                           widget.exchangeRates,
                           widget.strategyList,
                           widget.usdtMap,
+                          initialKRW: cap,
                         );
-                        _autoZoomToAITrades();
-                      } else {
+                      });
+                      _autoZoomToAITrades();
+                    } else {
+                      setState(() {
+                        showAITrading = false;
                         aiTradeResults = [];
-                      }
-                    });
+                      });
+                    }
                   },
                 ),
                 CheckBoxItem(
@@ -853,11 +872,15 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                         showExchangeRate = false; // 김프 매매가 켜지면 환율은 꺼짐
                       });
 
+                      final cap =
+                          await SimulationCondition.instance.getInitialCapitalKrw();
+                      if (!mounted) return;
                       final results = SimulationModel.gimchiSimulateResults(
                         widget.exchangeRates,
                         widget.strategyList,
                         widget.usdtMap,
                         null, // premiumTrends는 서버에서 받아와야 함
+                        initialKRW: cap,
                       );
                       setState(() {
                         aiTradeResults = results;

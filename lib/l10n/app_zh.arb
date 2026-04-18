@@ -150,6 +150,19 @@
   "priceLabel": "价格",
   "basePremium": "基准溢价",
   "kimchiPremiumShort": "溢价",
+  "tradeTimeline": "交易时间线",
+  "performanceMetrics": "绩效指标",
+  "initialCapital": "初始资金: {amount}",
+  "@initialCapital": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "editInitialCapitalTitle": "模拟初始资金",
+  "editInitialCapitalHint": "请输入 1 万至 10 亿韩元之间的金额。",
+  "initialCapitalInvalid": "请输入有效数字。",
   "profitRate": "收益率",
   "evaluationAmount": "评估金额",
   "fee": "手续费",

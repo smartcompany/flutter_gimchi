@@ -919,8 +919,26 @@ abstract class AppLocalizations {
   /// No description provided for @initialCapital.
   ///
   /// In ko, this message translates to:
-  /// **'초기 자본: ₩1,000,000'**
-  String get initialCapital;
+  /// **'초기 자본: {amount}'**
+  String initialCapital(String amount);
+
+  /// No description provided for @editInitialCapitalTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'모의 투자 초기 자본'**
+  String get editInitialCapitalTitle;
+
+  /// No description provided for @editInitialCapitalHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'1만 원 이상 10억 원 이하로 입력하세요.'**
+  String get editInitialCapitalHint;
+
+  /// No description provided for @initialCapitalInvalid.
+  ///
+  /// In ko, this message translates to:
+  /// **'유효한 금액(숫자)을 입력해 주세요.'**
+  String get initialCapitalInvalid;
 
   /// No description provided for @finalValue.
   ///

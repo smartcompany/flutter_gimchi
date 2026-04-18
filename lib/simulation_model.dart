@@ -34,6 +34,7 @@ class SimulationModel {
     List<ChartData> usdExchangeRates,
     List<StrategyMap> strategyList,
     Map<DateTime, USDTChartData> usdtMap, {
+    double initialKRW = 1000000,
     double? buyFee,
     double? sellFee,
   }) {
@@ -57,7 +58,6 @@ class SimulationModel {
     };
 
     List<SimulationResult> simResults = [];
-    double initialKRW = 1000000;
     double totalKRW = initialKRW;
     SimulationResult? unselledResult;
 
@@ -325,11 +325,11 @@ class SimulationModel {
     List<StrategyMap> strategyList,
     Map<DateTime, USDTChartData> usdtMap,
     Map<DateTime, Map<String, double>>? premiumTrends, {
+    double initialKRW = 1000000,
     double? buyFee,
     double? sellFee,
   }) {
     List<SimulationResult> simResults = [];
-    double initialKRW = 1000000;
     double totalKRW = initialKRW;
     SimulationResult? unselledResult;
 
@@ -511,8 +511,9 @@ class SimulationModel {
 
   // 시뮬레이션 결과를 기반으로 수익률 데이터를 계산하는 내부 함수
   static SimulationYieldData _calculateYieldData(
-    List<SimulationResult> results,
-  ) {
+    List<SimulationResult> results, {
+    required double initialKRW,
+  }) {
     if (results.isEmpty) {
       return SimulationYieldData(
         totalReturn: 0.0,
@@ -534,8 +535,8 @@ class SimulationModel {
 
     final days = lastDate.difference(firstDate).inDays;
     final totalReturn =
-        (results.last.finalKRW / 1000000 - 1) * 100; // 총 수익률 (%)
-    final annualYield = calculateAnnualYield(results);
+        (results.last.finalKRW / initialKRW - 1) * 100; // 총 수익률 (%)
+    final annualYield = calculateAnnualYield(results, initialKRW: initialKRW);
 
     return SimulationYieldData(
       totalReturn: totalReturn,
@@ -545,7 +546,10 @@ class SimulationModel {
   }
 
   // results를 입력으로 받아 annualYield를 리턴하는 static 함수
-  static double calculateAnnualYield(List<SimulationResult> results) {
+  static double calculateAnnualYield(
+    List<SimulationResult> results, {
+    required double initialKRW,
+  }) {
     if (results.isEmpty) return 0.0;
 
     final firstDate = results.first.buyDate;
@@ -556,7 +560,7 @@ class SimulationModel {
     if (days < 1) return 0.0;
 
     final years = days / 365.0;
-    final totalReturn = results.last.finalKRW / 1000000;
+    final totalReturn = results.last.finalKRW / initialKRW;
     final annualYield =
         (years > 0) ? (pow(totalReturn, 1 / years) - 1) * 100 : 0.0;
 
@@ -568,6 +572,7 @@ class SimulationModel {
     List<ChartData> usdExchangeRates,
     List<StrategyMap> strategyList,
     Map<DateTime, USDTChartData> usdtMap, {
+    double initialKRW = 1000000,
     double? buyFee,
     double? sellFee,
   }) {
@@ -575,10 +580,11 @@ class SimulationModel {
       usdExchangeRates,
       strategyList,
       usdtMap,
+      initialKRW: initialKRW,
       buyFee: buyFee,
       sellFee: sellFee,
     );
-    return _calculateYieldData(results);
+    return _calculateYieldData(results, initialKRW: initialKRW);
   }
 
   // 김치 시뮬레이션 수익률 계산
@@ -587,6 +593,7 @@ class SimulationModel {
     List<StrategyMap> strategyList,
     Map<DateTime, USDTChartData> usdtMap,
     Map<DateTime, Map<String, double>>? premiumTrends, {
+    double initialKRW = 1000000,
     double? buyFee,
     double? sellFee,
   }) {
@@ -595,11 +602,12 @@ class SimulationModel {
       strategyList,
       usdtMap,
       premiumTrends,
+      initialKRW: initialKRW,
       buyFee: buyFee,
       sellFee: sellFee,
     );
 
-    return _calculateYieldData(simResults);
+    return _calculateYieldData(simResults, initialKRW: initialKRW);
   }
 
   // 다음 매수/매도 시점 가져오기 (현재 가격 기준으로 하나만 반환)

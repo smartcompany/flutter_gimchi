@@ -1385,76 +1385,88 @@ class _MyHomePageState extends State<MyHomePage>
       final response = await ApiService.shared.fetchStrategyWithKimchiTrends();
 
       if (mounted && response != null) {
-        setState(() {
-          strategyList = response['strategies'] ?? [];
-          latestStrategy = strategyList.isNotEmpty ? strategyList.first : null;
+        final newStrategyList =
+            List<StrategyMap>.from(response['strategies'] ?? []);
+        final newLatestStrategy =
+            newStrategyList.isNotEmpty ? newStrategyList.first : null;
 
-          // 김치 프리미엄 트렌드 데이터 설정
-          if (response['kimchiTrends'] != null) {
-            print('서버에서 받은 김치 트렌드 데이터 개수: ${response['kimchiTrends'].length}');
-            // 서버에서 받은 데이터를 DateTime 키로 변환
-            premiumTrends = <DateTime, Map<String, double>>{};
-            (response['kimchiTrends'] as Map).forEach((dateStr, trendData) {
-              try {
-                final date = DateTime.parse(dateStr.toString());
-                final Map<String, double> data = {};
-                (trendData as Map).forEach((key, value) {
-                  final stringKey = key.toString();
-                  if (value is num) {
-                    data[stringKey] = value.toDouble();
-                  }
-                });
-                premiumTrends![date] = data;
-              } catch (e) {
-                print('날짜 파싱 에러: $dateStr, $e');
-              }
-            });
-            print('변환된 premiumTrends 개수: ${premiumTrends?.length ?? 0}');
-          }
-
-          // Settings에서 수수료 정보 추출
-          double? buyFee;
-          double? sellFee;
-          final settings = ApiService.shared.settings;
-          if (settings != null) {
-            final upbitFees = settings['upbit_fees'] as Map<String, dynamic>?;
-            if (upbitFees != null) {
-              buyFee = (upbitFees['buy_fee'] as num?)?.toDouble();
-              sellFee = (upbitFees['sell_fee'] as num?)?.toDouble();
+        Map<DateTime, Map<String, double>>? nextPremiumTrends = premiumTrends;
+        if (response['kimchiTrends'] != null) {
+          print('서버에서 받은 김치 트렌드 데이터 개수: ${response['kimchiTrends'].length}');
+          nextPremiumTrends = <DateTime, Map<String, double>>{};
+          (response['kimchiTrends'] as Map).forEach((dateStr, trendData) {
+            try {
+              final date = DateTime.parse(dateStr.toString());
+              final Map<String, double> data = {};
+              (trendData as Map).forEach((key, value) {
+                final stringKey = key.toString();
+                if (value is num) {
+                  data[stringKey] = value.toDouble();
+                }
+              });
+              nextPremiumTrends![date] = data;
+            } catch (e) {
+              print('날짜 파싱 에러: $dateStr, $e');
             }
+          });
+          print('변환된 premiumTrends 개수: ${nextPremiumTrends.length}');
+        }
+
+        double? buyFee;
+        double? sellFee;
+        final settings = ApiService.shared.settings;
+        if (settings != null) {
+          final upbitFees = settings['upbit_fees'] as Map<String, dynamic>?;
+          if (upbitFees != null) {
+            buyFee = (upbitFees['buy_fee'] as num?)?.toDouble();
+            sellFee = (upbitFees['sell_fee'] as num?)?.toDouble();
           }
+        }
 
-          aiYieldData = SimulationModel.getYieldForAISimulation(
-            exchangeRates,
-            strategyList,
-            usdtMap,
-            buyFee: buyFee,
-            sellFee: sellFee,
-          );
+        final simInitialKrw =
+            await SimulationCondition.instance.getInitialCapitalKrw();
+        if (!mounted) return;
 
-          gimchiYieldData = SimulationModel.getYieldForGimchiSimulation(
-            exchangeRates,
-            strategyList,
-            usdtMap,
-            premiumTrends,
-            buyFee: buyFee,
-            sellFee: sellFee,
-          );
+        final newAiYield = SimulationModel.getYieldForAISimulation(
+          exchangeRates,
+          newStrategyList,
+          usdtMap,
+          initialKRW: simInitialKrw,
+          buyFee: buyFee,
+          sellFee: sellFee,
+        );
 
-          // chartOnlyPageModel 업데이트
-          chartOnlyPageModel = ChartOnlyPageModel(
-            exchangeRates: exchangeRates,
-            kimchiPremium: kimchiPremium,
-            strategyList: strategyList,
-            usdtMap: usdtMap,
-            usdtChartData: usdtChartData,
-            kimchiMin: kimchiMin,
-            kimchiMax: kimchiMax,
-            premiumTrends: premiumTrends,
-          );
+        final newGimchiYield = SimulationModel.getYieldForGimchiSimulation(
+          exchangeRates,
+          newStrategyList,
+          usdtMap,
+          nextPremiumTrends,
+          initialKRW: simInitialKrw,
+          buyFee: buyFee,
+          sellFee: sellFee,
+        );
 
-          print('전략 데이터 로딩 완료');
+        final newChartModel = ChartOnlyPageModel(
+          exchangeRates: exchangeRates,
+          kimchiPremium: kimchiPremium,
+          strategyList: newStrategyList,
+          usdtMap: usdtMap,
+          usdtChartData: usdtChartData,
+          kimchiMin: kimchiMin,
+          kimchiMax: kimchiMax,
+          premiumTrends: nextPremiumTrends,
+        );
+
+        setState(() {
+          strategyList = newStrategyList;
+          latestStrategy = newLatestStrategy;
+          premiumTrends = nextPremiumTrends;
+          aiYieldData = newAiYield;
+          gimchiYieldData = newGimchiYield;
+          chartOnlyPageModel = newChartModel;
         });
+
+        print('전략 데이터 로딩 완료');
       }
     } catch (e) {
       chartOnlyPageModel = null;

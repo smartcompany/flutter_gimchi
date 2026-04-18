@@ -583,6 +583,7 @@ enum UserDataKey {
   gimchiBuyPercent,
   gimchiSellPercent,
   gimchiSellFollowExchangeRate,
+  simulationInitialKrw,
 }
 
 extension UserDataKeyExt on UserDataKey {
@@ -596,6 +597,8 @@ extension UserDataKeyExt on UserDataKey {
         return 'gimchiSellPercent';
       case UserDataKey.gimchiSellFollowExchangeRate:
         return 'gimchiSellFollowExchangeRate';
+      case UserDataKey.simulationInitialKrw:
+        return 'simulationInitialKrw';
     }
   }
 }

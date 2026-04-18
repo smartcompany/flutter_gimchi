@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -83,6 +85,9 @@ class SimulationCondition {
   DateTime? _kimchiEndDate;
   DateTime? get kimchiEndDate => _kimchiEndDate;
 
+  double _simulationInitialKrw = 1000000;
+  double get simulationInitialKrw => _simulationInitialKrw;
+
   void load() {
     SharedPreferences.getInstance().then((prefs) {
       instance._kimchiBuyThreshold =
@@ -97,7 +102,50 @@ class SimulationCondition {
           startDateRaw != null ? DateTime.tryParse(startDateRaw) : null;
       instance._kimchiEndDate =
           endDateRaw != null ? DateTime.tryParse(endDateRaw) : null;
+      instance._simulationInitialKrw = _readSimulationInitialKrwSync(prefs);
     });
+  }
+
+  static double _readSimulationInitialKrwSync(SharedPreferences prefs) {
+    final direct = prefs.getDouble('simulationInitialKrw');
+    if (direct != null && direct >= 10000) {
+      return direct;
+    }
+    final raw = prefs.getString('userData');
+    if (raw != null) {
+      try {
+        final map = Map<String, dynamic>.from(jsonDecode(raw) as Map);
+        final v = map['simulationInitialKrw'];
+        if (v is num && v.toDouble() >= 10000) {
+          return v.toDouble();
+        }
+      } catch (_) {}
+    }
+    return 1000000;
+  }
+
+  /// 모의 투자 초기 자본 (원). SharedPreferences + 서버 userData 동기화.
+  Future<double> getInitialCapitalKrw() async {
+    final prefs = await SharedPreferences.getInstance();
+    _simulationInitialKrw = _readSimulationInitialKrwSync(prefs);
+    return _simulationInitialKrw;
+  }
+
+  static const double _minInitialKrw = 10000;
+  static const double _maxInitialKrw = 1000000000;
+
+  Future<bool> saveSimulationInitialKrw(double value) async {
+    final clamped = value.clamp(_minInitialKrw, _maxInitialKrw);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('simulationInitialKrw', clamped);
+    _simulationInitialKrw = clamped;
+    try {
+      return await ApiService.shared.saveAndSyncUserData({
+        UserDataKey.simulationInitialKrw: clamped,
+      });
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> saveKimchiBuyThreshold(double value) async {

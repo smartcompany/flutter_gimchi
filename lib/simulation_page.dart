@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:usdt_signal/ChartOnlyPage.dart'; // ChartOnlyPageModel import 추가
 import 'package:usdt_signal/api_service.dart';
@@ -7,6 +8,67 @@ import 'package:usdt_signal/simulation_model.dart';
 import 'package:usdt_signal/strategy_history_page.dart';
 import 'utils.dart';
 import 'dialogs/liquid_glass_dialog.dart';
+
+/// 정수 원화 입력용: 숫자만 받아 천단위 구분자로 표시하고 커서 위치를 맞춥니다.
+class _ThousandsSeparatorDigitsFormatter extends TextInputFormatter {
+  _ThousandsSeparatorDigitsFormatter(this._fmt);
+  final NumberFormat _fmt;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digitsOnly = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
+    if (digitsOnly.isEmpty) {
+      return const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
+
+    var d = digitsOnly;
+    if (d.length > 15) {
+      d = d.substring(0, 15);
+    }
+    final n = int.tryParse(d);
+    if (n == null) {
+      return oldValue;
+    }
+    final formatted = _fmt.format(n);
+
+    final sel = newValue.selection;
+    int digitsBeforeCursor = d.length;
+    if (sel.isValid && sel.baseOffset <= newValue.text.length) {
+      final before = newValue.text.substring(0, sel.baseOffset);
+      digitsBeforeCursor = before.replaceAll(RegExp(r'[^\d]'), '').length;
+    }
+
+    int newOffset = 0;
+    if (digitsBeforeCursor > 0) {
+      var digitCount = 0;
+      for (var i = 0; i < formatted.length; i++) {
+        final ch = formatted[i];
+        if (ch == ',' || ch == ' ' || ch == '\u00a0') continue;
+        digitCount++;
+        if (digitCount == digitsBeforeCursor) {
+          newOffset = i + 1;
+          break;
+        }
+      }
+      if (digitCount < digitsBeforeCursor) {
+        newOffset = formatted.length;
+      }
+    }
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(
+        offset: newOffset.clamp(0, formatted.length),
+      ),
+    );
+  }
+}
 
 // ============================================================================
 // 시뮬레이션 화면 테마 (다크/라이트 공통 ColorScheme)
@@ -427,6 +489,7 @@ class _SimulationPageState extends State<SimulationPage>
   // 소수점 4자리까지 표시하는 포맷
   final NumberFormat krwFormat = NumberFormat("#,##0.#", "ko_KR");
   double totalProfitRate = 0; // 총 수익률 변수 추가
+  double _initialCapitalKrw = 1000000;
 
   @override
   void initState() {
@@ -470,16 +533,20 @@ class _SimulationPageState extends State<SimulationPage>
         print('시뮬레이션 수수료 설정: settings가 null입니다.');
       }
 
+      final initial = await SimulationCondition.instance.getInitialCapitalKrw();
+
       if (widget.simulationType == SimulationType.ai) {
         final simResults = SimulationModel.simulateResults(
           usdExchangeRates,
           strategyList,
           usdtMap,
+          initialKRW: initial,
           buyFee: buyFee,
           sellFee: sellFee,
         );
 
         setState(() {
+          _initialCapitalKrw = initial;
           strategies = List<StrategyMap>.from(strategyList);
           results = simResults;
           loading = false;
@@ -490,11 +557,13 @@ class _SimulationPageState extends State<SimulationPage>
           strategyList,
           usdtMap,
           widget.premiumTrends,
+          initialKRW: initial,
           buyFee: buyFee,
           sellFee: sellFee,
         );
 
         setState(() {
+          _initialCapitalKrw = initial;
           strategies = List<StrategyMap>.from(strategyList);
           results = simResults;
           loading = false;
@@ -506,6 +575,80 @@ class _SimulationPageState extends State<SimulationPage>
         error = e.toString();
         loading = false;
       });
+    }
+  }
+
+  Future<void> _onEditInitialCapital() async {
+    final intFormat = NumberFormat(
+      '#,##0',
+      Localizations.localeOf(context).toLanguageTag(),
+    );
+    final controller = TextEditingController(
+      text: intFormat.format(_initialCapitalKrw.round()),
+    );
+    try {
+      final result = await LiquidGlassDialog.show<double?>(
+        context: context,
+        barrierDismissible: false,
+        title: Text(l10n(context).editInitialCapitalTitle),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                l10n(context).editInitialCapitalHint,
+                style: _BodyStyles.labelText(context),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: false,
+                  signed: false,
+                ),
+                inputFormatters: [
+                  _ThousandsSeparatorDigitsFormatter(intFormat),
+                ],
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n(context).cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              final raw = controller.text
+                  .replaceAll(RegExp(r'[^\d]'), '')
+                  .trim();
+              final v = double.tryParse(raw);
+              if (v == null || v < 10000 || v > 1000000000) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l10n(context).initialCapitalInvalid)),
+                );
+                return;
+              }
+              Navigator.of(context).pop(v);
+            },
+            child: Text(l10n(context).confirm),
+          ),
+        ],
+      );
+      if (result != null && mounted) {
+        await SimulationCondition.instance.saveSimulationInitialKrw(result);
+        if (!mounted) return;
+        await runSimulation();
+      }
+    } finally {
+      controller.dispose();
     }
   }
 
@@ -1033,9 +1176,31 @@ class _SimulationPageState extends State<SimulationPage>
                             style: _TitleStyles.headerCardTitle(context),
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            l10n(context).initialCapital,
-                            style: _BodyStyles.labelText(context),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  l10n(context).initialCapital(
+                                    '₩${krwFormat.format(_initialCapitalKrw.round())}',
+                                  ),
+                                  style: _BodyStyles.labelText(context),
+                                ),
+                              ),
+                              IconButton(
+                                tooltip: l10n(context).editInitialCapitalTitle,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 32,
+                                  minHeight: 32,
+                                ),
+                                icon: Icon(
+                                  Icons.edit_outlined,
+                                  size: 20,
+                                  color: cs.primary,
+                                ),
+                                onPressed: _onEditInitialCapital,
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -1091,11 +1256,12 @@ class _SimulationPageState extends State<SimulationPage>
                       builder: (context) {
                         final double totalGain =
                             results.isNotEmpty
-                                ? (results.last.finalKRW - 1000000)
+                                ? (results.last.finalKRW - _initialCapitalKrw)
                                 : 0;
                         final double totalGainPercent =
                             results.isNotEmpty
-                                ? (results.last.finalKRW / 1000000 * 100 - 100)
+                                ? (results.last.finalKRW / _initialCapitalKrw * 100 -
+                                    100)
                                 : 0;
                         return RichText(
                           text: TextSpan(
@@ -1629,17 +1795,22 @@ class _SimulationPageState extends State<SimulationPage>
       return results[index - 1].finalKRW;
     } else {
       // 첫 거래인 경우 초기 자본 사용
-      return 1000000.0;
+      return _initialCapitalKrw;
     }
   }
 
   Widget _buildPerformanceMetrics(BuildContext context) {
     final double totalGain =
-        results.isNotEmpty ? (results.last.finalKRW / 1000000 * 100 - 100) : 0;
+        results.isNotEmpty
+            ? (results.last.finalKRW / _initialCapitalKrw * 100 - 100)
+            : 0;
 
     String annualYieldText = "0.00%";
     if (results.isNotEmpty) {
-      final annualYield = SimulationModel.calculateAnnualYield(results);
+      final annualYield = SimulationModel.calculateAnnualYield(
+        results,
+        initialKRW: _initialCapitalKrw,
+      );
       if (!annualYield.isNaN && !annualYield.isInfinite && annualYield != 0.0) {
         annualYieldText = "${annualYield.toStringAsFixed(2)}%";
       }

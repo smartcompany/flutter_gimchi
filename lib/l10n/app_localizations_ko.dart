@@ -430,7 +430,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get performanceMetrics => '성과 지표';
 
   @override
-  String get initialCapital => '초기 자본: ₩1,000,000';
+  String initialCapital(String amount) {
+    return '초기 자본: $amount';
+  }
+
+  @override
+  String get editInitialCapitalTitle => '모의 투자 초기 자본';
+
+  @override
+  String get editInitialCapitalHint => '1만 원 이상 10억 원 이하로 입력하세요.';
+
+  @override
+  String get initialCapitalInvalid => '유효한 금액(숫자)을 입력해 주세요.';
 
   @override
   String get finalValue => '최종 가치';

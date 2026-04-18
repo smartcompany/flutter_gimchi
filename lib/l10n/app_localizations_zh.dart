@@ -421,13 +421,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get kimchiPremiumShort => '溢价';
 
   @override
-  String get tradeTimeline => '매매 타임라인';
+  String get tradeTimeline => '交易时间线';
 
   @override
-  String get performanceMetrics => '성과 지표';
+  String get performanceMetrics => '绩效指标';
 
   @override
-  String get initialCapital => '초기 자본: ₩1,000,000';
+  String initialCapital(String amount) {
+    return '初始资金: $amount';
+  }
+
+  @override
+  String get editInitialCapitalTitle => '模拟初始资金';
+
+  @override
+  String get editInitialCapitalHint => '请输入 1 万至 10 亿韩元之间的金额。';
+
+  @override
+  String get initialCapitalInvalid => '请输入有效数字。';
 
   @override
   String get finalValue => '최종 가치';

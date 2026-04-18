@@ -441,7 +441,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get performanceMetrics => 'Performance Metrics';
 
   @override
-  String get initialCapital => 'Initial: ₩1,000,000';
+  String initialCapital(String amount) {
+    return 'Initial capital: $amount';
+  }
+
+  @override
+  String get editInitialCapitalTitle => 'Simulation starting capital';
+
+  @override
+  String get editInitialCapitalHint =>
+      'Enter an amount between ₩10,000 and ₩1 billion.';
+
+  @override
+  String get initialCapitalInvalid => 'Please enter a valid number.';
 
   @override
   String get finalValue => 'Final Value';
