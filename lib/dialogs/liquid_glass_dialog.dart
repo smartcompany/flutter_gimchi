@@ -1,20 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-/// 리퀴드 글래스 색상 팔레트
-class _GlassColors {
-  static const primaryGradient = [
-    Color(0xFF667EEA), // 보라색
-    Color(0xFF764BA2), // 진한 보라색
-  ];
-
-  static const glassWhite = Color(0xFFFFFFFF);
-  static const glassBorder = Color(0x30FFFFFF);
-  static const textPrimary = Color(0xFF1E293B);
-  static const textSecondary = Color(0xFF64748B);
-}
-
-/// 리퀴드 글래스 스타일의 다이얼로그
+/// 리퀴드 글래스 스타일의 다이얼로그 (라이트/다크 테마 연동)
 class LiquidGlassDialog extends StatelessWidget {
   final Widget? title;
   final Widget? content;
@@ -37,6 +24,35 @@ class LiquidGlassDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = cs.brightness == Brightness.dark;
+
+    final glassTop = isDark
+        ? cs.surfaceContainerHighest.withValues(alpha: 0.92)
+        : cs.surfaceContainerHighest.withValues(alpha: 0.96);
+    final glassBottom = isDark
+        ? cs.surfaceContainerHigh.withValues(alpha: 0.88)
+        : cs.surfaceContainerHigh.withValues(alpha: 0.9);
+    final borderColor = cs.outline.withValues(alpha: isDark ? 0.45 : 0.25);
+    final titleStyle = Theme.of(context).textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: cs.onSurface,
+        ) ??
+        TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: cs.onSurface,
+        );
+    final bodyStyle = Theme.of(context).textTheme.bodyLarge?.copyWith(
+          color: cs.onSurface,
+          height: 1.5,
+        ) ??
+        TextStyle(
+          fontSize: 16,
+          color: cs.onSurface,
+          height: 1.5,
+        );
+
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -44,7 +60,7 @@ class LiquidGlassDialog extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
           child: Container(
             width: width,
             height: height,
@@ -52,21 +68,15 @@ class LiquidGlassDialog extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  _GlassColors.glassWhite.withOpacity(0.95),
-                  _GlassColors.glassWhite.withOpacity(0.85),
-                ],
+                colors: [glassTop, glassBottom],
               ),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: _GlassColors.glassBorder,
-                width: 1.5,
-              ),
+              border: Border.all(color: borderColor, width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: _GlassColors.primaryGradient[0].withOpacity(0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+                  color: cs.primary.withValues(alpha: isDark ? 0.35 : 0.22),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
@@ -77,11 +87,7 @@ class LiquidGlassDialog extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
                     child: DefaultTextStyle(
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: _GlassColors.textPrimary,
-                      ),
+                      style: titleStyle,
                       child: title!,
                     ),
                   ),
@@ -96,11 +102,7 @@ class LiquidGlassDialog extends StatelessWidget {
                             actions != null && actions!.isNotEmpty ? 8 : 24,
                           ),
                       child: DefaultTextStyle(
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: _GlassColors.textPrimary,
-                          height: 1.5,
-                        ),
+                        style: bodyStyle,
                         child: content!,
                       ),
                     ),
@@ -126,7 +128,6 @@ class LiquidGlassDialog extends StatelessWidget {
     );
   }
 
-  /// 간단한 AlertDialog 스타일의 리퀴드 글래스 다이얼로그 표시
   static Future<T?> show<T>({
     required BuildContext context,
     Widget? title,
@@ -151,4 +152,3 @@ class LiquidGlassDialog extends StatelessWidget {
     );
   }
 }
-

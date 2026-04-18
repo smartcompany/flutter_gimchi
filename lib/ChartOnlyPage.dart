@@ -135,6 +135,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
     final double chartHeight =
@@ -158,16 +159,16 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
           toolbarHeight: 48,
           title: Text(
             l10n(context).chartTrendAnalysis,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 18,
-              color: Color(0xFF1E293B),
+              color: cs.onSurface,
             ),
           ),
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
-          iconTheme: const IconThemeData(color: Color(0xFF1E293B), size: 22),
+          iconTheme: IconThemeData(color: cs.onSurface, size: 22),
           flexibleSpace: ClipRRect(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -177,13 +178,13 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withOpacity(0.85),
-                      Colors.white.withOpacity(0.7),
+                      cs.surface.withValues(alpha: 0.92),
+                      cs.surface.withValues(alpha: 0.78),
                     ],
                   ),
                   border: Border(
                     bottom: BorderSide(
-                      color: Colors.white.withOpacity(0.3),
+                      color: cs.outline.withValues(alpha: 0.4),
                       width: 0.5,
                     ),
                   ),
@@ -193,14 +194,14 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
           ),
         ),
         body: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFFE0E7FF), // 연한 보라
-                Color(0xFFF3E8FF), // 연한 핑크
-                Color(0xFFFFF1F2), // 연한 핑크 화이트
+                cs.surface,
+                cs.surfaceContainerLow,
+                cs.surfaceContainerHigh,
               ],
             ),
           ),
@@ -226,6 +227,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
 
   // 3. 차트 카드
   Widget _buildChartCard(double chartHeight, AppLocalizations l10n) {
+    final cs = Theme.of(context).colorScheme;
     List<PlotBand> kimchiPlotBands =
         showKimchiPlotBands ? getKimchiPlotBands() : [];
 
@@ -243,18 +245,18 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Colors.white.withOpacity(0.9),
-                    Colors.white.withOpacity(0.7),
+                    cs.surfaceContainerHigh.withValues(alpha: 0.96),
+                    cs.surfaceContainerHighest.withValues(alpha: 0.88),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
+                  color: cs.outline.withValues(alpha: 0.4),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF667EEA).withOpacity(0.2),
+                    color: cs.primary.withValues(alpha: 0.14),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -270,11 +272,14 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
           left: 10,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cs.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: cs.outline.withValues(alpha: 0.4),
+              ),
             ),
             child: IconButton(
-              icon: const Icon(Icons.refresh, color: Colors.deepPurple),
+              icon: Icon(Icons.refresh, color: cs.primary),
               tooltip: l10n.resetChart,
               onPressed: () {
                 setState(() {
@@ -290,11 +295,14 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
           right: 10,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cs.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: cs.outline.withValues(alpha: 0.4),
+              ),
             ),
             child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.deepPurple),
+              icon: Icon(Icons.close, color: cs.primary),
               tooltip: l10n.backToPreviousChart,
               onPressed: () {
                 Navigator.of(context).pop();
@@ -405,13 +413,25 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
       }
     }
 
+    final cs = Theme.of(context).colorScheme;
+    final chartSurface = cs.surfaceContainerHighest;
+    final axisLabelColor = cs.onSurfaceVariant;
+    final axisLineColor = cs.outline.withValues(alpha: 0.55);
+
     return SfCartesianChart(
       onTooltipRender: (TooltipArgs args) => _handleTooltipRender(args, l10n),
-      legend: const Legend(isVisible: true, position: LegendPosition.bottom),
+      plotAreaBackgroundColor: chartSurface,
+      plotAreaBorderColor: axisLineColor,
+      plotAreaBorderWidth: 0,
+      legend: Legend(
+        isVisible: true,
+        position: LegendPosition.bottom,
+        textStyle: TextStyle(color: axisLabelColor, fontSize: 12),
+      ),
       margin: const EdgeInsets.all(10),
-      primaryXAxis: _buildPrimaryXAxis(kimchiPlotBands),
-      primaryYAxis: _buildPrimaryYAxis(),
-      axes: _buildAxes(),
+      primaryXAxis: _buildPrimaryXAxis(kimchiPlotBands, cs),
+      primaryYAxis: _buildPrimaryYAxis(cs),
+      axes: _buildAxes(cs),
       zoomPanBehavior: _zoomPanBehavior,
       tooltipBehavior: TooltipBehavior(enable: true),
       annotations: [
@@ -449,7 +469,10 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
           ),
         if (widget.usdtChartData.isNotEmpty)
           CartesianChartAnnotation(
-            widget: const BlinkingDot(color: Colors.blue, size: 8),
+            widget: const BlinkingDot(
+              color: Color(0xFF7EB8FF),
+              size: 8,
+            ),
             coordinateUnit: CoordinateUnit.point,
             x: widget.usdtChartData.last.time,
             y: widget.usdtChartData.last.close,
@@ -460,7 +483,13 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
   }
 
   // X축 설정
-  DateTimeAxis _buildPrimaryXAxis(List<PlotBand> kimchiPlotBands) {
+  DateTimeAxis _buildPrimaryXAxis(
+    List<PlotBand> kimchiPlotBands,
+    ColorScheme cs,
+  ) {
+    final axisLabelColor = cs.onSurfaceVariant;
+    final gridColor = cs.outline.withValues(alpha: 0.28);
+    final axisLineColor = cs.outline.withValues(alpha: 0.55);
     return DateTimeAxis(
       edgeLabelPlacement: EdgeLabelPlacement.shift,
       intervalType: DateTimeIntervalType.days,
@@ -469,22 +498,34 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
       initialZoomFactor: 0.9,
       initialZoomPosition: 0.8,
       plotBands: kimchiPlotBands,
+      axisLine: AxisLine(color: axisLineColor, width: 1),
+      majorGridLines: MajorGridLines(color: gridColor, width: 1),
+      labelStyle: TextStyle(color: axisLabelColor, fontSize: 11),
     );
   }
 
   // Y축 설정
-  NumericAxis _buildPrimaryYAxis() {
+  NumericAxis _buildPrimaryYAxis(ColorScheme cs) {
+    final axisLabelColor = cs.onSurfaceVariant;
+    final gridColor = cs.outline.withValues(alpha: 0.28);
+    final axisLineColor = cs.outline.withValues(alpha: 0.55);
     return NumericAxis(
       rangePadding: ChartRangePadding.auto,
       labelFormat: '{value}',
       numberFormat: NumberFormat("###,##0.0"),
       minimum: getUsdtMin(widget.usdtChartData),
       maximum: getUsdtMax(widget.usdtChartData),
+      axisLine: AxisLine(color: axisLineColor, width: 1),
+      majorGridLines: MajorGridLines(color: gridColor, width: 1),
+      labelStyle: TextStyle(color: axisLabelColor, fontSize: 11),
     );
   }
 
   // 추가 축들 설정
-  List<ChartAxis> _buildAxes() {
+  List<ChartAxis> _buildAxes(ColorScheme cs) {
+    final axisLabelColor = cs.onSurfaceVariant;
+    final gridColor = cs.outline.withValues(alpha: 0.28);
+    final axisLineColor = cs.outline.withValues(alpha: 0.55);
     return <ChartAxis>[
       if (showKimchiPremium)
         NumericAxis(
@@ -492,7 +533,13 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
           opposedPosition: true,
           labelFormat: '{value}%',
           numberFormat: NumberFormat("##0.0"),
-          majorTickLines: const MajorTickLines(size: 2, color: Colors.red),
+          axisLine: AxisLine(color: axisLineColor, width: 1),
+          majorGridLines: MajorGridLines(color: gridColor, width: 1),
+          labelStyle: TextStyle(color: axisLabelColor, fontSize: 11),
+          majorTickLines: MajorTickLines(
+            size: 2,
+            color: cs.error,
+          ),
           rangePadding: ChartRangePadding.round,
           minimum: widget.kimchiMin - 0.5,
           maximum: widget.kimchiMax + 0.5,
@@ -538,7 +585,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
       dataSource: widget.usdtChartData,
       xValueMapper: (USDTChartData data, _) => data.time,
       yValueMapper: (USDTChartData data, _) => data.close,
-      color: Colors.blue,
+      color: const Color(0xFF7EB8FF),
       animationDuration: 0,
     );
   }
@@ -555,8 +602,8 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
       highValueMapper: (USDTChartData data, _) => data.high,
       openValueMapper: (USDTChartData data, _) => data.open,
       closeValueMapper: (USDTChartData data, _) => data.close,
-      bearColor: Colors.blue,
-      bullColor: Colors.red,
+      bearColor: const Color(0xFF7EB8FF),
+      bullColor: const Color(0xFFF87171),
       animationDuration: 0,
     );
   }
@@ -570,7 +617,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
       dataSource: widget.exchangeRates,
       xValueMapper: (ChartData data, _) => data.time,
       yValueMapper: (ChartData data, _) => data.value,
-      color: Colors.green,
+      color: const Color(0xFF86EFAC),
       animationDuration: 0,
     );
   }
@@ -584,7 +631,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
       dataSource: widget.kimchiPremium,
       xValueMapper: (ChartData data, _) => data.time,
       yValueMapper: (ChartData data, _) => data.value,
-      color: Colors.orange,
+      color: const Color(0xFFFBBF24),
       yAxisName: 'kimchiAxis',
       animationDuration: 0,
     );
@@ -718,6 +765,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
   }
 
   Widget _buildCheckboxCard(AppLocalizations l10n) {
+    final cs = Theme.of(context).colorScheme;
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
@@ -728,18 +776,18 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withOpacity(0.9),
-                Colors.white.withOpacity(0.7),
+                cs.surfaceContainerHigh.withValues(alpha: 0.96),
+                cs.surfaceContainerHighest.withValues(alpha: 0.88),
               ],
             ),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withOpacity(0.3),
+              color: cs.outline.withValues(alpha: 0.4),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF667EEA).withOpacity(0.2),
+                color: cs.primary.withValues(alpha: 0.12),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -755,21 +803,21 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                 CheckBoxItem(
                   value: showExchangeRate,
                   label: l10n.exchangeRate,
-                  color: Colors.green,
+                  color: const Color(0xFF86EFAC),
                   onChanged:
                       (val) => setState(() => showExchangeRate = val ?? true),
                 ),
                 CheckBoxItem(
                   value: showKimchiPremium,
                   label: l10n.kimchiPremium,
-                  color: Colors.orange,
+                  color: const Color(0xFFFBBF24),
                   onChanged:
                       (val) => setState(() => showKimchiPremium = val ?? true),
                 ),
                 CheckBoxItem(
                   value: showAITrading,
                   label: l10n.aiBuySell,
-                  color: Colors.deepPurple,
+                  color: cs.primary,
                   onChanged: (val) {
                     setState(() {
                       showAITrading = val ?? false;
@@ -793,7 +841,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                 CheckBoxItem(
                   value: showGimchiTrading,
                   label: l10n.kimchiPremiumBuySell,
-                  color: Colors.teal,
+                  color: const Color(0xFF5EEAD4),
                   onChanged: (val) async {
                     setState(() {
                       showGimchiTrading = val ?? false;
@@ -832,7 +880,7 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                       CheckBoxItem(
                         value: showKimchiPlotBands,
                         label: l10n.kimchiPremiumBackground,
-                        color: Colors.blue,
+                        color: const Color(0xFF7EB8FF),
                         onChanged: (val) {
                           setState(() {
                             showKimchiPlotBands = val ?? true;
@@ -844,13 +892,16 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
                       ),
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.blue.shade50,
+                          color: cs.secondaryContainer.withValues(alpha: 0.55),
                           shape: BoxShape.circle,
+                          border: Border.all(
+                            color: cs.outline.withValues(alpha: 0.35),
+                          ),
                         ),
                         child: IconButton(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.help_outline,
-                            color: Colors.blue,
+                            color: cs.onSecondaryContainer,
                             size: 16,
                           ),
                           tooltip:
@@ -962,10 +1013,10 @@ class _ChartOnlyPageState extends State<ChartOnlyPage> {
         1.0,
       );
       Color bandColor = Color.lerp(
-        Colors.blue,
-        Colors.red,
+        const Color(0xFF2563EB),
+        const Color(0xFFDC2626),
         t,
-      )!.withOpacity(0.6);
+      )!.withValues(alpha: 0.55);
 
       kimchiPlotBands.add(
         PlotBand(

@@ -42,6 +42,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return ClipRRect(
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(20),
@@ -55,8 +56,8 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withOpacity(0.95),
-                Colors.white.withOpacity(0.85),
+                cs.surfaceContainerHigh.withValues(alpha: 0.98),
+                cs.surface.withValues(alpha: 0.96),
               ],
             ),
             borderRadius: const BorderRadius.only(
@@ -64,7 +65,10 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
               topRight: Radius.circular(20),
             ),
             border: Border(
-              top: BorderSide(color: Colors.white.withOpacity(0.3), width: 1.5),
+              top: BorderSide(
+                color: cs.outline.withValues(alpha: 0.45),
+                width: 1.5,
+              ),
             ),
           ),
           child: Column(
@@ -75,7 +79,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                 height: 4,
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.grey[400],
+                  color: cs.outlineVariant.withValues(alpha: 0.65),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -91,7 +95,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                       widget.simulationType == SimulationType.kimchi
                           ? Icons.trending_up
                           : Icons.psychology,
-                      color: Colors.deepPurple,
+                      color: cs.primary,
                       size: 22,
                     ),
                     const SizedBox(width: 10),
@@ -99,17 +103,17 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                       widget.simulationType == SimulationType.kimchi
                           ? l10n(context).kimchiStrategyHistory
                           : l10n(context).aiStrategyHistory,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
+                        color: cs.onSurface,
                       ),
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.close,
-                        color: Colors.grey,
+                        color: cs.onSurfaceVariant,
                         size: 22,
                       ),
                       padding: EdgeInsets.zero,
@@ -122,12 +126,16 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                   ],
                 ),
               ),
-              const Divider(height: 1),
+              Divider(height: 1, color: cs.outline.withValues(alpha: 0.35)),
               // 내용
               Expanded(
                 child:
                     loading
-                        ? const Center(child: CircularProgressIndicator())
+                        ? Center(
+                          child: CircularProgressIndicator(
+                            color: cs.primary,
+                          ),
+                        )
                         : error != null
                         ? Center(
                           child: Column(
@@ -136,7 +144,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                               Icon(
                                 Icons.error_outline,
                                 size: 64,
-                                color: Colors.red[300],
+                                color: cs.error,
                               ),
                               const SizedBox(height: 16),
                               Text(
@@ -144,13 +152,15 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.red[700],
+                                  color: cs.error,
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 error!,
-                                style: TextStyle(color: Colors.red[600]),
+                                style: TextStyle(
+                                  color: cs.onSurface.withValues(alpha: 0.85),
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                             ],
@@ -164,7 +174,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                               Icon(
                                 Icons.inbox_outlined,
                                 size: 64,
-                                color: Colors.grey[400],
+                                color: cs.onSurfaceVariant,
                               ),
                               const SizedBox(height: 16),
                               Text(
@@ -172,7 +182,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.grey[600],
+                                  color: cs.onSurface,
                                 ),
                               ),
                             ],
@@ -211,18 +221,30 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withOpacity(0.9),
-                      Colors.white.withOpacity(0.7),
+                      Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHigh
+                          .withValues(alpha: 0.95),
+                      Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.88),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .outline
+                        .withValues(alpha: 0.4),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF667EEA).withOpacity(0.15),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.12),
                       blurRadius: 15,
                       offset: const Offset(0, 4),
                     ),
@@ -240,22 +262,25 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                           children: [
                             Icon(
                               Icons.trending_up,
-                              color: Colors.deepPurple,
+                              color: Theme.of(context).colorScheme.primary,
                               size: 24,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 '${DateFormat('yyyy/MM/dd').format(date)} ${l10n(context).strategy}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                             ),
                             Icon(
                               Icons.arrow_forward_ios,
-                              color: Colors.grey[400],
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
                               size: 16,
                             ),
                           ],
@@ -298,18 +323,30 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withOpacity(0.9),
-                      Colors.white.withOpacity(0.7),
+                      Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHigh
+                          .withValues(alpha: 0.95),
+                      Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.88),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .outline
+                        .withValues(alpha: 0.4),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF667EEA).withOpacity(0.15),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.12),
                       blurRadius: 15,
                       offset: const Offset(0, 4),
                     ),
@@ -327,22 +364,25 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                           children: [
                             Icon(
                               Icons.psychology,
-                              color: Colors.deepPurple,
+                              color: Theme.of(context).colorScheme.primary,
                               size: 24,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 '${DateFormat('yyyy/MM/dd').format(date)} ${l10n(context).strategy}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                             ),
                             Icon(
                               Icons.arrow_forward_ios,
-                              color: Colors.grey[400],
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
                               size: 16,
                             ),
                           ],
@@ -386,15 +426,17 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: const Color(0xFF14532D).withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.withOpacity(0.3)),
+                  border: Border.all(
+                    color: const Color(0xFF4ADE80).withValues(alpha: 0.45),
+                  ),
                 ),
                 child: Text(
                   '매수: ${buyThreshold.toStringAsFixed(1)}%',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.green,
+                    color: Color(0xFF86EFAC),
                   ),
                 ),
               ),
@@ -407,15 +449,17 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: const Color(0xFF450A0A).withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.withOpacity(0.3)),
+                  border: Border.all(
+                    color: const Color(0xFFF87171).withValues(alpha: 0.45),
+                  ),
                 ),
                 child: Text(
                   '매도: ${sellThreshold.toStringAsFixed(1)}%',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.red,
+                    color: Color(0xFFFECACA),
                   ),
                 ),
               ),
@@ -427,12 +471,16 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
   }
 
   Widget _buildAIStrategyInfo(BuildContext context, StrategyMap strategy) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       children: [
         if (strategy['summary'] != null) ...[
           Text(
             strategy['summary'],
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
+            style: TextStyle(
+              fontSize: 14,
+              color: cs.onSurface.withValues(alpha: 0.92),
+            ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -444,15 +492,18 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: const Color(0xFF14532D).withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: const Color(0xFF4ADE80).withValues(alpha: 0.4),
+                  ),
                 ),
                 child: Text(
                   '매수: ${NumberFormat('#,##0').format(strategy['buy_price'])}',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.green,
+                    color: Color(0xFF86EFAC),
                   ),
                 ),
               ),
@@ -462,15 +513,18 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: const Color(0xFF450A0A).withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: const Color(0xFFF87171).withValues(alpha: 0.4),
+                  ),
                 ),
                 child: Text(
                   '매도: ${NumberFormat('#,##0').format(strategy['sell_price'])}',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.red,
+                    color: Color(0xFFFECACA),
                   ),
                 ),
               ),
@@ -490,6 +544,7 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final cs = Theme.of(context).colorScheme;
         return Dialog(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -503,18 +558,18 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withOpacity(0.95),
-                      Colors.white.withOpacity(0.85),
+                      cs.surfaceContainerHigh.withValues(alpha: 0.98),
+                      cs.surface.withValues(alpha: 0.94),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
+                    color: cs.outline.withValues(alpha: 0.45),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF667EEA).withOpacity(0.3),
+                      color: cs.primary.withValues(alpha: 0.2),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -533,16 +588,17 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                         children: [
                           Text(
                             '${DateFormat('yyyy/MM/dd').format(date)} ${AppLocalizations.of(context)!.strategy}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
+                              color: cs.onSurface,
                             ),
                           ),
                           const Spacer(),
                           IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.close,
-                              color: Colors.deepPurple,
+                              color: cs.primary,
                               size: 22,
                             ),
                             padding: EdgeInsets.zero,
@@ -566,8 +622,8 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
                         child: ElevatedButton(
                           onPressed: () => Navigator.of(context).pop(),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple,
-                            foregroundColor: Colors.white,
+                            backgroundColor: cs.primary,
+                            foregroundColor: cs.onPrimary,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -621,28 +677,46 @@ class _StrategyHistoryPageState extends State<StrategyHistoryPage> {
         double.parse(buyThreshold.toStringAsFixed(1)),
         double.parse(sellThreshold.toStringAsFixed(1)),
       ),
-      style: const TextStyle(fontSize: 16),
+      style: TextStyle(
+        fontSize: 16,
+        color: Theme.of(context).colorScheme.onSurface,
+        height: 1.45,
+      ),
     );
   }
 
   Widget _buildAIStrategyDetail(BuildContext context, StrategyMap strategy) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (strategy['summary'] != null) ...[
-          Text(strategy['summary'], style: const TextStyle(fontSize: 16)),
+          Text(
+            strategy['summary'],
+            style: TextStyle(
+              fontSize: 16,
+              color: cs.onSurface,
+              height: 1.45,
+            ),
+          ),
         ],
         const SizedBox(height: 12),
         if (strategy['buy_price'] != null) ...[
           Text(
             '매수 가격: ${NumberFormat('#,##0').format(strategy['buy_price'])}원',
-            style: const TextStyle(fontSize: 14, color: Colors.green),
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF86EFAC),
+            ),
           ),
         ],
         if (strategy['sell_price'] != null) ...[
           Text(
             '매도 가격: ${NumberFormat('#,##0').format(strategy['sell_price'])}원',
-            style: const TextStyle(fontSize: 14, color: Colors.red),
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFFFECACA),
+            ),
           ),
         ],
       ],

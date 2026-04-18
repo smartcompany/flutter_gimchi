@@ -9,160 +9,139 @@ import 'utils.dart';
 import 'dialogs/liquid_glass_dialog.dart';
 
 // ============================================================================
-// Liquid Glass 디자인 스타일 정의
+// 시뮬레이션 화면 테마 (다크/라이트 공통 ColorScheme)
 // ============================================================================
 
-/// Liquid Glass 색상 팔레트
-class _GlassColors {
-  // 그라데이션 색상
-  static const primaryGradient = [
-    Color(0xFF667EEA), // 보라색
-    Color(0xFF764BA2), // 진한 보라색
+class _SimUi {
+  static const accentGradient = [
+    Color(0xFF667EEA),
+    Color(0xFF764BA2),
   ];
 
-  static const secondaryGradient = [
-    Color(0xFFF093FB), // 핑크
-    Color(0xFFF5576C), // 코랄
+  static List<Color> pageBackground(ColorScheme cs) => [
+    cs.surface,
+    cs.surfaceContainerLow,
+    cs.surfaceContainerHigh,
   ];
 
-  static const backgroundGradient = [
-    Color(0xFFE0E7FF), // 연한 보라
-    Color(0xFFF3E8FF), // 연한 핑크
-    Color(0xFFFFF1F2), // 연한 핑크 화이트
+  static List<Color> glassCardFill(ColorScheme cs) => [
+    cs.surfaceContainerHigh.withValues(alpha: 0.96),
+    cs.surfaceContainerHigh.withValues(alpha: 0.85),
   ];
 
-  // Glass 효과 색상
-  static const glassWhite = Color(0xFFFFFFFF);
-  static const glassOverlay = Color(0x40FFFFFF);
-  static const glassBorder = Color(0x30FFFFFF);
+  static Color glassBorder(ColorScheme cs) =>
+      cs.outline.withValues(alpha: 0.42);
 
-  // 텍스트 색상
-  static const textPrimary = Color(0xFF1E293B);
-  static const textSecondary = Color(0xFF64748B);
-  static const textLight = Color(0xFFFFFFFF);
+  static List<Color> glassCardFillLight(ColorScheme cs) => [
+    cs.surfaceContainerHighest.withValues(alpha: 0.92),
+    cs.surfaceContainerHighest.withValues(alpha: 0.78),
+  ];
 }
 
-/// 제목/헤더 스타일
 class _TitleStyles {
-  // AppBar 제목
-  static const appBarTitle = TextStyle(
+  static TextStyle appBarTitle(BuildContext context) => TextStyle(
     fontWeight: FontWeight.bold,
-    color: _GlassColors.textPrimary,
+    color: Theme.of(context).colorScheme.onSurface,
   );
 
-  // 섹션 제목 (Trade Timeline, Performance Metrics 등)
-  static const sectionTitle = TextStyle(
+  static TextStyle sectionTitle(BuildContext context) => TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.bold,
-    color: _GlassColors.textPrimary,
+    color: Theme.of(context).colorScheme.onSurface,
   );
 
-  // 헤더 카드 제목
-  static const headerCardTitle = TextStyle(
+  static TextStyle headerCardTitle(BuildContext context) => TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.bold,
-    color: _GlassColors.textPrimary,
+    color: Theme.of(context).colorScheme.onSurface,
   );
 
-  // 다이얼로그 제목
-  static const dialogTitle = TextStyle(
+  static TextStyle dialogTitle(BuildContext context) => TextStyle(
     fontWeight: FontWeight.bold,
     fontSize: 18,
-    color: _GlassColors.textPrimary,
+    color: Theme.of(context).colorScheme.onSurface,
   );
 }
 
-/// 본문/일반 텍스트 스타일
 class _BodyStyles {
-  // 일반 본문 텍스트
-  static const bodyText = TextStyle(
+  static TextStyle bodyText(BuildContext context) => TextStyle(
     fontSize: 18,
-    color: _GlassColors.textPrimary,
+    color: Theme.of(context).colorScheme.onSurface,
   );
 
-  // 라벨 텍스트 (헤더 카드의 라벨 등)
-  static const labelText = TextStyle(
+  static TextStyle labelText(BuildContext context) => TextStyle(
     fontSize: 16,
-    color: _GlassColors.textSecondary,
+    color: Theme.of(context).colorScheme.onSurfaceVariant,
   );
 
-  // 회색 라벨 텍스트
-  static const greyLabelText = TextStyle(
+  static TextStyle greyLabelText(BuildContext context) => TextStyle(
     fontSize: 16,
-    color: _GlassColors.textSecondary,
+    color: Theme.of(context).colorScheme.onSurfaceVariant,
   );
 }
 
-/// 버튼 텍스트 스타일
 class _ButtonStyles {
-  // 작은 버튼 (전략보기, 차트로 보기 등)
   static const smallButton = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.bold,
   );
 
-  // 큰 버튼 (전체 히스토리 보기 등)
-  static const largeButton = TextStyle(
+  static TextStyle largeButton(BuildContext context) => TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.bold,
+    color: Theme.of(context).colorScheme.onPrimary,
   );
 }
 
-/// 카드 내부 텍스트 스타일
 class _CardStyles {
-  // 매수/매도 카드 제목
-  static const cardTitle = TextStyle(
+  static TextStyle cardTitle(BuildContext context) => TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.bold,
-    color: _GlassColors.textPrimary,
+    color: Theme.of(context).colorScheme.onSurface,
   );
 
-  // 매수/매도 카드 날짜
-  static const cardDate = TextStyle(
+  static TextStyle cardDate(BuildContext context) => TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w500,
-    color: _GlassColors.textSecondary,
+    color: Theme.of(context).colorScheme.onSurfaceVariant,
   );
 
-  // 매수/매도 카드 가격
-  static const cardPrice = TextStyle(
+  static TextStyle cardPrice(BuildContext context) => TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.bold,
-    color: _GlassColors.textPrimary,
+    color: Theme.of(context).colorScheme.onSurface,
   );
 
-  // 성과 지표 라벨
-  static const metricLabel = TextStyle(
+  static TextStyle metricLabel(BuildContext context) => TextStyle(
     fontSize: 14,
-    color: _GlassColors.textSecondary,
+    color: Theme.of(context).colorScheme.onSurfaceVariant,
     fontWeight: FontWeight.w600,
   );
 
-  // 성과 지표 값
-  static const metricValue = TextStyle(
+  static TextStyle metricValue(BuildContext context) => TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.bold,
-    color: _GlassColors.textPrimary,
+    color: Theme.of(context).colorScheme.onSurface,
   );
 
-  // 헤더 카드 값 (Period, Total Gain 등)
-  static const headerCardValue = TextStyle(
+  static TextStyle headerCardValue(BuildContext context) => TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
-    color: _GlassColors.textPrimary,
+    color: Theme.of(context).colorScheme.onSurface,
   );
 }
 
-/// 다이얼로그 텍스트 스타일
 class _DialogStyles {
-  // 다이얼로그 섹션 제목
-  static const sectionTitle = TextStyle(
+  static TextStyle sectionTitle(BuildContext context) => TextStyle(
     fontWeight: FontWeight.bold,
     fontSize: 15,
+    color: Theme.of(context).colorScheme.onSurface,
   );
 
-  // 다이얼로그 본문
-  static const bodyText = TextStyle(fontSize: 14, color: Colors.black87);
+  static TextStyle bodyText(BuildContext context) => TextStyle(
+    fontSize: 14,
+    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.9),
+  );
 }
 
 enum SimulationType { ai, kimchi }
@@ -586,6 +565,7 @@ class _SimulationPageState extends State<SimulationPage>
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final cs = Theme.of(context).colorScheme;
         return Dialog(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -598,19 +578,16 @@ class _SimulationPageState extends State<SimulationPage>
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      _GlassColors.glassWhite.withOpacity(0.95),
-                      _GlassColors.glassWhite.withOpacity(0.85),
-                    ],
+                    colors: _SimUi.glassCardFill(cs),
                   ),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: _GlassColors.glassBorder,
+                    color: _SimUi.glassBorder(cs),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: _GlassColors.primaryGradient[0].withOpacity(0.3),
+                      color: cs.primary.withValues(alpha: 0.22),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -629,15 +606,15 @@ class _SimulationPageState extends State<SimulationPage>
                         children: [
                           Text(
                             '${displayDate.toCustomString()} ${l10n(context).strategy}',
-                            style: _TitleStyles.dialogTitle.copyWith(
+                            style: _TitleStyles.dialogTitle(context).copyWith(
                               fontSize: 18,
                             ),
                           ),
                           const Spacer(),
                           IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.close,
-                              color: Colors.deepPurple,
+                              color: cs.primary,
                               size: 22,
                             ),
                             padding: EdgeInsets.zero,
@@ -665,12 +642,12 @@ class _SimulationPageState extends State<SimulationPage>
                         const SizedBox(height: 10),
                         Text(
                           l10n(context).summary,
-                          style: _DialogStyles.sectionTitle,
+                          style: _DialogStyles.sectionTitle(context),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           strategy['summary'] ?? '',
-                          style: _DialogStyles.bodyText,
+                          style: _DialogStyles.bodyText(context),
                         ),
                       ] else ...[
                         Text(
@@ -682,6 +659,7 @@ class _SimulationPageState extends State<SimulationPage>
                               : (strategy != null && strategy.isNotEmpty)
                               ? '${strategy['summary'] ?? '전략 정보'}'
                               : '해당 날짜에 대한 전략이 없습니다.',
+                          style: _DialogStyles.bodyText(context),
                         ),
                       ],
                     ],
@@ -697,6 +675,7 @@ class _SimulationPageState extends State<SimulationPage>
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
@@ -706,13 +685,13 @@ class _SimulationPageState extends State<SimulationPage>
           widget.simulationType == SimulationType.kimchi
               ? l10n(context).gimchBaseTrade
               : l10n(context).aiBaseTrade,
-          style: _TitleStyles.appBarTitle.copyWith(fontSize: 18),
+          style: _TitleStyles.appBarTitle(context).copyWith(fontSize: 18),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(
-          color: _GlassColors.textPrimary,
+        iconTheme: IconThemeData(
+          color: cs.onSurface,
           size: 22,
         ),
         flexibleSpace: ClipRRect(
@@ -724,13 +703,13 @@ class _SimulationPageState extends State<SimulationPage>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    _GlassColors.glassWhite.withOpacity(0.85),
-                    _GlassColors.glassWhite.withOpacity(0.7),
+                    cs.surface.withValues(alpha: 0.92),
+                    cs.surface.withValues(alpha: 0.78),
                   ],
                 ),
                 border: Border(
                   bottom: BorderSide(
-                    color: _GlassColors.glassBorder,
+                    color: _SimUi.glassBorder(cs),
                     width: 0.5,
                   ),
                 ),
@@ -742,7 +721,7 @@ class _SimulationPageState extends State<SimulationPage>
             widget.simulationType == SimulationType.kimchi
                 ? [
                   IconButton(
-                    icon: const Icon(Icons.settings, color: Colors.deepPurple),
+                    icon: Icon(Icons.settings, color: cs.primary),
                     onPressed: () async {
                       final sortedDates = widget.usdtMap.keys.toList()..sort();
                       final defaultStartDate =
@@ -769,7 +748,7 @@ class _SimulationPageState extends State<SimulationPage>
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: _GlassColors.backgroundGradient,
+            colors: _SimUi.pageBackground(cs),
           ),
         ),
         child: SafeArea(
@@ -777,9 +756,19 @@ class _SimulationPageState extends State<SimulationPage>
             children: [
               // 메인 콘텐츠
               loading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: cs.primary,
+                      ),
+                    )
                   : error != null
-                  ? Center(child: Text('${l10n(context).error}: $error'))
+                  ? Center(
+                      child: Text(
+                        '${l10n(context).error}: $error',
+                        style: TextStyle(color: cs.error),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
                   : SingleChildScrollView(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -789,14 +778,20 @@ class _SimulationPageState extends State<SimulationPage>
                         const SizedBox(height: 24),
                         Text(
                           l10n(context).tradeTimeline,
-                          style: _TitleStyles.sectionTitle,
+                          style: _TitleStyles.sectionTitle(context),
                         ),
                         const SizedBox(height: 12),
                         if (results.isEmpty)
                           Center(
                             child: Padding(
                               padding: const EdgeInsets.all(24.0),
-                              child: Text(l10n(context).noStrategyData),
+                              child: Text(
+                                l10n(context).noStrategyData,
+                                style: TextStyle(
+                                  color: cs.onSurfaceVariant,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           )
                         else
@@ -842,6 +837,7 @@ class _SimulationPageState extends State<SimulationPage>
       minChildSize: 0.12, // 최소 크기
       maxChildSize: 0.4, // 최대 크기 (초기 크기와 동일)
       builder: (context, scrollController) {
+        final cs = Theme.of(context).colorScheme;
         return ClipRRect(
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(20),
@@ -854,21 +850,18 @@ class _SimulationPageState extends State<SimulationPage>
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    _GlassColors.glassWhite.withOpacity(0.9),
-                    _GlassColors.glassWhite.withOpacity(0.7),
-                  ],
+                  colors: _SimUi.glassCardFill(cs),
                 ),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
                 ),
                 border: Border(
-                  top: BorderSide(color: _GlassColors.glassBorder, width: 1.5),
+                  top: BorderSide(color: _SimUi.glassBorder(cs), width: 1.5),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: _GlassColors.primaryGradient[0].withOpacity(0.2),
+                    color: cs.primary.withValues(alpha: 0.18),
                     blurRadius: 20,
                     offset: const Offset(0, -4),
                   ),
@@ -896,7 +889,7 @@ class _SimulationPageState extends State<SimulationPage>
                         height: 4,
                         margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                          color: cs.outlineVariant.withValues(alpha: 0.65),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -907,22 +900,24 @@ class _SimulationPageState extends State<SimulationPage>
                       children: [
                         Text(
                           l10n(context).performanceMetrics,
-                          style: _TitleStyles.sectionTitle,
+                          style: _TitleStyles.sectionTitle(context),
                         ),
                         OutlinedButton.icon(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.show_chart,
-                            color: Colors.deepPurple,
+                            color: cs.primary,
                             size: 16,
                           ),
                           label: Text(
                             l10n(context).seeWithChart,
                             style: _ButtonStyles.smallButton.copyWith(
-                              color: Colors.deepPurple,
+                              color: cs.primary,
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.deepPurple),
+                            side: BorderSide(
+                              color: cs.primary.withValues(alpha: 0.85),
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -970,6 +965,7 @@ class _SimulationPageState extends State<SimulationPage>
   }
 
   Widget _buildHeaderCard(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
@@ -979,16 +975,13 @@ class _SimulationPageState extends State<SimulationPage>
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                _GlassColors.glassWhite.withOpacity(0.7),
-                _GlassColors.glassWhite.withOpacity(0.5),
-              ],
+              colors: _SimUi.glassCardFillLight(cs),
             ),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: _GlassColors.glassBorder, width: 1.5),
+            border: Border.all(color: _SimUi.glassBorder(cs), width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.35),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -1004,16 +997,16 @@ class _SimulationPageState extends State<SimulationPage>
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: _GlassColors.primaryGradient,
+                          colors: _SimUi.accentGradient,
                         ),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: _GlassColors.primaryGradient[0].withOpacity(
-                              0.3,
+                            color: _SimUi.accentGradient[0].withValues(
+                              alpha: 0.35,
                             ),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
@@ -1024,7 +1017,7 @@ class _SimulationPageState extends State<SimulationPage>
                         widget.simulationType == SimulationType.ai
                             ? Icons.psychology
                             : Icons.trending_up,
-                        color: Colors.white,
+                        color: cs.onPrimary,
                         size: 20,
                       ),
                     ),
@@ -1037,12 +1030,12 @@ class _SimulationPageState extends State<SimulationPage>
                             widget.simulationType == SimulationType.ai
                                 ? l10n(context).aiSimulatedTradeTitle
                                 : l10n(context).kimchiSimulatedTradeTitle,
-                            style: _TitleStyles.headerCardTitle,
+                            style: _TitleStyles.headerCardTitle(context),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             l10n(context).initialCapital,
-                            style: _BodyStyles.labelText,
+                            style: _BodyStyles.labelText(context),
                           ),
                         ],
                       ),
@@ -1055,8 +1048,8 @@ class _SimulationPageState extends State<SimulationPage>
                   height: 3,
                   width: 100,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: _GlassColors.primaryGradient,
+                    gradient: const LinearGradient(
+                      colors: _SimUi.accentGradient,
                     ),
                     borderRadius: BorderRadius.circular(2),
                   ),
@@ -1068,7 +1061,7 @@ class _SimulationPageState extends State<SimulationPage>
                   children: [
                     Text(
                       l10n(context).tradingPerioid,
-                      style: _BodyStyles.greyLabelText,
+                      style: _BodyStyles.greyLabelText(context),
                     ),
                     Builder(
                       builder: (context) {
@@ -1079,7 +1072,7 @@ class _SimulationPageState extends State<SimulationPage>
                             results.last.analysisDate.toCustomString();
                         return Text(
                           "$startDate - $endDate",
-                          style: _CardStyles.headerCardValue,
+                          style: _CardStyles.headerCardValue(context),
                         );
                       },
                     ),
@@ -1092,7 +1085,7 @@ class _SimulationPageState extends State<SimulationPage>
                   children: [
                     Text(
                       l10n(context).totalGain,
-                      style: _BodyStyles.greyLabelText,
+                      style: _BodyStyles.greyLabelText(context),
                     ),
                     Builder(
                       builder: (context) {
@@ -1110,21 +1103,22 @@ class _SimulationPageState extends State<SimulationPage>
                               TextSpan(
                                 text:
                                     "${totalGain >= 0 ? '+' : ''}${krwFormat.format(totalGain.round())} ",
-                                style: _CardStyles.cardPrice.copyWith(
+                                style: _CardStyles.cardPrice(context).copyWith(
                                   color:
                                       totalGain >= 0
-                                          ? const Color(0xFF2E7D32)
-                                          : const Color(0xFFC62828),
+                                          ? const Color(0xFF4ADE80)
+                                          : const Color(0xFFF87171),
                                 ),
                               ),
                               TextSpan(
                                 text:
                                     "(${totalGainPercent.toStringAsFixed(2)}%)",
-                                style: _CardStyles.headerCardValue.copyWith(
+                                style: _CardStyles.headerCardValue(context)
+                                    .copyWith(
                                   color:
                                       totalGain >= 0
-                                          ? const Color(0xFF2E7D32)
-                                          : const Color(0xFFC62828),
+                                          ? const Color(0xFF4ADE80)
+                                          : const Color(0xFFF87171),
                                 ),
                               ),
                             ],
@@ -1141,7 +1135,7 @@ class _SimulationPageState extends State<SimulationPage>
                   children: [
                     Text(
                       l10n(context).stackedFinalKRW,
-                      style: _BodyStyles.greyLabelText,
+                      style: _BodyStyles.greyLabelText(context),
                     ),
                     Builder(
                       builder: (context) {
@@ -1149,7 +1143,7 @@ class _SimulationPageState extends State<SimulationPage>
                         final finalKRW = results.last.finalKRW;
                         return Text(
                           "₩${krwFormat.format(finalKRW.round())}",
-                          style: _CardStyles.headerCardValue,
+                          style: _CardStyles.headerCardValue(context),
                         );
                       },
                     ),
@@ -1174,14 +1168,14 @@ class _SimulationPageState extends State<SimulationPage>
                           Icon(
                             Icons.info_outline,
                             size: 14,
-                            color: Colors.grey[600],
+                            color: cs.onSurfaceVariant,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             l10n(context).upbitFeeApplied(buyFee, sellFee),
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey[600],
+                              color: cs.onSurfaceVariant,
                               fontStyle: FontStyle.italic,
                             ),
                           ),
@@ -1212,10 +1206,13 @@ class _SimulationPageState extends State<SimulationPage>
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [color.withOpacity(0.2), color.withOpacity(0.1)],
+              colors: [
+              color.withValues(alpha: 0.22),
+              color.withValues(alpha: 0.12),
+            ],
             ),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: color.withOpacity(0.5), width: 1.5),
+            border: Border.all(color: color.withValues(alpha: 0.55), width: 1.5),
           ),
           child: OutlinedButton(
             onPressed: () {
@@ -1246,8 +1243,8 @@ class _SimulationPageState extends State<SimulationPage>
 
   Widget _buildBuyCard(BuildContext context, SimulationResult r) {
     final gradient = [
-      const Color(0xFFFF6B6B).withOpacity(0.9),
-      const Color(0xFFFF8E8E).withOpacity(0.7),
+      const Color(0xFF7F1D1D).withValues(alpha: 0.92),
+      const Color(0xFFB91C1C).withValues(alpha: 0.78),
     ];
 
     return GestureDetector(
@@ -1270,12 +1267,12 @@ class _SimulationPageState extends State<SimulationPage>
               ),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.22),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: gradient[0].withOpacity(0.3),
+                  color: gradient[0].withValues(alpha: 0.35),
                   blurRadius: 15,
                   offset: const Offset(0, 8),
                 ),
@@ -1286,10 +1283,10 @@ class _SimulationPageState extends State<SimulationPage>
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.18),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.35),
                       width: 1.5,
                     ),
                   ),
@@ -1305,15 +1302,15 @@ class _SimulationPageState extends State<SimulationPage>
                   children: [
                     Text(
                       l10n(context).buy,
-                      style: _CardStyles.cardTitle.copyWith(
+                      style: _CardStyles.cardTitle(context).copyWith(
                         color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       r.buyDate?.toCustomString() ?? "-",
-                      style: _CardStyles.cardDate.copyWith(
-                        color: Colors.white.withOpacity(0.9),
+                      style: _CardStyles.cardDate(context).copyWith(
+                        color: Colors.white.withValues(alpha: 0.92),
                       ),
                     ),
                   ],
@@ -1323,7 +1320,7 @@ class _SimulationPageState extends State<SimulationPage>
                   padding: const EdgeInsets.only(right: 4),
                   child: Text(
                     "₩${krwFormat.format(r.buyPrice)}",
-                    style: _CardStyles.cardPrice.copyWith(
+                    style: _CardStyles.cardPrice(context).copyWith(
                       color: Colors.white,
                       fontSize: 15,
                     ),
@@ -1344,8 +1341,8 @@ class _SimulationPageState extends State<SimulationPage>
 
   Widget _buildSellCard(BuildContext context, SimulationResult r) {
     final gradient = [
-      const Color(0xFF4ECDC4).withOpacity(0.9),
-      const Color(0xFF44A08D).withOpacity(0.7),
+      const Color(0xFF134E4A).withValues(alpha: 0.92),
+      const Color(0xFF0D9488).withValues(alpha: 0.78),
     ];
 
     return GestureDetector(
@@ -1368,12 +1365,12 @@ class _SimulationPageState extends State<SimulationPage>
               ),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.22),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: gradient[0].withOpacity(0.3),
+                  color: gradient[0].withValues(alpha: 0.35),
                   blurRadius: 15,
                   offset: const Offset(0, 8),
                 ),
@@ -1384,10 +1381,10 @@ class _SimulationPageState extends State<SimulationPage>
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.18),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.35),
                       width: 1.5,
                     ),
                   ),
@@ -1403,15 +1400,15 @@ class _SimulationPageState extends State<SimulationPage>
                   children: [
                     Text(
                       l10n(context).sell,
-                      style: _CardStyles.cardTitle.copyWith(
+                      style: _CardStyles.cardTitle(context).copyWith(
                         color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       r.sellDate?.toCustomString() ?? "-",
-                      style: _CardStyles.cardDate.copyWith(
-                        color: Colors.white.withOpacity(0.9),
+                      style: _CardStyles.cardDate(context).copyWith(
+                        color: Colors.white.withValues(alpha: 0.92),
                       ),
                     ),
                   ],
@@ -1423,7 +1420,7 @@ class _SimulationPageState extends State<SimulationPage>
                     r.sellPrice != null
                         ? "₩${krwFormat.format(r.sellPrice!)}"
                         : "-",
-                    style: _CardStyles.cardPrice.copyWith(
+                    style: _CardStyles.cardPrice(context).copyWith(
                       color: Colors.white,
                       fontSize: 15,
                     ),
@@ -1465,12 +1462,13 @@ class _SimulationPageState extends State<SimulationPage>
       }
     }
 
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: cs.outline.withValues(alpha: 0.38)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1479,12 +1477,12 @@ class _SimulationPageState extends State<SimulationPage>
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.grey.shade200,
+              color: cs.surfaceContainerHighest,
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.account_balance_wallet,
-              color: Colors.grey.shade600,
+              color: cs.onSurfaceVariant,
               size: 20,
             ),
           ),
@@ -1500,18 +1498,18 @@ class _SimulationPageState extends State<SimulationPage>
                     children: [
                       TextSpan(
                         text: "${l10n(context).gain}: ",
-                        style: _CardStyles.cardDate.copyWith(
-                          color: Colors.black87,
+                        style: _CardStyles.cardDate(context).copyWith(
+                          color: cs.onSurfaceVariant,
                         ),
                       ),
                       TextSpan(
                         text:
                             "${profit >= 0 ? '+' : ''}₩${krwFormat.format(profit.round())} ",
-                        style: _CardStyles.cardDate.copyWith(
+                        style: _CardStyles.cardDate(context).copyWith(
                           color:
                               profit >= 0
-                                  ? const Color(0xFF2E7D32)
-                                  : const Color(0xFFC62828),
+                                  ? const Color(0xFF4ADE80)
+                                  : const Color(0xFFF87171),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -1519,11 +1517,11 @@ class _SimulationPageState extends State<SimulationPage>
                         TextSpan(
                           text:
                               "(${profitRate >= 0 ? '+' : ''}${profitRate.toStringAsFixed(2)}%)",
-                          style: _CardStyles.cardDate.copyWith(
+                          style: _CardStyles.cardDate(context).copyWith(
                             color:
                                 profitRate >= 0
-                                    ? const Color(0xFF2E7D32)
-                                    : const Color(0xFFC62828),
+                                    ? const Color(0xFF4ADE80)
+                                    : const Color(0xFFF87171),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1574,8 +1572,8 @@ class _SimulationPageState extends State<SimulationPage>
                         l10n(
                           context,
                         ).feeWithAmount(krwFormat.format(totalFee.round())),
-                        style: _CardStyles.cardDate.copyWith(
-                          color: Colors.black54,
+                        style: _CardStyles.cardDate(context).copyWith(
+                          color: cs.onSurfaceVariant,
                           fontSize: 13,
                         ),
                       ),
@@ -1592,22 +1590,22 @@ class _SimulationPageState extends State<SimulationPage>
                             r.sellDate == null
                                 ? "${l10n(context).evaluationAmount} "
                                 : "${l10n(context).finalKRW} ",
-                        style: _CardStyles.cardDate.copyWith(
-                          color: Colors.black87,
+                        style: _CardStyles.cardDate(context).copyWith(
+                          color: cs.onSurfaceVariant,
                         ),
                       ),
                       TextSpan(
                         text: "₩${krwFormat.format(currentValue.round())}",
-                        style: _CardStyles.cardDate.copyWith(
-                          color: Colors.black87,
+                        style: _CardStyles.cardDate(context).copyWith(
+                          color: cs.onSurface,
                         ),
                       ),
                       if (r.sellDate == null && currentUsdtPrice != null)
                         TextSpan(
                           text:
                               " (${l10n(context).usdt}: ${currentUsdtPrice.toStringAsFixed(1)})",
-                          style: _CardStyles.cardDate.copyWith(
-                            color: Colors.black54,
+                          style: _CardStyles.cardDate(context).copyWith(
+                            color: cs.onSurfaceVariant,
                             fontSize: 12,
                           ),
                         ),
@@ -1647,21 +1645,24 @@ class _SimulationPageState extends State<SimulationPage>
       }
     }
 
+    final cs = Theme.of(context).colorScheme;
     return Row(
       children: [
         Expanded(
           child: _buildMetricCard(
+            context,
             l10n(context).totalGain,
             "${totalGain.toStringAsFixed(2)}%",
-            const Color(0xFF2E7D32),
+            const Color(0xFF4ADE80),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: _buildMetricCard(
+            context,
             l10n(context).extimatedYearGain,
             annualYieldText,
-            Colors.deepPurple,
+            cs.primary,
             showInfoIcon: true,
             onInfoTap: () => _showAnnualYieldInfoDialog(context),
           ),
@@ -1671,12 +1672,14 @@ class _SimulationPageState extends State<SimulationPage>
   }
 
   Widget _buildMetricCard(
+    BuildContext context,
     String label,
     String value,
     Color valueColor, {
     bool showInfoIcon = false,
     VoidCallback? onInfoTap,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
@@ -1687,16 +1690,13 @@ class _SimulationPageState extends State<SimulationPage>
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                _GlassColors.glassWhite.withOpacity(0.7),
-                _GlassColors.glassWhite.withOpacity(0.5),
-              ],
+              colors: _SimUi.glassCardFillLight(cs),
             ),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _GlassColors.glassBorder, width: 1.5),
+            border: Border.all(color: _SimUi.glassBorder(cs), width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.28),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),
@@ -1707,7 +1707,7 @@ class _SimulationPageState extends State<SimulationPage>
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(label, style: _CardStyles.metricLabel),
+                  Text(label, style: _CardStyles.metricLabel(context)),
                   if (showInfoIcon) ...[
                     const SizedBox(width: 4),
                     GestureDetector(
@@ -1715,7 +1715,7 @@ class _SimulationPageState extends State<SimulationPage>
                       child: Icon(
                         Icons.info_outline,
                         size: 16,
-                        color: _GlassColors.textSecondary,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -1724,7 +1724,9 @@ class _SimulationPageState extends State<SimulationPage>
               const SizedBox(height: 8),
               Text(
                 value,
-                style: _CardStyles.metricValue.copyWith(color: valueColor),
+                style: _CardStyles.metricValue(context).copyWith(
+                  color: valueColor,
+                ),
               ),
             ],
           ),
@@ -1734,30 +1736,31 @@ class _SimulationPageState extends State<SimulationPage>
   }
 
   void _showAnnualYieldInfoDialog(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     LiquidGlassDialog.show(
       context: context,
       title: Row(
         children: [
-          const Icon(Icons.info_outline, color: Colors.deepPurple, size: 24),
+          Icon(Icons.info_outline, color: cs.primary, size: 24),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               l10n(context).extimatedYearGain,
-              style: _TitleStyles.dialogTitle,
+              style: _TitleStyles.dialogTitle(context),
             ),
           ),
         ],
       ),
       content: Text(
         l10n(context).annualYieldDescription,
-        style: _DialogStyles.bodyText,
+        style: _DialogStyles.bodyText(context),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
             l10n(context).confirm,
-            style: const TextStyle(color: Colors.deepPurple),
+            style: TextStyle(color: cs.primary),
           ),
         ),
       ],
@@ -1781,9 +1784,9 @@ class _SimulationPageState extends State<SimulationPage>
                   maxChildSize: 0.95,
                   builder:
                       (context, scrollController) => Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(20),
                             topRight: Radius.circular(20),
                           ),
@@ -1800,8 +1803,8 @@ class _SimulationPageState extends State<SimulationPage>
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.deepPurple,
-          foregroundColor: Colors.white,
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -1809,13 +1812,11 @@ class _SimulationPageState extends State<SimulationPage>
         ),
         child: Text(
           l10n(context).viewAllStrategyHistory,
-          style: _ButtonStyles.largeButton,
+          style: _ButtonStyles.largeButton(context),
         ),
       ),
     );
   }
-
-  /// 김치 프리미엄 시뮬레이션 함수
 }
 
 class SimulationYieldData {
@@ -1890,13 +1891,13 @@ class _StrategyDialogRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: _BodyStyles.labelText.copyWith(
-              color: Colors.deepPurple,
+            style: _BodyStyles.labelText(context).copyWith(
+              color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(width: 8),
-          Text(value, style: _BodyStyles.bodyText),
+          Text(value, style: _BodyStyles.bodyText(context)),
         ],
       ),
     );

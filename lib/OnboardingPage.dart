@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:usdt_signal/theme/app_theme.dart';
 import 'package:usdt_signal/utils.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -14,18 +15,25 @@ class _OnboardingPageState extends State<OnboardingPage> {
   int _currentPage = 0;
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return MediaQuery(
-      data: MediaQuery.of(context).copyWith(
-        textScaleFactor: 1.0, // 시스템 폰트 크기 설정을 무시하고 고정
-      ),
+      data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
       child: Builder(
         builder: (context) {
           final List<_OnboardingSlide> slides = [
             _OnboardingSlide(
               title: l10n(context).onboardingTitle1,
               body: l10n(context).onboardingBody1,
-              image: Icons.show_chart, // 실제 앱에서는 이미지로 교체
+              image: Icons.show_chart,
               imageDesc: l10n(context).onboardingImageDesc1,
             ),
             _OnboardingSlide(
@@ -43,111 +51,124 @@ class _OnboardingPageState extends State<OnboardingPage> {
             _OnboardingSlide(
               title: l10n(context).onboardingTitle4,
               body: l10n(context).onboardingBody4,
-              image: Icons.show_chart,
+              image: Icons.insights,
               imageDesc: l10n(context).onboardingImageDesc4,
             ),
           ];
 
           return Scaffold(
+            extendBodyBehindAppBar: true,
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
-              automaticallyImplyLeading: false, // 왼쪽 뒤로가기 버튼 제거
+              automaticallyImplyLeading: false,
               actions: [
-                Container(
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.grey[200],
-                  ),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.close,
-                      color: Colors.black87,
-                      size: 20,
+                Padding(
+                  padding: const EdgeInsets.only(right: 8, top: 4),
+                  child: Material(
+                    color: cs.surfaceContainerHigh.withValues(alpha: 0.9),
+                    shape: const CircleBorder(),
+                    clipBehavior: Clip.antiAlias,
+                    child: IconButton(
+                      icon: Icon(Icons.close, color: cs.onSurface, size: 22),
+                      onPressed: () => widget.onFinish?.call(),
                     ),
-                    onPressed: () {
-                      widget.onFinish?.call(); // 온보딩 종료
-                    },
                   ),
                 ),
               ],
             ),
-            body: SafeArea(
-              child: Column(
-                children: [
-                  Expanded(
-                    child: PageView.builder(
-                      controller: _controller,
-                      itemCount: slides.length,
-                      onPageChanged: (i) => setState(() => _currentPage = i),
-                      itemBuilder:
-                          (context, i) =>
-                              _OnboardingSlideWidget(slide: slides[i]),
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      slides.length,
-                      (i) => Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 16,
-                        ),
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color:
-                              _currentPage == i
-                                  ? Colors.deepPurple
-                                  : Colors.grey[300],
-                        ),
+            body: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    cs.surface,
+                    cs.primaryContainer.withValues(alpha: 0.35),
+                    cs.surfaceContainerLow,
+                  ],
+                ),
+              ),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: PageView.builder(
+                        controller: _controller,
+                        itemCount: slides.length,
+                        onPageChanged: (i) => setState(() => _currentPage = i),
+                        itemBuilder:
+                            (context, i) =>
+                                _OnboardingSlideWidget(slide: slides[i]),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(slides.length, (i) {
+                          final active = _currentPage == i;
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeOutCubic,
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            height: 8,
+                            width: active ? 28 : 8,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: active
+                                  ? cs.primary
+                                  : cs.outlineVariant.withValues(
+                                      alpha: 0.8,
+                                    ),
+                            ),
+                          );
+                        }),
+                      ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        if (_currentPage > 0)
-                          TextButton(
+                    Padding(
+                      padding: AppTheme.screenPadding.copyWith(top: 0),
+                      child: Row(
+                        children: [
+                          if (_currentPage > 0)
+                            TextButton(
+                              onPressed: () {
+                                _controller.previousPage(
+                                  duration: const Duration(milliseconds: 320),
+                                  curve: Curves.easeOutCubic,
+                                );
+                              },
+                              child: Text(l10n(context).previous),
+                            )
+                          else
+                            const SizedBox(width: 72),
+                          const Spacer(),
+                          FilledButton(
                             onPressed: () {
-                              _controller.previousPage(
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.ease,
-                              );
+                              if (_currentPage < slides.length - 1) {
+                                _controller.nextPage(
+                                  duration: const Duration(milliseconds: 320),
+                                  curve: Curves.easeOutCubic,
+                                );
+                              } else {
+                                widget.onFinish?.call();
+                              }
                             },
-                            child: Text(l10n(context).previous),
-                          )
-                        else
-                          const SizedBox(width: 60),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_currentPage < slides.length - 1) {
-                              _controller.nextPage(
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.ease,
-                              );
-                            } else {
-                              widget.onFinish?.call(); // 온보딩 종료 콜백
-                            }
-                          },
-                          child: Text(
-                            _currentPage == slides.length - 1
-                                ? l10n(context).start
-                                : l10n(context).next,
+                            child: Text(
+                              _currentPage == slides.length - 1
+                                  ? l10n(context).start
+                                  : l10n(context).next,
+                              style: tt.labelLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: cs.onPrimary,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
@@ -176,34 +197,88 @@ class _OnboardingSlideWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(slide.image, size: 100, color: Colors.deepPurple),
-          const SizedBox(height: 16),
-          Text(
-            slide.imageDesc,
-            style: const TextStyle(fontSize: 16, color: Colors.deepPurple),
-            textAlign: TextAlign.center,
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: AppTheme.screenPadding.copyWith(top: 8, bottom: 16),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          AppTheme.brandGradient[0].withValues(alpha: 0.95),
+                          AppTheme.brandGradient[1].withValues(alpha: 0.95),
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: cs.primary.withValues(alpha: 0.25),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(22),
+                      child: Icon(
+                        slide.image,
+                        size: 48,
+                        color: cs.onPrimary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    slide.imageDesc,
+                    style: tt.labelLarge?.copyWith(
+                      color: cs.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    slide.title,
+                    style: tt.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: cs.onSurface,
+                      height: 1.25,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    slide.body,
+                    style: tt.bodyLarge?.copyWith(
+                      color: cs.onSurfaceVariant,
+                      height: 1.45,
+                    ),
+                    textAlign: TextAlign.center,
+                    softWrap: true,
+                  ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
-          const SizedBox(height: 32),
-          Text(
-            slide.title,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            slide.body,
-            style: const TextStyle(fontSize: 16),
-            textAlign: TextAlign.center,
-            softWrap: true, // 자동 줄바꿈 허용
-            maxLines: 5, // 최대 5줄까지만 표시
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

@@ -31,6 +31,7 @@ import 'package:url_launcher/url_launcher.dart'; // url_launcher 패키지 impor
 import 'news_splash_view.dart';
 import 'dialogs/purchase_confirmation_dialog.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -96,6 +97,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: AppTheme.dark(),
+      themeMode: ThemeMode.dark,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -168,8 +171,13 @@ class _OnboardingLauncherState extends State<OnboardingLauncher> {
       child: Builder(
         builder: (context) {
           if (_loading) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
+            return Scaffold(
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              body: Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
             );
           }
           if (_onboardingDone) {
@@ -1050,6 +1058,7 @@ class _MyHomePageState extends State<MyHomePage>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildYieldInfoTile(
+            context,
             title:
                 _showAnnualYield
                     ? _getAnnualYieldTitle(context, isAi: true)
@@ -1064,6 +1073,7 @@ class _MyHomePageState extends State<MyHomePage>
           ),
           const SizedBox(height: 8),
           _buildYieldInfoTile(
+            context,
             title:
                 _showAnnualYield
                     ? _getAnnualYieldTitle(context, isAi: false)
@@ -1086,11 +1096,11 @@ class _MyHomePageState extends State<MyHomePage>
                       : _buyAdRemoval,
               icon:
                   _isPurchasing
-                      ? const SizedBox(
+                      ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onPrimary,
                           strokeWidth: 2.5,
                         ),
                       )
@@ -1103,8 +1113,8 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 28,
                   vertical: 16,
@@ -1112,7 +1122,7 @@ class _MyHomePageState extends State<MyHomePage>
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 3,
+                elevation: 2,
                 minimumSize: const Size(double.infinity, 56),
                 fixedSize: const Size(double.infinity, 56),
               ),
@@ -1124,8 +1134,8 @@ class _MyHomePageState extends State<MyHomePage>
             child: ElevatedButton(
               onPressed: _getShowStrategyButtonHandler(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 textStyle: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -1137,7 +1147,7 @@ class _MyHomePageState extends State<MyHomePage>
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 3,
+                elevation: 2,
                 minimumSize: const Size(double.infinity, 56),
                 fixedSize: const Size(double.infinity, 56),
               ),
@@ -1171,21 +1181,23 @@ class _MyHomePageState extends State<MyHomePage>
     return l10n(context).extimatedYearGain;
   }
 
-  Widget _buildYieldInfoTile({
+  Widget _buildYieldInfoTile(
+    BuildContext context, {
     required String title,
     required String valueText,
     required String detailText,
     VoidCallback? onTap,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cs.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+          border: Border.all(color: cs.outline.withValues(alpha: 0.5)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1194,10 +1206,10 @@ class _MyHomePageState extends State<MyHomePage>
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: cs.onSurface,
                   ),
                 ),
                 if (onTap != null) ...[
@@ -1205,7 +1217,7 @@ class _MyHomePageState extends State<MyHomePage>
                   Icon(
                     Icons.swap_horiz,
                     size: 16,
-                    color: Colors.deepPurple.withOpacity(0.6),
+                    color: cs.primary.withValues(alpha: 0.85),
                   ),
                 ],
               ],
@@ -1215,19 +1227,19 @@ class _MyHomePageState extends State<MyHomePage>
                 children: [
                   TextSpan(
                     text: valueText,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
-                      color: Colors.deepPurple,
+                      color: cs.primary,
                     ),
                   ),
                   if (detailText.isNotEmpty)
                     TextSpan(
                       text: detailText,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                 ],
@@ -1254,13 +1266,14 @@ class _MyHomePageState extends State<MyHomePage>
       return const SizedBox.shrink();
     }
 
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       height: 100, // 충분한 높이 확보
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.withOpacity(0.3)),
+        border: Border.all(color: cs.outline.withValues(alpha: 0.45)),
       ),
       child: Column(
         children: [
@@ -1271,7 +1284,7 @@ class _MyHomePageState extends State<MyHomePage>
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
+              color: cs.primaryContainer.withValues(alpha: 0.45),
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(14),
                 bottomRight: Radius.circular(14),
@@ -1285,7 +1298,7 @@ class _MyHomePageState extends State<MyHomePage>
                     l10n(context).adClickInstruction,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.blue.shade700,
+                      color: cs.onPrimaryContainer,
                       fontWeight: FontWeight.w500,
                     ),
                     textAlign: TextAlign.center,
@@ -1515,9 +1528,13 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFF8F5FA),
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
       );
     }
     // 마지막 날짜 로그 추가
@@ -1548,8 +1565,14 @@ class _MyHomePageState extends State<MyHomePage>
             // 섹션 1: 현재 값 정보 + 차트
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .outline
+                      .withValues(alpha: 0.35),
+                ),
               ),
               child: Column(
                 children: [
@@ -1566,8 +1589,14 @@ class _MyHomePageState extends State<MyHomePage>
             // 섹션 2: 현재 매수 구간 + 매매 전략
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .outline
+                      .withValues(alpha: 0.35),
+                ),
               ),
               child: Column(
                 children: [
@@ -1596,7 +1625,7 @@ class _MyHomePageState extends State<MyHomePage>
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: const Color(0xFFF8F5FA),
+          backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: AppBar(
             toolbarHeight: 48,
             backgroundColor: Colors.transparent,
@@ -1608,19 +1637,21 @@ class _MyHomePageState extends State<MyHomePage>
               children: [
                 Text(
                   l10n(context).usdt_signal,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: Colors.grey.shade900,
-                  ),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                 ),
                 Container(
                   margin: const EdgeInsets.only(left: 8.0),
                   decoration: BoxDecoration(
-                    color: Colors.deepPurple.shade50,
+                    color: Theme.of(context).colorScheme.primaryContainer,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.deepPurple.shade200,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .outline
+                          .withValues(alpha: 0.35),
                       width: 1,
                     ),
                   ),
@@ -1642,7 +1673,7 @@ class _MyHomePageState extends State<MyHomePage>
                       padding: const EdgeInsets.all(6.0),
                       child: Icon(
                         Icons.help_outline,
-                        color: Colors.deepPurple,
+                        color: Theme.of(context).colorScheme.primary,
                         size: 20,
                       ),
                     ),
@@ -1651,7 +1682,10 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ],
             ),
-            iconTheme: IconThemeData(color: Colors.grey.shade900, size: 22),
+            iconTheme: IconThemeData(
+              color: Theme.of(context).colorScheme.onSurface,
+              size: 22,
+            ),
             flexibleSpace: ClipRRect(
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -1661,13 +1695,22 @@ class _MyHomePageState extends State<MyHomePage>
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color(0xFFF8F5FA).withOpacity(0.85),
-                        const Color(0xFFF8F5FA).withOpacity(0.7),
+                        Theme.of(context)
+                            .colorScheme
+                            .surface
+                            .withValues(alpha: 0.92),
+                        Theme.of(context)
+                            .colorScheme
+                            .surface
+                            .withValues(alpha: 0.75),
                       ],
                     ),
                     border: Border(
                       bottom: BorderSide(
-                        color: Colors.grey.shade300.withOpacity(0.3),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .outlineVariant
+                            .withValues(alpha: 0.6),
                         width: 0.5,
                       ),
                     ),
@@ -1715,7 +1758,8 @@ class _MyHomePageState extends State<MyHomePage>
       sellPrice = prices.sellPrice;
     }
 
-    // 디자인 강조: 배경색, 아이콘, 컬러 분기
+    final cs = Theme.of(context).colorScheme;
+    // 디자인 강조: 배경색, 아이콘, 컬러 분기 (다크 대응)
     Color bgColor;
     IconData icon;
     Color iconColor;
@@ -1723,20 +1767,19 @@ class _MyHomePageState extends State<MyHomePage>
     // 오늘 날짜에 대한 코멘트 생성
     if (usdtPrice <= buyPrice) {
       comment = l10n(context).buyWin;
-      bgColor = Colors.green.shade50;
+      bgColor = const Color(0xFF153528).withValues(alpha: 0.95);
       icon = Icons.trending_up;
-      iconColor = Colors.green;
+      iconColor = const Color(0xFF4ADE80);
     } else if (usdtPrice > sellPrice) {
       comment = l10n(context).sellWin;
-      bgColor = Colors.red.shade50;
+      bgColor = const Color(0xFF3D181C).withValues(alpha: 0.95);
       icon = Icons.trending_down;
-      iconColor = Colors.red;
+      iconColor = const Color(0xFFF87171);
     } else {
       comment = l10n(context).justSee;
-      // 관망 구간
-      bgColor = Colors.yellow.shade50;
+      bgColor = const Color(0xFF3A3420).withValues(alpha: 0.95);
       icon = Icons.remove_red_eye;
-      iconColor = Colors.orange;
+      iconColor = const Color(0xFFFBBF24);
     }
 
     return Stack(
@@ -1748,7 +1791,9 @@ class _MyHomePageState extends State<MyHomePage>
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: bgColor.withOpacity(0.7)),
+            border: Border.all(
+              color: cs.outline.withValues(alpha: 0.4),
+            ),
           ),
           child: Row(
             children: [
@@ -1757,10 +1802,10 @@ class _MyHomePageState extends State<MyHomePage>
               Expanded(
                 child: Text(
                   comment,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: cs.onSurface,
                   ),
                 ),
               ),
@@ -1782,14 +1827,18 @@ class _MyHomePageState extends State<MyHomePage>
     String? description,
   ) {
     final isSelected = value == selected;
+    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () => Navigator.of(context).pop(value),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.deepPurple.shade50 : Colors.transparent,
+          color: isSelected ? cs.primaryContainer.withValues(alpha: 0.55) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? cs.primary.withValues(alpha: 0.35) : Colors.transparent,
+          ),
         ),
         child: Row(
           children: [
@@ -1804,7 +1853,7 @@ class _MyHomePageState extends State<MyHomePage>
                       fontWeight:
                           isSelected ? FontWeight.bold : FontWeight.normal,
                       fontSize: 16,
-                      color: Colors.black87,
+                      color: cs.onSurface,
                     ),
                   ),
                   if (description != null && description.isNotEmpty) ...[
@@ -1813,7 +1862,7 @@ class _MyHomePageState extends State<MyHomePage>
                       description,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.black54,
+                        color: cs.onSurfaceVariant,
                         height: 1.3,
                       ),
                     ),
@@ -1821,7 +1870,7 @@ class _MyHomePageState extends State<MyHomePage>
                 ],
               ),
             ),
-            if (isSelected) const Icon(Icons.check, color: Colors.deepPurple),
+            if (isSelected) Icon(Icons.check, color: cs.primary),
           ],
         ),
       ),
@@ -1830,12 +1879,13 @@ class _MyHomePageState extends State<MyHomePage>
 
   // 챗팅 아이콘 빌더
   Widget _buildChatIcon() {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(left: 16.0),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
+        color: cs.secondaryContainer.withValues(alpha: 0.65),
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.blue.shade200, width: 1),
+        border: Border.all(color: cs.outline.withValues(alpha: 0.45), width: 1),
       ),
       child: InkWell(
         onTap: () async {
@@ -1854,7 +1904,7 @@ class _MyHomePageState extends State<MyHomePage>
         },
         child: Padding(
           padding: const EdgeInsets.all(6.0),
-          child: Icon(Icons.support_agent, color: Colors.blue, size: 20),
+          child: Icon(Icons.support_agent, color: cs.onSecondaryContainer, size: 20),
         ),
         borderRadius: BorderRadius.circular(16),
       ),
@@ -1863,23 +1913,24 @@ class _MyHomePageState extends State<MyHomePage>
 
   // 알림 아이콘 빌더
   Widget _buildNotificationIcon() {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(right: 8),
       decoration: BoxDecoration(
         color:
             _todayCommentAlarmType == TodayCommentAlarmType.kimchi
-                ? Colors.orange.shade50
+                ? cs.tertiaryContainer.withValues(alpha: 0.55)
                 : _todayCommentAlarmType == TodayCommentAlarmType.ai
-                ? Colors.deepPurple.shade50
-                : Colors.grey.shade50,
+                ? cs.primaryContainer.withValues(alpha: 0.55)
+                : cs.surfaceContainerHighest,
         shape: BoxShape.circle,
         border: Border.all(
           color:
               _todayCommentAlarmType == TodayCommentAlarmType.kimchi
-                  ? Colors.orange.shade200
+                  ? cs.tertiary.withValues(alpha: 0.5)
                   : _todayCommentAlarmType == TodayCommentAlarmType.ai
-                  ? Colors.deepPurple.shade200
-                  : Colors.grey.shade200,
+                  ? cs.primary.withValues(alpha: 0.45)
+                  : cs.outline.withValues(alpha: 0.45),
           width: 1,
         ),
       ),
@@ -1896,10 +1947,10 @@ class _MyHomePageState extends State<MyHomePage>
                 : Icons.notifications_off,
             color:
                 _todayCommentAlarmType == TodayCommentAlarmType.kimchi
-                    ? Colors.orange
+                    ? cs.tertiary
                     : _todayCommentAlarmType == TodayCommentAlarmType.ai
-                    ? Colors.deepPurple
-                    : Colors.grey,
+                    ? cs.primary
+                    : cs.onSurfaceVariant,
             size: 20,
           ),
         ),
@@ -1948,6 +1999,9 @@ class _MyHomePageState extends State<MyHomePage>
     ChartData? todayRate,
     ChartData? todayKimchi,
   ) {
+    const usdtAccent = Color(0xFF7EB8FF);
+    const rateAccent = Color(0xFF86EFAC);
+    const kimchiAccent = Color(0xFFFBBF24);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1955,12 +2009,12 @@ class _MyHomePageState extends State<MyHomePage>
         InfoItem(
           label: l10n(context).usdt,
           value: todayUsdt != null ? todayUsdt.close.toStringAsFixed(1) : '-',
-          color: Colors.blue,
+          color: usdtAccent,
         ),
         InfoItem(
           label: l10n(context).exchangeRate,
           value: todayRate != null ? todayRate.value.toStringAsFixed(1) : '-',
-          color: Colors.green,
+          color: rateAccent,
         ),
         InfoItem(
           label: l10n(context).gimchiPremiem,
@@ -1968,7 +2022,7 @@ class _MyHomePageState extends State<MyHomePage>
               todayKimchi != null
                   ? '${todayKimchi.value.toStringAsFixed(2)}%'
                   : '-',
-          color: Colors.orange,
+          color: kimchiAccent,
         ),
       ],
     );
@@ -1979,10 +2033,13 @@ class _MyHomePageState extends State<MyHomePage>
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(
+          SizedBox(
             width: 16,
             height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
           const SizedBox(width: 8),
           Text(l10n(context).fundingRateLoading),
@@ -1993,6 +2050,7 @@ class _MyHomePageState extends State<MyHomePage>
     final rate = _xrpFundingRate;
     final interval = rate?.fundingIntervalHours ?? 8;
     final isBybit = _fundingRateSource == 'bybit';
+    final cs = Theme.of(context).colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -2002,7 +2060,7 @@ class _MyHomePageState extends State<MyHomePage>
               rate != null
                   ? '${rate.annualizedRatePercent.toStringAsFixed(2)}%'
                   : '-',
-          color: Colors.deepPurple,
+          color: const Color(0xFFC4B5FD),
         ),
         InfoItem(
           label: l10n(context).fundingRateInterval(interval),
@@ -2010,7 +2068,7 @@ class _MyHomePageState extends State<MyHomePage>
               rate != null
                   ? '${rate.fundingRatePercent.toStringAsFixed(4)}%'
                   : '-',
-          color: Colors.teal,
+          color: const Color(0xFF5EEAD4),
         ),
         Align(
           alignment: Alignment.topCenter,
@@ -2019,10 +2077,10 @@ class _MyHomePageState extends State<MyHomePage>
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               minimumSize: const Size(72, 34),
-              backgroundColor: Colors.deepPurple,
-              foregroundColor: Colors.white,
-              elevation: 6,
-              shadowColor: Colors.black.withOpacity(0.2),
+              backgroundColor: cs.primary,
+              foregroundColor: cs.onPrimary,
+              elevation: 4,
+              shadowColor: Colors.black.withValues(alpha: 0.35),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -2043,6 +2101,7 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   Widget _buildInfoPageIndicator() {
+    final cs = Theme.of(context).colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(2, (index) {
@@ -2053,7 +2112,7 @@ class _MyHomePageState extends State<MyHomePage>
           width: isActive ? 8 : 6,
           height: isActive ? 8 : 6,
           decoration: BoxDecoration(
-            color: isActive ? Colors.deepPurple : Colors.grey[300],
+            color: isActive ? cs.primary : cs.outlineVariant.withValues(alpha: 0.55),
             shape: BoxShape.circle,
           ),
         );
@@ -2062,6 +2121,12 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   Widget _buildChartCard(double chartHeight) {
+    final cs = Theme.of(context).colorScheme;
+    final chartSurface = cs.surfaceContainerHighest;
+    final axisLabelColor = cs.onSurfaceVariant;
+    final gridColor = cs.outline.withValues(alpha: 0.28);
+    final axisLineColor = cs.outline.withValues(alpha: 0.55);
+
     List<PlotBand> kimchiPlotBands =
         showKimchiPlotBands ? getKimchiPlotBands() : [];
 
@@ -2085,8 +2150,15 @@ class _MyHomePageState extends State<MyHomePage>
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Container(
-            decoration: BoxDecoration(color: Colors.white),
+            decoration: BoxDecoration(
+              color: chartSurface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: cs.outline.withValues(alpha: 0.35)),
+            ),
             child: SfCartesianChart(
+              plotAreaBackgroundColor: chartSurface,
+              plotAreaBorderColor: axisLineColor,
+              plotAreaBorderWidth: 0,
               onTooltipRender: (TooltipArgs args) {
                 final clickedPoint =
                     args.dataPoints?[(args.pointIndex ?? 0) as int];
@@ -2105,9 +2177,10 @@ class _MyHomePageState extends State<MyHomePage>
                     'Gimchi: ${kimchiPremiumValue.toStringAsFixed(2)}%';
               },
 
-              legend: const Legend(
+              legend: Legend(
                 isVisible: true,
                 position: LegendPosition.bottom,
+                textStyle: TextStyle(color: axisLabelColor, fontSize: 12),
               ),
               margin: const EdgeInsets.all(10),
               primaryXAxis: DateTimeAxis(
@@ -2118,6 +2191,9 @@ class _MyHomePageState extends State<MyHomePage>
                 initialZoomFactor: 0.9,
                 initialZoomPosition: 0.8,
                 plotBands: kimchiPlotBands,
+                axisLine: AxisLine(color: axisLineColor, width: 1),
+                majorGridLines: MajorGridLines(color: gridColor, width: 1),
+                labelStyle: TextStyle(color: axisLabelColor, fontSize: 11),
               ),
               primaryYAxis: NumericAxis(
                 rangePadding: ChartRangePadding.auto,
@@ -2125,6 +2201,9 @@ class _MyHomePageState extends State<MyHomePage>
                 numberFormat: NumberFormat("###,##0.0"),
                 minimum: getUsdtMin(usdtChartData),
                 maximum: getUsdtMax(usdtChartData),
+                axisLine: AxisLine(color: axisLineColor, width: 1),
+                majorGridLines: MajorGridLines(color: gridColor, width: 1),
+                labelStyle: TextStyle(color: axisLabelColor, fontSize: 11),
               ),
               axes: <ChartAxis>[
                 if (showKimchiPremium)
@@ -2133,9 +2212,12 @@ class _MyHomePageState extends State<MyHomePage>
                     opposedPosition: true,
                     labelFormat: '{value}%',
                     numberFormat: NumberFormat("##0.0"),
-                    majorTickLines: const MajorTickLines(
+                    axisLine: AxisLine(color: axisLineColor, width: 1),
+                    majorGridLines: MajorGridLines(color: gridColor, width: 1),
+                    labelStyle: TextStyle(color: axisLabelColor, fontSize: 11),
+                    majorTickLines: MajorTickLines(
                       size: 2,
-                      color: Colors.red,
+                      color: cs.error,
                     ),
                     rangePadding: ChartRangePadding.round,
                     minimum: kimchiMin - 0.5,
@@ -2166,7 +2248,10 @@ class _MyHomePageState extends State<MyHomePage>
                   ),
                 if (usdtChartData.isNotEmpty)
                   CartesianChartAnnotation(
-                    widget: const BlinkingDot(color: Colors.blue, size: 8),
+                    widget: const BlinkingDot(
+                      color: Color(0xFF7EB8FF),
+                      size: 8,
+                    ),
                     coordinateUnit: CoordinateUnit.point,
                     x: usdtChartData.last.time,
                     y: usdtChartData.last.close,
@@ -2180,7 +2265,7 @@ class _MyHomePageState extends State<MyHomePage>
                     dataSource: usdtChartData,
                     xValueMapper: (USDTChartData data, _) => data.time,
                     yValueMapper: (USDTChartData data, _) => data.close,
-                    color: Colors.blue,
+                    color: const Color(0xFF7EB8FF),
                     animationDuration: 0,
                   )
                 else
@@ -2193,8 +2278,8 @@ class _MyHomePageState extends State<MyHomePage>
                     highValueMapper: (USDTChartData data, _) => data.high,
                     openValueMapper: (USDTChartData data, _) => data.open,
                     closeValueMapper: (USDTChartData data, _) => data.close,
-                    bearColor: Colors.blue,
-                    bullColor: Colors.red,
+                    bearColor: const Color(0xFF7EB8FF),
+                    bullColor: const Color(0xFFF87171),
                     animationDuration: 0,
                   ),
                 // 환율 그래프를 showExchangeRate가 true일 때만 표시
@@ -2204,7 +2289,7 @@ class _MyHomePageState extends State<MyHomePage>
                     dataSource: exchangeRates,
                     xValueMapper: (ChartData data, _) => data.time,
                     yValueMapper: (ChartData data, _) => data.value,
-                    color: Colors.green,
+                    color: const Color(0xFF86EFAC),
                     animationDuration: 0,
                   ),
                 if (showKimchiPremium)
@@ -2213,7 +2298,7 @@ class _MyHomePageState extends State<MyHomePage>
                     dataSource: kimchiPremium,
                     xValueMapper: (ChartData data, _) => data.time,
                     yValueMapper: (ChartData data, _) => data.value,
-                    color: Colors.orange,
+                    color: const Color(0xFFFBBF24),
                     yAxisName: 'kimchiAxis',
                     animationDuration: 0,
                   ),
@@ -2226,11 +2311,14 @@ class _MyHomePageState extends State<MyHomePage>
           left: 10,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white, // 원하는 배경색
-              borderRadius: BorderRadius.circular(18), // 완전한 원형
+              color: cs.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: cs.outline.withValues(alpha: 0.4),
+              ),
             ),
             child: IconButton(
-              icon: const Icon(Icons.refresh, color: Colors.deepPurple),
+              icon: Icon(Icons.refresh, color: cs.primary),
               tooltip: '차트 리셋',
               onPressed: () {
                 setState(() {
@@ -2246,25 +2334,28 @@ class _MyHomePageState extends State<MyHomePage>
           right: 3, // 3픽셀 오른쪽으로 이동 (10-3=7)
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white, // 원하는 배경색
-              borderRadius: BorderRadius.circular(18), // 완전한 원형
+              color: cs.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: cs.outline.withValues(alpha: 0.4),
+              ),
             ),
             child: IconButton(
               icon:
                   chartOnlyPageModel == null
-                      ? const SizedBox(
+                      ? SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.deepPurple,
+                            cs.primary,
                           ),
                         ),
                       )
-                      : const Icon(
+                      : Icon(
                         Icons.open_in_full,
-                        color: Colors.deepPurple,
+                        color: cs.primary,
                       ),
               tooltip: chartOnlyPageModel == null ? '차트 데이터 로딩 중...' : '차트 확대',
               onPressed:
@@ -2327,10 +2418,10 @@ class _MyHomePageState extends State<MyHomePage>
       // 색상 계산: 낮을수록 파랑, 높을수록 빨강 (0~5% 기준)
       double t = ((data.value - kimchiMin) / maxGimchRange).clamp(0.0, 1.0);
       Color bandColor = Color.lerp(
-        Colors.blue,
-        Colors.red,
+        const Color(0xFF2563EB),
+        const Color(0xFFDC2626),
         t,
-      )!.withOpacity(0.6);
+      )!.withValues(alpha: 0.55);
 
       kimchiPlotBands.add(
         PlotBand(
@@ -2358,6 +2449,7 @@ class _MyHomePageState extends State<MyHomePage>
       return adUnlockButton; // 광고 시청 버튼이 있다면 바로 반환
     }
 
+    final cs = Theme.of(context).colorScheme;
     return DefaultTabController(
       length: 2,
       initialIndex: _selectedStrategyTabIndex, // 초기 선택 탭 적용
@@ -2367,9 +2459,10 @@ class _MyHomePageState extends State<MyHomePage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TabBar(
-              labelColor: Colors.deepPurple,
-              unselectedLabelColor: Colors.black54,
-              indicatorColor: Colors.deepPurple,
+              labelColor: cs.primary,
+              unselectedLabelColor: cs.onSurfaceVariant,
+              indicatorColor: cs.primary,
+              dividerColor: cs.outline.withValues(alpha: 0.35),
               labelStyle: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -2460,9 +2553,15 @@ class _MyHomePageState extends State<MyHomePage>
                 : sellPrice.toString())
             : '-';
 
+    final cs = Theme.of(context).colorScheme;
+    final onSurface = cs.onSurface;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
-      color: Colors.white,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.outline.withValues(alpha: 0.35)),
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 1.0, horizontal: 16),
         child: Column(
@@ -2474,16 +2573,18 @@ class _MyHomePageState extends State<MyHomePage>
               children: [
                 Text(
                   '${l10n(context).buy}: $buyPriceStr',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
+                    color: onSurface,
                   ),
                 ),
                 Text(
                   '${l10n(context).sell}: $sellPriceStr',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
+                    color: onSurface,
                   ),
                 ),
               ],
@@ -2494,28 +2595,29 @@ class _MyHomePageState extends State<MyHomePage>
               children: [
                 Text(
                   '${l10n(context).gain}: $profitRateStr',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
+                    color: onSurface,
                   ),
                 ),
                 // 전략보기 버튼
                 OutlinedButton.icon(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.lightbulb_outline,
-                    color: Colors.deepPurple,
+                    color: cs.primary,
                     size: 16,
                   ),
                   label: Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.deepPurple,
+                    style: TextStyle(
+                      color: cs.primary,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.deepPurple),
+                    side: BorderSide(color: cs.primary.withValues(alpha: 0.85)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -2531,9 +2633,9 @@ class _MyHomePageState extends State<MyHomePage>
                       context: context,
                       title: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.lightbulb,
-                            color: Colors.orange,
+                            color: cs.tertiary,
                             size: 24,
                           ),
                           const SizedBox(width: 8),
@@ -2588,22 +2690,22 @@ class _MyHomePageState extends State<MyHomePage>
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                icon: const Icon(Icons.bar_chart, color: Colors.deepPurple),
+                icon: Icon(Icons.bar_chart, color: cs.primary),
                 label: Text(
                   l10n(context).runSimulation,
                   style: TextStyle(
-                    color: Colors.deepPurple,
+                    color: cs.primary,
                     fontWeight: FontWeight.bold,
                     fontSize: 17,
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.deepPurple),
+                  side: BorderSide(color: cs.primary.withValues(alpha: 0.85)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  foregroundColor: Colors.deepPurple,
+                  foregroundColor: cs.primary,
                 ),
                 onPressed:
                     latestStrategy == null
@@ -2658,18 +2760,18 @@ class _MyHomePageState extends State<MyHomePage>
             SizedBox(
               width: double.infinity,
               child: TextButton.icon(
-                icon: const Icon(Icons.link, color: Colors.blue),
+                icon: Icon(Icons.link, color: cs.secondary),
                 label: Text(
                   l10n(context).coinInfoSite,
                   style: TextStyle(
-                    color: Colors.blue,
+                    color: cs.secondary,
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                   ),
                 ),
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  foregroundColor: Colors.blue,
+                  foregroundColor: cs.secondary,
                 ),
                 onPressed: () async {
                   final url = Uri.parse('http://coinpang.org');
@@ -2698,11 +2800,11 @@ class _MyHomePageState extends State<MyHomePage>
           const SizedBox(height: 8),
           Text(
             l10n(context).selectReceiveAlertSubtitle,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.normal,
-              color: Colors.black54,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
             textAlign: TextAlign.center,
           ),
         ],

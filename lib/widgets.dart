@@ -14,17 +14,17 @@ class InfoItem extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
     return Column(
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+          style: tt.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
             color: color,
           ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 4),
         TweenAnimationBuilder<double>(
           key: ValueKey(value), // value가 바뀔 때마다 새 위젯으로 인식
           tween: Tween<double>(begin: 1.5, end: 1.0),
@@ -34,9 +34,9 @@ class InfoItem extends StatelessWidget {
               scale: scale,
               child: Text(
                 value,
-                style: const TextStyle(
-                  fontSize: 22,
+                style: tt.titleLarge?.copyWith(
                   fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             );
@@ -61,6 +61,7 @@ class CheckBoxItem extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -68,15 +69,17 @@ class CheckBoxItem extends StatelessWidget {
           value: value,
           onChanged: onChanged,
           activeColor: color,
+          checkColor: cs.onPrimary,
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            color: value ? color : Colors.grey[700],
-            fontWeight: value ? FontWeight.w600 : FontWeight.w500,
+        Flexible(
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: value ? color : cs.onSurfaceVariant,
+                  fontWeight: value ? FontWeight.w600 : FontWeight.w500,
+                ),
           ),
         ),
       ],
@@ -116,13 +119,14 @@ class StrategyCell extends StatelessWidget {
   const StrategyCell(this.text, {this.isHeader = false, super.key});
   @override
   Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: Text(
         text,
-        style: TextStyle(
-          fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
-          fontSize: 15,
+        style: (isHeader ? tt.titleSmall : tt.bodyMedium)?.copyWith(
+          fontWeight: isHeader ? FontWeight.w700 : FontWeight.w400,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );
@@ -135,19 +139,26 @@ class HistoryRow extends StatelessWidget {
   const HistoryRow({required this.label, required this.value, super.key});
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
           Text(
             '$label: ',
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 13,
-              color: Colors.deepPurple,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: cs.primary,
+                ),
+          ),
+          Expanded(
+            child: Text(
+              value?.toString() ?? '-',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: cs.onSurface,
+                  ),
             ),
           ),
-          Text(value?.toString() ?? '-', style: const TextStyle(fontSize: 13)),
         ],
       ),
     );

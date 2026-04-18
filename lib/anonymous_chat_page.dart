@@ -85,8 +85,14 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     if (_userId.isEmpty) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        backgroundColor: cs.surface,
+        body: Center(
+          child: CircularProgressIndicator(color: cs.primary),
+        ),
+      );
     }
 
     final builders = fl_chat_core.Builders(
@@ -106,14 +112,27 @@ class _AnonymousChatPageState extends State<AnonymousChatPage> {
           ),
     );
 
+    final theme = Theme.of(context);
+    final chatTheme = fl_chat_core.ChatTheme.fromThemeData(theme);
+
     return Scaffold(
-      appBar: AppBar(title: Text(l10n(context).chatRoom), actions: []),
+      backgroundColor: cs.surface,
+      appBar: AppBar(
+        title: Text(l10n(context).chatRoom),
+        backgroundColor: cs.surface,
+        foregroundColor: cs.onSurface,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        actions: const [],
+      ),
       body: SafeArea(
         child: fl_chat_ui.Chat(
           chatController: _chatController,
           currentUserId: _userId,
           onMessageSend: _onMessageSend,
           builders: builders,
+          theme: chatTheme,
+          backgroundColor: cs.surface,
           resolveUser: (fl_chat_core.UserID id) async {
             return fl_chat_core.User(id: id, name: 'John Doe');
           },
@@ -159,12 +178,12 @@ int getAnonNum(String authorId) {
 }
 
 Color getAnonColor(String authorId) {
-  final colors = [
-    Colors.red,
-    Colors.blue,
-    Colors.green,
-    Colors.orange,
-    Colors.purple,
+  const colors = [
+    Color(0xFF7EB8FF),
+    Color(0xFF86EFAC),
+    Color(0xFFFBBF24),
+    Color(0xFFC4B5FD),
+    Color(0xFF5EEAD4),
   ];
   final anonNum = getAnonNum(authorId);
   return colors[(anonNum - 1) % colors.length];
@@ -201,22 +220,30 @@ Widget USTextMessageBuilder(
   required bool isSentByMe,
   fl_chat_core.MessageGroupStatus? groupStatus,
 }) {
-  // authorId별로 색상 매핑
-  final colors = [
-    Colors.blue[100],
-    Colors.green[100],
-    Colors.orange[100],
-    Colors.purple[100],
-    Colors.red[100],
-    Colors.teal[100],
-    Colors.amber[100],
+  final cs = Theme.of(context).colorScheme;
+  final tt = Theme.of(context).textTheme;
+
+  // 상대방 말풍선: 어두운 톤 위에 읽기 좋은 밝은 글자
+  const otherBubbleTints = [
+    Color(0xFF2D2640),
+    Color(0xFF1E3328),
+    Color(0xFF332A1F),
+    Color(0xFF252838),
+    Color(0xFF1F2D33),
+    Color(0xFF302428),
+    Color(0xFF28332A),
   ];
 
-  // authorId별로 고유한 색상 인덱스 생성
-  final bgColor =
-      isSentByMe
-          ? Colors.blue[200]
-          : colors[(getAnonNum(message.authorId) - 1) % colors.length];
+  final Color bgColor;
+  final Color fgColor;
+  if (isSentByMe) {
+    bgColor = cs.primary;
+    fgColor = cs.onPrimary;
+  } else {
+    final idx = (getAnonNum(message.authorId) - 1) % otherBubbleTints.length;
+    bgColor = otherBubbleTints[idx];
+    fgColor = const Color(0xFFE8E6ED);
+  }
 
   // 메시지 텍스트 파싱
   final displayText = _parseMessageText(message.text);
@@ -227,7 +254,20 @@ Widget USTextMessageBuilder(
     decoration: BoxDecoration(
       color: bgColor,
       borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: isSentByMe
+            ? cs.primary.withValues(alpha: 0.35)
+            : cs.outline.withValues(alpha: 0.35),
+      ),
     ),
-    child: Text(displayText, style: const TextStyle(fontSize: 16)),
+    child: Text(
+      displayText,
+      style: tt.bodyLarge?.copyWith(
+            fontSize: 16,
+            color: fgColor,
+            height: 1.35,
+          ) ??
+          TextStyle(fontSize: 16, color: fgColor, height: 1.35),
+    ),
   );
 }
